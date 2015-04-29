@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "webpack-build": "./node_modules/webpack/bin/webpack.js --progress --colors -d",
+    "webpack-watch": "./node_modules/webpack/bin/webpack.js --watch --progress --colors -d",
     "webpack-build-prod": "./node_modules/webpack/bin/webpack.js --progress --colors -p",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npm run webpack-build"
