@@ -4,7 +4,7 @@ module.exports = {
 	},
 	output : {
 		filename : "[name].build.js",
-		path     : "./"
+		path     : "./build/assets/js/"
 	},
 	resolve : {
 		alias : {
