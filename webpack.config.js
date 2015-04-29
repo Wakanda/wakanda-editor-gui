@@ -3,6 +3,7 @@ module.exports = {
 		main : "./main.js"
 	},
 	output : {
+    publicPath: "/ce/build/assets/js/",
 		filename : "[name].build.js",
 		path     : "./build/assets/js/"
 	},
