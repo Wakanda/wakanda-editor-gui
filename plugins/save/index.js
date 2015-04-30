@@ -6,7 +6,7 @@ export default {
 	
 	save(){
 		
-		IDE.toolbar.removeClassToItem("save", "save-enabled");
+		IDE.core.toolbar.removeClassToItem("save", "save-enabled");
 		
 		IDE.editor.setReadOnly(true);
 		
@@ -20,7 +20,7 @@ export default {
 		switch(event.name){
 			case "editor.ondirty":
 				document.title = `(*) ${document.title}`;
-				IDE.toolbar.addClassToItem("save", "save-enabled");
+				IDE.core.toolbar.addClassToItem("save", "save-enabled");
 			break;
 			
 			case "editor.onclean":

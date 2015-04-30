@@ -4,11 +4,12 @@ require("./styles/common.css");
 require("./styles/editor.css");
 require("./styles/tree.css");
 
+import Core from "./src/core";
+IDE.core = new Core();
+
 import Editor from "./scripts/Editor";
-import Toolbar from "./scripts/Toolbar"
 import Tree from "./scripts/Tree"
 import FileManager from "./scripts/FileManager"
-import PluginsManager from "./scripts/PluginsManager"
 import TabManager from "./scripts/TabManager"
 import {query, mapExtToEditorMode} from "./scripts/Utils"
 
@@ -31,32 +32,10 @@ if(IDE.qParams.path){
 }
 
 /*
- * Create EventEmitter
- */
-var _EventEmitter   = require('./lib/micro-events.js');
-IDE.EventManager = new _EventEmitter();
-
-/*
- * Create Plugins Manager
- */
-IDE.pluginsManager = new PluginsManager();
-/*
  * TMP : Load Plugins
  */
-IDE.pluginsManager.load("history");
-IDE.pluginsManager.load("save");
-
-
-/*
- * Create Toolbar
- */ 
-var toolbarElements = IDE.pluginsManager.getToolbarElements();
- 
-var toolbar = new Toolbar({
-	className : "page_toolbar",
-	items : toolbarElements
-});
-IDE.toolbar = toolbar;
+IDE.core.loadPlugin("history");
+IDE.core.loadPlugin("save");
 
 /*
  * Create FileManager

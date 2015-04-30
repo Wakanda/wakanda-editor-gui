@@ -15,14 +15,14 @@ export default {
 		var undoManager   = IDE.editor.editor.session.$undoManager;
 		
 		if(undoManager.hasUndo()){
-			IDE.toolbar.swapItemClass("undo", "undo", "undo-enabled");		
+			IDE.core.toolbar.swapItemClass("undo", "undo", "undo-enabled");		
 		} else {
-			IDE.toolbar.swapItemClass("undo", "undo-enabled", "undo");
+			IDE.core.toolbar.swapItemClass("undo", "undo-enabled", "undo");
 		}
 		if(undoManager.hasRedo()){
-			IDE.toolbar.swapItemClass("redo", "redo", "redo-enabled");		
+			IDE.core.toolbar.swapItemClass("redo", "redo", "redo-enabled");		
 		} else {
-			IDE.toolbar.swapItemClass("redo", "redo-enabled", "redo");	
+			IDE.core.toolbar.swapItemClass("redo", "redo-enabled", "redo");	
 		}
 	}
 }

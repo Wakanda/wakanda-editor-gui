@@ -1,4 +1,6 @@
-import {safeClassReplace} from "./Utils";
+require("./style.css");
+
+import {safeClassReplace} from "../../scripts/Utils";
 
 var IDE = window.IDE;
 
@@ -17,6 +19,12 @@ class Toolbar {
 		this.create();
 	}
 	
+	reload(items) {
+		this.items = [];
+		this.addItems(items);
+		this.render();
+	}
+
 	addItems(items) {
 		this.items.push(...items);
 	}
@@ -55,7 +63,7 @@ class Toolbar {
 			var target     = event.target;
 			var pluginName = target.getAttribute("data-plugin");
 			var command    = target.getAttribute("data-command");			
-			var plugin     = IDE.pluginsManager.get(pluginName);
+			var plugin     = IDE.core.getPlugin(pluginName);
 			
 			plugin.code[command]();
 		});

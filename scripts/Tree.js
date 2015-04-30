@@ -102,13 +102,13 @@ class Tree {
 		})
 		.on("activate_node.jstree",Tree.onselect)
 		.on("loaded.jstree", function(){
-			IDE.EventManager.emit("tree.ready");
+			IDE.core.EventManager.emit("tree.ready");
 		});
 	}
 	
 	hookEvents(){
 		
-		IDE.EventManager.on("tree.ready", ()=>this.init() );
+		IDE.core.EventManager.on("tree.ready", ()=>this.init() );
 		var that     = this;
 		var interact = require("../lib/interact-1.2.4.min.js");
 		
