@@ -18,7 +18,7 @@ require("./styles/tree.css");
 /*import Core from "./src/core";
 IDE.core = new Core();*/
 
-import Core from "./src/core2";
+import Core from "./src/core";
 
 import Toolbar from "./plugins/toolbar/toolbar";
 Toolbar.conf = {
@@ -37,8 +37,6 @@ Core.run();
 
 
 
-
-//Core2.run();
 
 import Editor from "./scripts/Editor";
 import Tree from "./scripts/Tree"

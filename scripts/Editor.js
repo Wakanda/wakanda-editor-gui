@@ -1,3 +1,5 @@
+import Core from "../src/core";
+
 class Editor {	
 	
 	constructor({lib, id="editor", theme="monokai", mode="javascript", options={}}){
@@ -28,7 +30,7 @@ class Editor {
 		
 		document.on("change", (...args)=> {
 			setTimeout(()=>this.dirty = true , 0);
-			setTimeout(()=>IDE.core.EventManager.emit("editor.onchange", {name : "editor.onchange", params : args}), 0);
+			setTimeout(()=>Core.EventManager.emit("editor.onchange", {name : "editor.onchange", params : args}), 0);
 		});
 	}
 	
@@ -53,7 +55,7 @@ class Editor {
 	
 	ready() {
 		this.registerEvents();
-		IDE.core.EventManager.emit("editor.onready", {name : "editor.onready"});
+		Core.EventManager.emit("editor.onready", {name : "editor.onready"});
 	}
 	
 	create(id) {
@@ -95,10 +97,10 @@ class Editor {
 	set dirty(value){
 		if(value && ! this._dirty){
 			this._dirty = true;
-			IDE.core.EventManager.emit("editor.ondirty", {name : "editor.ondirty"});
+			Core.EventManager.emit("editor.ondirty", {name : "editor.ondirty"});
 		}else if(!value && this._dirty){
 			this._dirty = false;
-			IDE.core.EventManager.emit("editor.onclean", {name : "editor.onclean"});
+			Core.EventManager.emit("editor.onclean", {name : "editor.onclean"});
 		}
 	}
 	

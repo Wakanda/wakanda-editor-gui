@@ -28,7 +28,7 @@ export default {
 }*/
 
 require("./style.css");
-import Core from "../../src/core2";
+import Core from "../../src/core";
 
 class Histories {
 
@@ -54,11 +54,11 @@ class Histories {
 		Core.plugins.Toolbar.addItems(this.toolbar);
 		Core.plugins.Toolbar.render();
 
-		
+
 	}
 	
 	run() {
-		Core.subscribe("Histories", this.subscribe);
+		Core.subscribePlugin("Histories", this.subscribe);
 	}
 
 	redo(){

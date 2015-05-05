@@ -32,12 +32,13 @@ export default {
 */
 
 require("./style.css");
-import Core from "../../src/core2";
+import Core from "../../src/core";
 
 class Save {
 
 	constructor(options) {
 		this.subscribe = ["editor.ondirty","editor.onclean"];
+		console.log(this.subscribe, "1")
 		this.toolbar = [
 			{
 				name : "save",

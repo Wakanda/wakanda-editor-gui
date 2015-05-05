@@ -21,7 +21,7 @@ import `{$plugin}`;
 require("./style.css");
 
 import {safeClassReplace} from "../../scripts/Utils";
-import Core from "../../src/core2";
+import Core from "../../src/core";
 
 var IDE = window.IDE;
 
