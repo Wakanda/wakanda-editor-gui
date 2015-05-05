@@ -16,8 +16,7 @@ class Tree {
 	static fetcher(node, callback) {
 		var path = (node.id !== "#")? node.id : "/";
 		
-		IDE
-		.fileManager
+		Core.get("fileManager")
 		.getTree(path)
 		.then( Tree.mapper(node, callback) );			
 	}

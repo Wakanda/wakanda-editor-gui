@@ -36,7 +36,7 @@ class Editor {
 	
 	loadFile(){
 		var path = IDE.qParams.path
-		IDE.fileManager.getFile(path).then((event)=>{
+		Core.get("fileManager").getFile(path).then((event)=>{
 			var content = event.response;
 			
 			this.setContent(content);

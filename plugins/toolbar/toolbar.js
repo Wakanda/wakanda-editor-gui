@@ -1,23 +1,3 @@
-/*import Core from "core"
-import otherPlugins from "/"
-
-
-export default class Toolbar {
-
-	constructor (options = {}) {
-		Core.plugins.layout.add("header", this.render);
-
-		
-	}
-
-
-}
-
-plugin = plugins.pop();
-import `{$plugin}`;
-
-*/
-
 require("./style.css");
 
 import {safeClassReplace} from "../../scripts/Utils";
@@ -86,7 +66,7 @@ class Toolbar {
 			var command    = target.getAttribute("data-command");			
 			var plugin     = Core.get(pluginName);
 			
-			plugin.code[command]();
+			plugin[command]();
 		});
 	}
 	

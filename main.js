@@ -11,27 +11,18 @@ Toolbar.conf = {
 	className : "page_toolbar",
 	items : []
 }
-
 import Save from "./plugins/save/save";
 import Histories from "./plugins/history/history";
 
-Core.run();
-
-
 
 /****** @to update ******/
-
-
-
-
 import Editor from "./scripts/Editor";
 import Tree from "./scripts/Tree"
-import FileManager from "./scripts/FileManager"
 import TabManager from "./scripts/TabManager"
 import {query, mapExtToEditorMode} from "./scripts/Utils"
 
 /*
- * Query Params
+ * Query Params ***** @to update ******
  */
 var qParams    = query();
 var mode       = qParams.mode;
@@ -48,12 +39,16 @@ if(IDE.qParams.path){
 	}
 }
 
-/*
- * Create FileManager
- */
-var fileManager    = new FileManager();
-IDE.fileManager    = fileManager;
 
+/************/
+
+
+import FileManager from "./plugins/fileManager/fileManager";
+
+Core.run();
+
+
+/****** @to update ******/
 /*
  * Create Explorer
  */
