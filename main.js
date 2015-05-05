@@ -1,22 +1,8 @@
-/*import Core from "core"
-//IDE.core = new Core();
-
-import Toolbar from "toolbar"
-
-
-
-
-IDE.core.run();*/
-
-
 var IDE = window.IDE = {};
 
 require("./styles/common.css");
 require("./styles/editor.css");
 require("./styles/tree.css");
-
-/*import Core from "./src/core";
-IDE.core = new Core();*/
 
 import Core from "./src/core";
 
@@ -33,7 +19,7 @@ Core.run();
 
 
 
-/******/
+/****** @to update ******/
 
 
 

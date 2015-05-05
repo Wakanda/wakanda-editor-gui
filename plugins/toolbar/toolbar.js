@@ -84,7 +84,7 @@ class Toolbar {
 			var target     = event.target;
 			var pluginName = target.getAttribute("data-plugin");
 			var command    = target.getAttribute("data-command");			
-			var plugin     = IDE.core.getPlugin(pluginName);
+			var plugin     = Core.get(pluginName);
 			
 			plugin.code[command]();
 		});

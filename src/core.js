@@ -25,7 +25,7 @@ export default {
 	   	for (let key of Object.keys(this.plugins)) {
 			var toRun = this.plugins[key].run;
 			if (toRun)
-				this.plugins[key].run();
+				toRun.call(this.plugins[key]);
 	   	}
 	},
 
@@ -35,12 +35,6 @@ export default {
 
 	get(pluginName) {
 		return this.plugins[pluginName];
-	},
-
-	subscribePlugin(pluginName, subscriptions) {
-		
-		if (subscriptions === undefined) return;
-
-		subscriptions.forEach( (event)=> this.EventManager.on(event, this.plugins[pluginName].on ) );		
 	}
+	
 }

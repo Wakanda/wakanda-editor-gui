@@ -5,7 +5,6 @@ class Histories {
 
 	constructor(options) {
 
-		this.subscribe = ["editor.onchange"];
 		this.toolbar = [
 			{
 				name : "undo",
@@ -25,11 +24,10 @@ class Histories {
 		Core.plugins.Toolbar.addItems(this.toolbar);
 		Core.plugins.Toolbar.render();
 
-
 	}
 	
 	run() {
-		Core.subscribePlugin("Histories", this.subscribe);
+		Core.EventManager.on("editor.onchange", this.on);
 	}
 
 	redo(){
@@ -57,7 +55,5 @@ class Histories {
 }
 
 export default Histories
-
-
 
 Core.register("Histories", Histories);
