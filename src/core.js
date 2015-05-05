@@ -1,9 +1,8 @@
-//first draft for the core
 class Core {
 
 	constructor(options) {
 		
-		this.corePlugins = [
+		this.corePlugins = [ /* @to remove */
 			"toolbar",
 			"request"
 		];
@@ -26,6 +25,10 @@ class Core {
 		});
 
 		//this.loadPlugin("request"); //@todo
+
+		// send request
+
+		// parse query string
   	}
 
   	getPlugin(pluginName) {

@@ -1,11 +1,44 @@
+/*import Core from "core"
+//IDE.core = new Core();
+
+import Toolbar from "toolbar"
+
+
+
+
+IDE.core.run();*/
+
+
 var IDE = window.IDE = {};
 
 require("./styles/common.css");
 require("./styles/editor.css");
 require("./styles/tree.css");
 
-import Core from "./src/core";
-IDE.core = new Core();
+/*import Core from "./src/core";
+IDE.core = new Core();*/
+
+import Core from "./src/core2";
+
+import Toolbar from "./plugins/toolbar/toolbar";
+Toolbar.conf = {
+	className : "page_toolbar",
+	items : []
+}
+
+import Save from "./plugins/save/save";
+import Histories from "./plugins/history/history";
+
+Core.run();
+
+
+
+/******/
+
+
+
+
+//Core2.run();
 
 import Editor from "./scripts/Editor";
 import Tree from "./scripts/Tree"
@@ -30,12 +63,6 @@ if(IDE.qParams.path){
 		document.title = IDE.filename;
 	}
 }
-
-/*
- * TMP : Load Plugins
- */
-IDE.core.loadPlugin("history");
-IDE.core.loadPlugin("save");
 
 /*
  * Create FileManager

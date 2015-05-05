@@ -1,6 +1,27 @@
+/*import Core from "core"
+import otherPlugins from "/"
+
+
+export default class Toolbar {
+
+	constructor (options = {}) {
+		Core.plugins.layout.add("header", this.render);
+
+		
+	}
+
+
+}
+
+plugin = plugins.pop();
+import `{$plugin}`;
+
+*/
+
 require("./style.css");
 
 import {safeClassReplace} from "../../scripts/Utils";
+import Core from "../../src/core2";
 
 var IDE = window.IDE;
 
@@ -117,3 +138,5 @@ class Toolbar {
 }
 
 export default Toolbar;
+
+Core.register("Toolbar", Toolbar);
