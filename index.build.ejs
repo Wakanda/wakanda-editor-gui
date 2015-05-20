@@ -15,6 +15,6 @@
   <% } %>
   <script src="./lib/emmet.js"></script>
   <script src="./lib/ace-min-noconflict/ace.js"></script>
-  <script src="/assets/js/main.build.js"></script>
+  <script src="/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
  </body>
 </html>
