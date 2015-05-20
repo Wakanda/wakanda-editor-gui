@@ -1,5 +1,10 @@
 var IDE = window.IDE = {};
 
+//@temporary resolve.alias / unit-tests example - just access "aliasExample" object from console
+import aliasExample from "./alias-example";
+window.aliasExample = aliasExample;
+//@end temporary
+
 require("./styles/common.css");
 require("./styles/editor.css");
 require("./styles/tree.css");
