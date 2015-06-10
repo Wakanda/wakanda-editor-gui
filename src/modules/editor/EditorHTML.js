@@ -9,7 +9,7 @@ class EditorHTML extends Editor {
 	}
 	
 	initMode() {
-		require("../lib/ace-min-noconflict/ext-emmet.js");
+		require("../../../lib/ace-min-noconflict/ext-emmet.js");
 		this.setOptions({
 			"enableEmmet" : true
 		});

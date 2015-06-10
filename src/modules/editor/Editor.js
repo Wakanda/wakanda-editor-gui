@@ -1,5 +1,3 @@
-import Core from "../src/core";
-
 class Editor {	
 	
 	constructor({lib, id="editor", theme="monokai", mode="javascript", options={}}){
@@ -8,6 +6,10 @@ class Editor {
 		this.theme   = theme;
 		this.options = options;		
 		this._dirty  = false;
+		
+		var _EventEmitter   = require('../../../lib/micro-events.js');
+		this.events = new _EventEmitter();
+		
 		this.init(id);
 	}
 	
@@ -30,13 +32,13 @@ class Editor {
 		
 		document.on("change", (...args)=> {
 			setTimeout(()=>this.dirty = true , 0);
-			setTimeout(()=>Core.EventManager.emit("editor.onchange", {name : "editor.onchange", params : args}), 0);
+			setTimeout(()=>this.events.emit("editor.onchange", {name : "editor.onchange", params : args}), 0);
 		});
 	}
 	
 	loadFile(){
 		var path = IDE.qParams.path
-		Core.get("fileManager").getFile(path).then((event)=>{
+		IDE.fileManager.getFile(path).then((event)=>{
 			var content = event.response;
 			
 			this.setContent(content);
@@ -55,7 +57,7 @@ class Editor {
 	
 	ready() {
 		this.registerEvents();
-		Core.EventManager.emit("editor.onready", {name : "editor.onready"});
+		this.events.emit("editor.onready", {name : "editor.onready"});
 	}
 	
 	create(id) {
@@ -97,15 +99,27 @@ class Editor {
 	set dirty(value){
 		if(value && ! this._dirty){
 			this._dirty = true;
-			Core.EventManager.emit("editor.ondirty", {name : "editor.ondirty"});
+			this.events.emit("editor.ondirty", {name : "editor.ondirty"});
 		}else if(!value && this._dirty){
 			this._dirty = false;
-			Core.EventManager.emit("editor.onclean", {name : "editor.onclean"});
+			this.events.emit("editor.onclean", {name : "editor.onclean"});
 		}
 	}
 	
 	get dirty(){
 		return this._dirty;
+	}
+	
+	onDirty(callback){
+		this.events.on("editor.ondirty", callback);
+	}
+	
+	onClean(callback){
+		this.events.on("editor.onclean", callback);
+	}
+	
+	onChange(callback){
+		this.events.on("editor.onchange", callback);
 	}
 	
 }

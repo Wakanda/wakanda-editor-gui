@@ -1,7 +1,4 @@
-require("./style.css");
-
-import {safeClassReplace} from "../../scripts/Utils";
-import Core from "../../src/core";
+import {safeClassReplace} from "../Utils";
 
 var IDE = window.IDE;
 
@@ -16,18 +13,22 @@ class Toolbar {
 		this.items      = [];		
 		this.itemPrefix = "page-toolbar-item-";
 		
-		this.addItems(options.items);		
-		this.create();
+		this.addItems(options.items);
+		
+		IDE.plugins.onPluginActivated(this.addPluginItems);
+		
+		IDE.plugins.onPluginsActivated(()=>this.create());
+		
 	}
 	
-	reload(items) {
-		this.items = [];
-		this.addItems(items);
-		this.render();
-	}
-
 	addItems(items) {
-		this.items.push(...items);
+		if(items && items.length){
+			this.items.push(...items);
+		}		
+	}
+	
+	addPluginItems(plugin){
+		//TODO
 	}
 	
 	renderItem(item) {
@@ -64,13 +65,14 @@ class Toolbar {
 			var target     = event.target;
 			var pluginName = target.getAttribute("data-plugin");
 			var command    = target.getAttribute("data-command");			
-			var plugin     = Core.get(pluginName);
+			var plugin     = IDE.pluginsManager.get(pluginName);
 			
-			plugin[command]();
+			plugin.code[command]();
 		});
 	}
 	
 	create() {
+		this.items = IDE.plugins.getToolbarElements(); //TMP
 		this.render();
 		this.hookEvents();
 	}
@@ -118,5 +120,3 @@ class Toolbar {
 }
 
 export default Toolbar;
-
-Core.register("Toolbar", Toolbar);

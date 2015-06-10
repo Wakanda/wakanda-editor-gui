@@ -1,5 +1,4 @@
 var IDE = window.IDE;
-import Core from "../src/core";
 
 class Tree {
 	constructor(options) {
@@ -9,6 +8,9 @@ class Tree {
 		var container = document.getElementsByClassName(this.className)[0];
 		
 		this.container = container;
+		
+		var _EventEmitter   = require('../../../lib/micro-events.js');
+		this.events = new _EventEmitter();
 				
 		this.create(options);
 	}
@@ -16,7 +18,8 @@ class Tree {
 	static fetcher(node, callback) {
 		var path = (node.id !== "#")? node.id : "/";
 		
-		Core.get("fileManager")
+		IDE
+		.fileManager
 		.getTree(path)
 		.then( Tree.mapper(node, callback) );			
 	}
@@ -79,19 +82,19 @@ class Tree {
 	static onselect(event, element){
 		var path = element.node.id;
 		
-		if(IDE.TabManager.tabs[path]){
-			IDE.TabManager.focusTab(path);
+		if(IDE.tabs.list[path]){
+			IDE.tabs.focusTab(path);
 		} else if(path==IDE.qParams.path){
 			
 		}else{
 			var url  = window.location.origin + window.location.pathname + "?project=" + IDE.qParams.project + "&path=" + path;
-			IDE.TabManager.createTab(url);
+			IDE.tabs.createTab(url);
 		}
 	}
 	
 	render() {
-		var jstree = require("../lib/jstree/jstree.js");
-		var $      = require("../lib/jquery-2.1.3.min.js");
+		var jstree = require("../../../lib/jstree/jstree.js");
+		var $      = require("../../..//lib/jquery-2.1.3.min.js");
 		
 		this.$container = $(this.container);
 		
@@ -101,16 +104,14 @@ class Tree {
 			}
 		})
 		.on("activate_node.jstree",Tree.onselect)
-		.on("loaded.jstree", function(){
-			Core.EventManager.emit("tree.ready");
-		});
+		.on("loaded.jstree", () => this.events.emit("ready") );
 	}
 	
 	hookEvents(){
 		
-		Core.EventManager.on("tree.ready", ()=>this.init() );
+		this.events.on("ready", ()=>this.init() );
 		var that     = this;
-		var interact = require("../lib/interact-1.2.4.min.js");
+		var interact = require("../../../lib/interact-1.2.4.min.js");
 		
 		interact('.cloud-ide-tree-editor-handle')
 		.draggable({

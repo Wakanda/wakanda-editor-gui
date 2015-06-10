@@ -1,5 +1,4 @@
 export default {
-	"subscribe" : ["editor.ondirty","editor.onclean"],
 	"toolbar"   : [
 		{
 			name : "save",

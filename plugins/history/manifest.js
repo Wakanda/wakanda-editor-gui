@@ -1,5 +1,4 @@
 export default {
-	"subscribe" : ["editor.onchange"],
 	"toolbar"   : [
 		{
 			name : "undo",
