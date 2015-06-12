@@ -34,7 +34,11 @@ class Editor {
 			setTimeout(()=>this.dirty = true , 0);
 			setTimeout(()=>this.events.emit("editor.onchange", {name : "editor.onchange", params : args}), 0);
 		});
-	}
+
+        this.editor.selection.on('changeCursor', (...args)=> {
+            setTimeout(()=>this.events.emit("editor.oncursorpositionchange", {name : "editor.oncursorpositionchange", params : args}), 0);
+        });
+    }
 	
 	loadFile(){
 		var path = IDE.qParams.path
@@ -121,7 +125,10 @@ class Editor {
 	onChange(callback){
 		this.events.on("editor.onchange", callback);
 	}
-	
+
+    onCursorPositionChange(callback){
+        this.events.on("editor.oncursorpositionchange", callback);
+    }
 }
 
 export default Editor;
