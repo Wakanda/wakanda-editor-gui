@@ -15,20 +15,20 @@ IDE.Core = new Core([
 	"fileManager",
 	"explorer",
 	"editor",
-	"tabManager"	
+	"tabManager"
 ]);
 
 IDE.Core.onReady(function(){
 	IDE.plugins.onPluginsLoaded(function(){
 		IDE.plugins.activate("history");
 		IDE.plugins.activate("save");
-        IDE.plugins.activate("autocomplete");
+		IDE.plugins.activate("autocomplete");
 		IDE.plugins.events.emit("all_activated");
 	});
 	
 	IDE.plugins.loadMultiple([
 		"history",
 		"save",
-        "autocomplete"
+		"autocomplete"
 	]);
 });
