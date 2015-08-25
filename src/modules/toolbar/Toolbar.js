@@ -64,9 +64,9 @@ class Toolbar {
 		this.container.addEventListener("click", function(event){
 			var target     = event.target;
 			var pluginName = target.getAttribute("data-plugin");
-			var command    = target.getAttribute("data-command");			
-			var plugin     = IDE.pluginsManager.get(pluginName);
-			
+			var command    = target.getAttribute("data-command");
+			var plugin     = IDE.plugins.get(pluginName);
+
 			plugin.code[command]();
 		});
 	}

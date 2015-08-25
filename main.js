@@ -3,6 +3,7 @@ var IDE = window.IDE = {};
 require("./styles/common.css");
 require("./styles/editor.css");
 require("./styles/tree.css");
+require("./styles/guid.css");
 
 //- LOAD CORE -//
 import Core from "./src/core"
@@ -14,20 +15,23 @@ IDE.Core = new Core([
 	"toolbar",
 	"fileManager",
 	"explorer",
-	"editor",
+	// "editor",
+	"GUID",
 	"tabManager"
 ]);
 
 IDE.Core.onReady(function(){
 	IDE.plugins.onPluginsLoaded(function(){
-		IDE.plugins.activate("history");
+		// IDE.plugins.activate("history");
 		IDE.plugins.activate("save");
+		IDE.plugins.activate("GuidHistoryManager");
 		IDE.plugins.activate("autocomplete");
 		IDE.plugins.events.emit("all_activated");
 	});
-	
+
 	IDE.plugins.loadMultiple([
-		"history",
+		// "history",
+		"GuidHistoryManager",
 		"save",
 		"autocomplete"
 	]);
