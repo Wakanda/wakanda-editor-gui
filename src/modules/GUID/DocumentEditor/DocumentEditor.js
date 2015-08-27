@@ -22,7 +22,7 @@ class DocumentEditor {
 		if (path) {
 			_this.iframe.src = path;
 
-			this.documentPromise = new Promise(function(res, rej){
+			this.documentPromise = new Promise(function(res, rej) {
 				_this.iframe.onload = function onIframeLoad(args) {
 					_this.window = _this.iframe.contentWindow || _this.iframe.contentDocument || window.WIN;
 					if (_this.window.document) {
@@ -67,45 +67,61 @@ class DocumentEditor {
 		this.events.on('GUID.window.resize', callBack);
 	}
 
-	removeSelectedElement() {
-		let selElem = this.selectedElement;
-		let events = this.events;
-		let parent = selElem.parentElement;
+	removeElement(args) {
+		let {
+			element
+		} = args;
 
 		let _this = this;
 
 		let command = this.commandsFactory.removeElement({
-			element: selElem
+			element
 		});
 		command.afterExecute = function() {
-			_this.selectElement({
-				element: parent
-			});
-		};
-		command.afterUndo = function() {
-			_this.selectElement({
-				element: selElem
-			});
+			if (_this.selectedElement === element) {
+				_this.selectElement({
+					element: parent
+				});
+			}
 		};
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
 
+	removeSelectedElement() {
+		this.removeElement({
+			element: _this.selectedElement
+		});
+	}
+
 	appendToSelectedElement(element) {
+		let _this = this;
+
 		let selElem = this.selectedElement;
 		let events = this.events;
 
-		this.broker.createCommand(this.commandsFactory.appendElement({
-				parent: selElem,
-				child: element
-			}))
+		let command = this.commandsFactory.appendElement({
+			parent: selElem,
+			child: element
+		});
+
+		command.afterUndo = function(args) {
+			let {
+				parent
+			} = args;
+			_this.selectElement({
+				element: parent
+			});
+		};
+
+		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
 	onAppendElement(callBack) {
-		this.events.emit('GUID.dom.append', callBack);
+		this.events.on('GUID.dom.append', callBack);
 	}
 	onRemoveElement(callBack) {
-		this.events.emit('GUID.element.remove', callBack)
+		this.events.on('GUID.dom.remove', callBack)
 	}
 
 	changeSelectedElementAttribute(attribute, value) {

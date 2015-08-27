@@ -35,7 +35,7 @@ class UserInterface {
 	clearHighLighting() {
 		let a = this.HIGHLIGHT == null;
 		let b = this._highLightedElement == null;
-		if(a!=b){
+		if (a != b) {
 			console.log(this);
 		}
 		if (this.HIGHLIGHT) {
@@ -43,7 +43,9 @@ class UserInterface {
 			this.fabric_canvas.remove(this.HIGHLIGHT);
 			this.HIGHLIGHT = null;
 			this._highLightedElement = null;
-			this.events.emit('element.clearHighLighting', {element});
+			this.events.emit('element.clearHighLighting', {
+				element
+			});
 		}
 	}
 
@@ -87,65 +89,67 @@ class UserInterface {
 			this.highLightArea(boundingRect);
 			this._highLightedElement = element;
 
-			this.events.emit('element.highlight', {element});
+			this.events.emit('element.highlight', {
+				element
+			});
 		}
 	}
 
-	onElementHighLight(callBack){
+	onElementHighLight(callBack) {
 		this.events.on('element.highlight', callBack);
+	}
+
+	updateSelectedElementBorder() {
+
+		if (this.rectSelected) {
+			this.fabric_canvas.remove(this.rectSelected);
+		}
+
+		let style = this.documentEditor.getSelectedElementComputedStyle();
+
+		let lineColor,
+			selectable = true;
+		switch (style.position) {
+			case 'absolute':
+				lineColor = 'green';
+				break;
+			case 'relative':
+				lineColor = 'blue';
+				break;
+			case 'fixed':
+				lineColor = 'orange';
+				//selectable = false;
+				break;
+			case 'static':
+				lineColor = 'brown';
+				selectable = false;
+				break;
+			default:
+				lineColor = 'yellow';
+		}
+		let boundingClientRect = this.documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
+
+		let {
+			left, top, width, height
+		} = boundingClientRect;
+
+		this.rectSelected = new fabric.Rect({
+			left: left,
+			top: top,
+			fill: '',
+			stroke: lineColor,
+			strokeWidth: 1,
+			width: width,
+			height: height,
+			selectable: selectable
+		});
+
+		this.fabric_canvas.add(this.rectSelected);
+		this.fabric_canvas.moveTo(this.rectSelected, 0);
 	}
 
 	initElementSelection() {
 		let _this = this;
-
-		let updateSelectedElementBorder = function() {
-
-			if (_this.rectSelected) {
-				_this.fabric_canvas.remove(_this.rectSelected);
-			}
-
-			let style = _this.documentEditor.getSelectedElementComputedStyle();
-
-			let lineColor,
-				selectable = true;
-			switch (style.position) {
-				case 'absolute':
-					lineColor = 'green';
-					break;
-				case 'relative':
-					lineColor = 'blue';
-					break;
-				case 'fixed':
-					lineColor = 'orange';
-					//selectable = false;
-					break;
-				case 'static':
-					lineColor = 'brown';
-					selectable = false;
-					break;
-				default:
-					lineColor = 'yellow';
-			}
-			let boundingClientRect = _this.documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
-
-			let {
-				left, top, width, height
-			} = boundingClientRect;
-
-			_this.rectSelected = new fabric.Rect({
-				left: left,
-				top: top,
-				fill: '',
-				stroke: lineColor,
-				strokeWidth: 1,
-				width: width,
-				height: height,
-				selectable: selectable
-			});
-
-			_this.fabric_canvas.add(_this.rectSelected);
-			_this.fabric_canvas.moveTo(_this.rectSelected, 0);
-		}
 
 		this.fabric_canvas.on('mouse:up', function(options) {
 			_this.documentEditor.selectElementByPoint({
@@ -154,9 +158,13 @@ class UserInterface {
 			});
 		});
 
-		this.documentEditor.onElementSelected(updateSelectedElementBorder);
+		this.documentEditor.onElementSelected(function() {
+			_this.updateSelectedElementBorder();
+		});
 
-		this.documentEditor.onDocumentSizeChange(updateSelectedElementBorder);
+		this.documentEditor.onDocumentSizeChange(function() {
+			_this.updateSelectedElementBorder();
+		});
 	}
 
 	highLightArea(coords) {
@@ -187,6 +195,12 @@ class UserInterface {
 		let _this = this;
 		this.documentEditor.onDocumentSizeChange(function() {
 			_this.resetCanvasDimentions();
+		});
+		this.documentEditor.onAppendElement(function() {
+			_this.updateSelectedElementBorder();
+		});
+		this.documentEditor.onRemoveElement(function() {
+			_this.updateSelectedElementBorder();
 		});
 	}
 
