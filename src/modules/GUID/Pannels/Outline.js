@@ -1,3 +1,5 @@
+//TODO Join(' > ')
+
 class Outline {
 	constructor(args) {
 		let {
@@ -10,6 +12,7 @@ class Outline {
 		this.elementToIdWP = new WeakMap();
 		this.render();
 		this.syncWihDocumentEditor();
+		this.syncWihUserInterface();
 	}
 
 	getDomPath(el) {
@@ -17,12 +20,12 @@ class Outline {
 		// if (el.tagName.toLowerCase() === 'html' || !el) {
 		// 	el = el.getElementsByTagName('body');
 		// }
+		let el_o = el;
 		if (this.elementToIdWP.has(el)) {
-			return this.elementToIdWP.get(el);
+			return this.elementToIdWP.get(el).slice();
 		}
 		var stack = [];
 		while (el.parentNode != null) {
-			//console.log(el.nodeName);
 			var sibCount = 0;
 			var sibIndex = 0;
 			for (var i = 0; i < el.parentNode.childNodes.length; i++) {
@@ -44,10 +47,45 @@ class Outline {
 			el = el.parentNode;
 		}
 		let ret = stack.slice(1);
+		this.elementToIdWP.set(el_o, ret);
+		return ret.slice(); // removes the html element
+	}
 
-		this.elementToIdWP.set(el, ret);
+	getElementFromId(id){
+		if(this.idToElementMap.has(id)){
+			return this.idToElementMap.get(id);
+		}
+		else{
+			console.log('warning');
+		}
+	}
 
-		return ret; // removes the html element
+	addElement(element) {
+		let {
+			id, parent, text, icon
+		} = this.createJsTreeNode(element);
+
+		this.idToElementMap.set(id, element);
+
+		let jst = this.$container.jstree();
+
+		jst.create_node(parent, {
+			id, text, icon
+		});
+
+		jst.refresh();
+	}
+
+	removeElement(args) {
+		let {
+			element
+		} = args;
+		let id = args.id || this.getDomPath(element).join(' > ');
+		let jst = this.$container.jstree();
+
+		jst.delete_node(id);
+
+		jst.refresh();
 	}
 
 	render() {
@@ -58,6 +96,21 @@ class Outline {
 
 		this.$container = $(this.container);
 		this.$container.jstree({
+			plugins: ["contextmenu"],
+			contextmenu: {
+				items: function($node) {
+					return {
+						Delete: {
+							label: "Remove",
+							action: function(obj) {
+								let {id} = $node;
+								let element = _this.getElementFromId(id);
+								_this.documentEditor.removeElement({element});
+							}
+						}
+					};
+				}
+			},
 			core: {
 				data: function(obj, cb) {
 					let data = [];
@@ -65,7 +118,7 @@ class Outline {
 					IDE.GUID.documentEditor.documentPromise.then((iframeDoc) => {
 						let itemsN = iframeDoc.body.getElementsByTagName("*");
 						let items = [];
-						for(let i = 0; i<itemsN.length; i++){
+						for (let i = 0; i < itemsN.length; i++) {
 							items.push(itemsN.item(i));
 						}
 						// items = Object.keys(items).map(key => items[key]);
@@ -78,21 +131,16 @@ class Outline {
 							if (item.tagName.toLowerCase() === 'script') {
 								continue;
 							}
-							let itemPath = _this.getDomPath(item);
 
-							let id = itemPath.join(' > ');
-							let text = item.tagName.toLowerCase();
-							let textWithId = itemPath.pop();
-							if(textWithId.indexOf('#') !== -1){
-								text = textWithId;
-							}
-							let parent = itemPath.length ? itemPath.join(' > ') : '#';
-
-							let icon = require('./html.png');
+							let {
+								id, parent, text, icon
+							} = _this.createJsTreeNode(item);
 
 							_this.idToElementMap.set(id, item);
 
-							data.push({ id, parent, text, icon });
+							data.push({
+								id, parent, text, icon
+							});
 						}
 						cb(data);
 
@@ -103,6 +151,25 @@ class Outline {
 
 	}
 
+	createJsTreeNode(item) {
+		let itemPath = this.getDomPath(item);
+
+		let id = itemPath.join(' > ');
+		let text = item.tagName.toLowerCase();
+		let textWithId = itemPath.pop();
+		if (textWithId.indexOf('#') !== -1) {
+			text = textWithId;
+		}
+		let parent = itemPath.length ? itemPath.join(' > ') : '#';
+
+		let icon = require('./html.png');
+
+		this.idToElementMap.set(id, item);
+
+		return {
+			id, parent, text, icon
+		};
+	}
 	syncWihDocumentEditor() {
 		let _this = this;
 		this.$container.on("changed.jstree", function(e, data) {
@@ -112,19 +179,9 @@ class Outline {
 					_this.documentEditor.selectElement({
 						element
 					});
-					console.log(data.node.id);
 				}
 			}
 		});
-		this.$container.bind("hover_node.jstree", function(e, data) {
-			let element = _this.idToElementMap.get(data.node.id);
-			IDE.GUID.userInterface.highLightElement(element);
-		});
-		this.$container.bind("dehover_node.jstree", function(e, data) {
-			IDE.GUID.userInterface.clearHighLighting();
-		});
-
-
 		this.documentEditor.onElementSelected(function(args) {
 			let {
 				element
@@ -134,14 +191,37 @@ class Outline {
 			treeInstance.deselect_all();
 			treeInstance.select_node(id);
 		});
+		this.documentEditor.onAppendElement(function(args) {
+			let {
+				child
+			} = args;
+			_this.addElement(child);
+		});
+		this.documentEditor.onRemoveElement(function(args) {
+			let {
+				child
+			} = args;
+			_this.removeElement({
+				element: child
+			});
+		});
+
+
+	}
+	syncWihUserInterface() {
+		let _this = this;
+		this.$container.bind("hover_node.jstree", function(e, data) {
+			let element = _this.idToElementMap.get(data.node.id);
+			IDE.GUID.userInterface.highLightElement(element);
+		});
+		this.$container.bind("dehover_node.jstree", function(e, data) {
+			IDE.GUID.userInterface.clearHighLighting();
+		});
 		this.userInterface.onElementHighLight(function(args) {
 			let {
 				element
 			} = args;
 			let treeInstance = _this.$container.jstree(true);
-			if (!(element.tagName)) {
-				console.log(element);
-			}
 			if (element.tagName.toLowerCase() === 'html') {
 				treeInstance.dehover_node('body');
 			} else {
@@ -155,9 +235,6 @@ class Outline {
 				element
 			} = args;
 			let treeInstance = _this.$container.jstree(true);
-			if (!(element)) {
-				console.log(element);
-			}
 			if (element.tagName.toLowerCase() === 'html') {
 				treeInstance.dehover_node('body');
 			} else {
@@ -166,9 +243,8 @@ class Outline {
 				treeInstance.dehover_node(id);
 			}
 		});
+
 	}
-
-
 }
 
 
