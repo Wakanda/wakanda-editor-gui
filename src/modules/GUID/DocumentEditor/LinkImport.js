@@ -1,5 +1,7 @@
 class LinkImport {
-	static addImportToDocument(doc, href) {
+	addImportToDocument(args) {
+		let doc = this.document;
+		let href = args.href;
 		let link = doc.createElement('link');
 
 		link.setAttribute('rel', 'import');
@@ -11,7 +13,10 @@ class LinkImport {
 	constructor(args) {
 		this.document = args.document;
 		this.initImportHref();
+	}
 
+	exists(href){
+		return (-1 !== this.importHrefs.indexOf(href));
 	}
 
 	initImportHref() {
@@ -23,9 +28,9 @@ class LinkImport {
 	}
 
 	addImport(href){
-		if (href !== undefined && -1 == this.importHrefs.indexOf(href)) {
+		if (href !== undefined && ! this.exists(href)) {
 			this.importHrefs.push(href);
-			LinkImport.addImportToDocument(href);
+			this.addImportToDocument({href});
 		}
 	}
 

@@ -22,7 +22,7 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe(path)
 			.then((iframeDoc) => {
 				_this.document = iframeDoc;
-				_this.importedLinks = new LinkImport({
+				_this.linkImport = new LinkImport({
 					document: iframeDoc
 				});
 				_this.selectedElement = iframeDoc.body || null;
@@ -67,18 +67,18 @@ class DocumentEditor {
 			throw "trying to access to ducument before loading done";
 		}
 	}
-	set document(doc){
-		if(this._document){
+	set document(doc) {
+		if (this._document) {
 			throw "you've alrady set the attribute document";
-		}
-		else{
+		} else {
 			this._document = doc;
 		}
 	}
 
 	initCommands() {
 		this.commandsFactory = new commandsFactory({
-			events: this.events
+			events: this.events,
+			linkImport : this.linkImport
 		});
 	}
 
@@ -189,7 +189,7 @@ class DocumentEditor {
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
 			className,
-			forceAdd: true
+			forceAddRem: true
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
@@ -201,7 +201,7 @@ class DocumentEditor {
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
 			className,
-			forceAdd: false
+			forceAddRem: false
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
@@ -253,6 +253,30 @@ class DocumentEditor {
 
 	onElementSelected(callBack) {
 		this.events.on('GUID.dom.select', callBack);
+	}
+
+	addImportHtml(href) {
+		let command = this.commandsFactory.toggleImport({
+			href,
+			forceAddRem : true
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+	onAddImport(callBack){
+		this.events.on('GUID.dom.import.add', callBack);
+	}
+
+	removeImportHtml(href) {
+		let command = this.commandsFactory.toggleImport({
+			href,
+			forceAddRem : false
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+	onRemoveImport(callBack){
+		this.events.on('GUID.dom.import.remove', callBack);
 	}
 
 }

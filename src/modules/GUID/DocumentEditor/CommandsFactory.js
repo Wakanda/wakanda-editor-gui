@@ -29,7 +29,7 @@ class Command {
 		this._afterUndo = afterUndo;
 	}
 }
-
+		this.linkImport = args.linkImport;
 class CommandFactory {
 	constructor(args) {
 		this.events = args.events;
@@ -138,7 +138,7 @@ class CommandFactory {
 
 	toggleClass(args) {
 		let {
-			element, className, forceAdd
+			element, className, forceAddRem
 		} = args;
 		let events = this.events;
 
@@ -156,11 +156,11 @@ class CommandFactory {
 
 		let execute, undo;
 
-		if (forceAdd === true) {
+		if (forceAddRem === true) {
 			[execute, undo] = [addClass, removeClass];
-		} else if (forceAdd === false) {
+		} else if (forceAddRem === false) {
 			[execute, undo] = [removeClass, addClass];
-		} else if (forceAdd === undefined) {
+		} else if (forceAddRem === undefined) {
 			if (exists) {
 				[execute, undo] = [removeClass, addClass];
 			} else {
@@ -173,6 +173,42 @@ class CommandFactory {
 		});
 	}
 
+
+	toggleImport(args) {
+		let {
+			href, forceAddRem
+		} = args;
+		let events = this.events;
+		let linkImport = this.linkImport;
+
+		let addImport = function() {
+			linkImport.addImport(href);
+			events.emit('GUID.dom.import.add', href);
+		};
+		let removeImport = function() {
+			linkImport.removeImport(href);
+			events.emit('GUID.dom.import.remove', href);
+		};
+
+		let execute, undo;
+		let exists = linkImport.exists(href);
+
+		if (forceAddRem === true) {
+			[execute, undo] = [addImport, removeImport];
+		} else if (forceAddRem === false) {
+			[execute, undo] = [removeImport, addImport];
+		} else if (forceAddRem === undefined) {
+			if (exists) {
+				[execute, undo] = [removeImport, addImport];
+			} else {
+				[execute, undo] = [addImport, removeImport];
+			}
+		}
+
+		return new Command({
+			execute, undo
+		});
+	}
 
 }
 
