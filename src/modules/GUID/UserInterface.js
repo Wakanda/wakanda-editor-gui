@@ -43,14 +43,14 @@ class UserInterface {
 			this.fabric_canvas.remove(this.HIGHLIGHT);
 			this.HIGHLIGHT = null;
 			this._highLightedElement = null;
-			this.events.emit('element.clearHighLighting', {
+			this.events.emit('GUID.UI.clearHighLighting', {
 				element
 			});
 		}
 	}
 
 	onClearHighLighting(callBack) {
-		this.events.on('element.clearHighLighting', callBack);
+		this.events.on('GUID.UI.clearHighLighting', callBack);
 	}
 
 	initHighLighting() {
@@ -89,14 +89,14 @@ class UserInterface {
 			this.highLightArea(boundingRect);
 			this._highLightedElement = element;
 
-			this.events.emit('element.highlight', {
+			this.events.emit('GUID.UI.element.highlight', {
 				element
 			});
 		}
 	}
 
 	onElementHighLight(callBack) {
-		this.events.on('element.highlight', callBack);
+		this.events.on('GUID.UI.element.highlight', callBack);
 	}
 
 	updateSelectedElementBorder() {
