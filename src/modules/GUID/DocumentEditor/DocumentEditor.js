@@ -19,25 +19,60 @@ class DocumentEditor {
 
 		let path = args.path;
 		console.log(path);
-		if (path) {
-			_this.iframe.src = path;
+		this.documentPromise = this.loadIframe(path)
+			.then((iframeDoc) => {
+				_this.document = iframeDoc;
+				_this.importedLinks = new LinkImport({
+					document: iframeDoc
+				});
+				_this.selectedElement = iframeDoc.body || null;
+				_this.initEvents();
+				_this.initCommands();
 
-			this.documentPromise = new Promise(function(res, rej) {
+				return iframeDoc;
+			});
+
+	}
+	loadIframe(path) {
+		let _this = this;
+		return new Promise((res, rej) => {
+			if (!path) {
+				rej('invalid path');
+			} else {
 				_this.iframe.onload = function onIframeLoad(args) {
 					_this.window = _this.iframe.contentWindow || _this.iframe.contentDocument || window.WIN;
+					let iframeDoc;
 					if (_this.window.document) {
-						_this.document = _this.window.document || window.DOCUMENT;
+						iframeDoc = _this.window.document || window.DOCUMENT;
 					}
-
-					_this.importedLinks = new LinkImport(_this.document);
-					_this.selectedElement = _this.document.body || null;
-
-					res(_this.document);
-
-					_this.initEvents();
-					_this.initCommands();
+					res(iframeDoc);
 				}
-			});
+				_this.iframe.src = path;
+			}
+		});
+	}
+
+	onReady(callBack) {
+		let _this = this;
+		this.documentPromise.then(function() {
+			callBack(_this);
+		});
+		return this;
+	}
+
+	get document() {
+		if (this._document) {
+			return this._document;
+		} else {
+			throw "trying to access to ducument before loading done";
+		}
+	}
+	set document(doc){
+		if(this._document){
+			throw "you've alrady set the attribute document";
+		}
+		else{
+			this._document = doc;
 		}
 	}
 
@@ -77,6 +112,7 @@ class DocumentEditor {
 		let command = this.commandsFactory.removeElement({
 			element
 		});
+		let parent = _this.selectedElement.parentElement;
 		command.afterExecute = function() {
 			if (_this.selectedElement === element) {
 				_this.selectElement({
@@ -118,10 +154,10 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onAppendElement(callBack) {
-		this.events.on('GUID.dom.append', callBack);
+		this.events.on('GUID.dom.element.append', callBack);
 	}
 	onRemoveElement(callBack) {
-		this.events.on('GUID.dom.remove', callBack)
+		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
 	changeSelectedElementAttribute(attribute, value) {
@@ -134,11 +170,12 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onElementAttributeChange(callBack) {
-		this.events.on('GUID.element.attribute.change', callBack);
+		this.events.on('GUID.dom.changeAttribute', callBack);
 	}
 	onElementAttributeRemove(callBack) {
-		this.events.on('GUID.element.attribute.remove', callBack);
+		this.events.on('GUID.dom.removeAttribute', callBack);
 	}
+
 
 	toggleClassOfSelectedElement(className) {
 		let command = this.commandsFactory.toggleClass({
@@ -158,7 +195,7 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onElementClassadd(callBack) {
-		this.events.on('GUID.element.class.add', callBack);
+		this.events.on('GUID.dom.class.add', callBack);
 	}
 	removeClassFromSelectedElement(className) {
 		let command = this.commandsFactory.toggleClass({
@@ -170,11 +207,13 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onElementClassRemove(callBack) {
-		this.events.on('GUID.element.class.remove', callBack);
+		this.events.on('GUID.dom.class.remove', callBack);
 	}
 
 	getElementFromPoint(coords) {
-		let {x, y} = coords;
+		let {
+			x, y
+		} = coords;
 		return this.document.elementFromPoint(x, y);
 	}
 	getSelectedElementComputedStyle() {

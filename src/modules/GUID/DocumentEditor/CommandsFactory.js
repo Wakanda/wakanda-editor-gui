@@ -44,7 +44,7 @@ class CommandFactory {
 
 		let execute = function() {
 			parent.appendChild(child);
-			events.emit('GUID.dom.append', {
+			events.emit('GUID.dom.element.append', {
 				parent, child
 			});
 
@@ -54,7 +54,7 @@ class CommandFactory {
 		};
 		let undo = function() {
 			parent.removeChild(child);
-			events.emit('GUID.dom.remove', {
+			events.emit('GUID.dom.element.remove', {
 				parent, child
 			});
 
@@ -80,7 +80,7 @@ class CommandFactory {
 
 		let execute = function() {
 			parent.removeChild(element);
-			events.emit('GUID.dom.remove', {
+			events.emit('GUID.dom.rlement.remove', {
 				parent, child: element
 			});
 
@@ -90,7 +90,7 @@ class CommandFactory {
 		};
 		let undo = function() {
 			parent.insertBefore(element, nextNode);
-			events.emit('GUID.dom.append', {
+			events.emit('GUID.dom.element.append', {
 				parent, child: element
 			});
 
@@ -113,19 +113,19 @@ class CommandFactory {
 
 		let execute = function() {
 			element.setAttribute(attribute, value);
-			events.emit('GUID.element.attribute.change', {
+			events.emit('GUID.dom.attribute.change', {
 				element, attribute, oldValue, value
 			});
 		};
 		let undo = function() {
 			if (oldValue) {
 				element.setAttribute(attribute, oldValue);
-				events.emit('GUID.element.attribute.change', {
+				events.emit('GUID.dom.attribute.change', {
 					element, attribute, oldValue: value, value: oldValue
 				});
 			} else {
 				element.removeAttribute(attribute);
-				events.emit('GUID.element.attribute.remove', {
+				events.emit('GUID.dom.attribute.remove', {
 					element, attribute
 				});
 			}
@@ -147,11 +147,11 @@ class CommandFactory {
 
 		let addClass = function() {
 			classList.add(className);
-			events.emit('GUID.element.class.add', element, className);
+			events.emit('GUID.dom.class.add', element, className);
 		};
 		let removeClass = function() {
 			classList.remove(className);
-			events.emit('GUID.element.class.remove', element, className);
+			events.emit('GUID.dom.class.remove', element, className);
 		};
 
 		let execute, undo;
@@ -172,6 +172,7 @@ class CommandFactory {
 			execute, undo
 		});
 	}
+
 
 }
 
