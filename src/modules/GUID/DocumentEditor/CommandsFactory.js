@@ -29,17 +29,15 @@ class Command {
 		this._afterUndo = afterUndo;
 	}
 }
-		this.linkImport = args.linkImport;
+
 class CommandFactory {
 	constructor(args) {
 		this.events = args.events;
-
+		this.linkImport = args.linkImport;
 	}
 
 	appendElement(args) {
-		let {
-			parent, child
-		} = args;
+		let { parent, child } = args;
 		let events = this.events;
 
 		let execute = function() {
@@ -156,11 +154,11 @@ class CommandFactory {
 
 		let execute, undo;
 
-		if (forceAddRem === true) {
+		if (forceAddRem === true) {// add
 			[execute, undo] = [addClass, removeClass];
-		} else if (forceAddRem === false) {
+		} else if (forceAddRem === false) {// remove
 			[execute, undo] = [removeClass, addClass];
-		} else if (forceAddRem === undefined) {
+		} else if (forceAddRem === undefined) {//toggle
 			if (exists) {
 				[execute, undo] = [removeClass, addClass];
 			} else {
@@ -193,11 +191,11 @@ class CommandFactory {
 		let execute, undo;
 		let exists = linkImport.exists(href);
 
-		if (forceAddRem === true) {
+		if (forceAddRem === true) {// add
 			[execute, undo] = [addImport, removeImport];
-		} else if (forceAddRem === false) {
+		} else if (forceAddRem === false) {// remove
 			[execute, undo] = [removeImport, addImport];
-		} else if (forceAddRem === undefined) {
+		} else if (forceAddRem === undefined) {//toggle
 			if (exists) {
 				[execute, undo] = [removeImport, addImport];
 			} else {
