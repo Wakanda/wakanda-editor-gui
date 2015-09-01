@@ -8,8 +8,8 @@ class LinkImport {
 		doc.head.appendChild(link);
 	}
 
-	constructor(doc) {
-		this.document = doc;
+	constructor(args) {
+		this.document = args.document;
 		this.initImportHref();
 
 	}
@@ -22,25 +22,33 @@ class LinkImport {
 		});
 	}
 
+	addImport(href){
+		if (href !== undefined && -1 == this.importHrefs.indexOf(href)) {
+			this.importHrefs.push(href);
+			LinkImport.addImportToDocument(href);
+		}
+	}
+
 	addPolymerWidget(polymerWidget) {
 		let importHref = polymerWidget['import'];
-		if (importHref !== undefined && -1 == this.importHrefs.indexOf(importHref)) {
-			this.importHrefs.push(importHref);
-			LinkImport.addImportToDocument(importHref);
+		this.addImport(importHref);
+	}
+
+	removeImport(href){
+		let index = this.importHrefs.indexOf(href);
+		if (index !== -1) {
+			this.importHrefs.splice(index, 1);
+			let linkInDom = this.document.querySelector('link[rel="import"][href="' + href + '"]');
+			if (linkInDom.parentNode) {
+				linkInDom.parentNode.removeChild(linkInDom);
+			}
 		}
 	}
 
 	//TODO: this function is not yet used
 	removePolymerWidget(polymerWidget) {
 		let importHref = polymerWidget['import'];
-		let index = this.importHrefs.indexOf(importHref);
-		if (index !== -1) {
-			this.importHrefs.splice(index, 1);
-			let linkInDom = this.document.querySelector('link[rel="import"][href="' + importHref + '"]');
-			if (linkInDom.parentNode) {
-				linkInDom.parentNode.removeChild(linkInDom);
-			}
-		}
+		this.removeImport(importHref);
 	}
 
 }

@@ -17,44 +17,48 @@ var Module = {
 
 			IDE.GUID.documentEditor = new Editor({
 				path
+			}).onReady(function(documentEditor) {
+
+				IDE.GUID.userInterface = new UserInterface(documentEditor);
+				IDE.GUID.documentEditorBroker = documentEditor.broker;
+
+				// load Pannels
+				IDE.GUID.panels = {};
+				// Outline
+				IDE.GUID.panels.outline = new Outline({
+					containerId: 'outline'
+				});
+				// Components
+
+				//undoRedoManagement
+				let plugin = 'GuidHistoryManager',
+					type = 'button';
+				let items = [{
+					action: 'undo',
+					name: 'undo',
+					plugin,
+					type
+				}, {
+					action: 'redo',
+					name: 'redo',
+					plugin,
+					type
+				}];
+				IDE.toolbar.addItems(items);
+				// console.log(items);
+
+
+				//to use it on devtool
+				window.d = documentEditor;
+				window.o = IDE.GUID.panels.outline;
+
+				loaded();
 			});
-			IDE.GUID.userInterface = new UserInterface(IDE.GUID.documentEditor);
-			IDE.GUID.documentEditorBroker = IDE.GUID.documentEditor.broker;
-
-			//undoManagement
-			let plugin = 'GuidHistoryManager',
-				type = 'button';
-			let items = [{
-				action: 'undo',
-				name: 'undo',
-				plugin,
-				type
-			}, {
-				action: 'redo',
-				name: 'redo',
-				plugin,
-				type
-			}];
-			IDE.toolbar.addItems(items);
-			// console.log(items);
-
-			//debug infos
-			IDE.GUID.documentEditor.onElementSelected(function(arg) {
-				console.log(arg.element);
-			});
-
-			IDE.GUID.outline = new Outline({containerId: 'outline'});
-
-			// IDE.GUID.documentEditor.onDocumentSizeChange(function(a) {
-			// 	console.log(a);
-			// });
-
 			//TODO remove this
 			let tree = document.getElementById('tree');
 			tree.hidden = true;
 			console.log('explorer');
 
-			loaded();
 		});
 
 	}
