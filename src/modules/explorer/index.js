@@ -1,4 +1,4 @@
-import Tree from "./Tree"
+import Tree from "./Tree";
 
 var Module =  {
 	activate(loaded){

@@ -18,3 +18,10 @@
   left: 0;
   right: 0;
 }
+#outline{
+  height: 50%;
+}
+#panel{
+  height: 50%;
+  top: 60%;
+}

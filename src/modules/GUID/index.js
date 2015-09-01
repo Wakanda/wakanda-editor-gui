@@ -3,12 +3,13 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline"], function(require) {
+		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components"], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
+			var Components = require("./Pannels/Components");
 			let path = IDE.qParams.path;
-			console.log(IDE.qParams.path);
+			// console.log(IDE.qParams.path);
 			let strWebFolder = 'WebFolder';
 			let i = path.indexOf(strWebFolder);
 			path = path.substring(i + strWebFolder.length);
@@ -17,7 +18,8 @@ var Module = {
 
 			IDE.GUID.documentEditor = new Editor({
 				path
-			}).onReady(function(documentEditor) {
+			})
+			.onReady((documentEditor) => {
 
 				IDE.GUID.userInterface = new UserInterface(documentEditor);
 				IDE.GUID.documentEditorBroker = documentEditor.broker;
@@ -29,6 +31,10 @@ var Module = {
 					containerId: 'outline'
 				});
 				// Components
+				IDE.GUID.panels.htmlComponents = new Components({
+					documentEditor,
+					containerId: 'panel'
+				})
 
 				//undoRedoManagement
 				let plugin = 'GuidHistoryManager',
@@ -47,13 +53,23 @@ var Module = {
 				IDE.toolbar.addItems(items);
 				// console.log(items);
 
+				//debug infos
+				// documentEditor.onElementSelected(function(arg) {
+				// 	console.log(arg.element);
+				// });
+
+				// documentEditor.onDocumentSizeChange(function(a) {
+				// 	console.log(a);
+				// });
 
 				//to use it on devtool
 				window.d = documentEditor;
 				window.o = IDE.GUID.panels.outline;
 
+				// activate
 				loaded();
 			});
+
 			//TODO remove this
 			let tree = document.getElementById('tree');
 			tree.hidden = true;
