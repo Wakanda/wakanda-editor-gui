@@ -78,7 +78,7 @@ class CommandFactory {
 
 		let execute = function() {
 			parent.removeChild(element);
-			events.emit('GUID.dom.rlement.remove', {
+			events.emit('GUID.dom.element.remove', {
 				parent, child: element
 			});
 
