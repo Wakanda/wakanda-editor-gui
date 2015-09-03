@@ -2,7 +2,7 @@
 var Module =  {
 	activate(loaded) {
 		//Core Plugin Editor
-		
+
 		switch(IDE.qParams.mode){
 			case "html":
 				require.ensure(["./EditorHTML.js"], function(require){

@@ -1,7 +1,11 @@
+import MultiEvent from '../../../lib/multi-event-master/src/multi-event-es6.js';
+
 class UserInterface {
 	constructor(documentEditor, ...args) {
-		let _EventEmitter = require('../../../lib/micro-events.js');
-		this.events = new _EventEmitter();
+		// let _EventEmitter = require('../../../lib/micro-events.js');
+		// this.events = new _EventEmitter();
+
+		this.events = new MultiEvent();
 
 		this.documentEditor = documentEditor;
 		this.canvas = document.createElement('canvas');

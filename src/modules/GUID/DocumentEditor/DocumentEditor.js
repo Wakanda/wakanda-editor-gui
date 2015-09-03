@@ -1,21 +1,26 @@
 import LinkImport from './LinkImport';
 import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
+import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+
+//TODO !important loaded ///./../.
 
 class DocumentEditor {
 
 	//TODO rev
 	constructor(args) {
-		let _EventEmitter = require('../../../../lib/micro-events.js');
-		this.events = new _EventEmitter();
+		// let _EventEmitter = require('../../../../lib/micro-events.js');
+		// this.events = new _EventEmitter();
+
+		this.events = new MultiEvent();
 
 		this.broker = args.broker || new Broker();
 		this.iframe = document.createElement('iframe');
 		this.iframe.setAttribute('id', 'editor-playground');
 		this.iframe.classList.add('document-editor-iframe');
 		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
-		let _this = this;
 
+		let _this = this;
 
 		let path = args.path;
 		console.log(path);
