@@ -44,7 +44,7 @@ class CommandFactory {
 		let execute = function(){
 			parent.insertBefore(element, elementRef);
 			events.emit('GUID.dom.element.append', {
-				parent, element, elementRef
+				parent, child: element, elementRef
 			});
 		};
 		let undo = function(){

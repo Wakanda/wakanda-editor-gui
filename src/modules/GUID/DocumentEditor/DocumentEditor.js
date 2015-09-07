@@ -139,7 +139,7 @@ class DocumentEditor {
 			element
 		} = args;
 		let elementRef = args.elementRef || this.selectedElement;
-
+		let _this = this;
 		let command = this.commandsFactory.prependElement({
 			element, elementRef
 		});
