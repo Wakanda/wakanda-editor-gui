@@ -135,8 +135,10 @@ class DocumentEditor {
 		});
 	}
 
-	appendToSelectedElement(element) {
+	appendToSelectedElement(args) {
 		let _this = this;
+
+		let {element} = args
 
 		let selElem = this.selectedElement;
 		let events = this.events;
@@ -165,7 +167,8 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
-	changeSelectedElementAttribute(attribute, value) {
+	changeSelectedElementAttribute(args) {
+		let {attribute, value} = args;
 		let command = this.commandsFactory.changeAttribute({
 			element: this.selectedElement,
 			attribute,
@@ -182,7 +185,8 @@ class DocumentEditor {
 	}
 
 
-	toggleClassOfSelectedElement(className) {
+	toggleClassOfSelectedElement(args) {
+		let {className} = args;
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
 			className
@@ -260,7 +264,8 @@ class DocumentEditor {
 		this.events.on('GUID.dom.select', callBack);
 	}
 
-	addImportHtml(href) {
+	addImportHtml(args) {
+		let {href} = args;
 		let command = this.commandsFactory.toggleImport({
 			href,
 			forceAddRem : true
@@ -272,7 +277,8 @@ class DocumentEditor {
 		this.events.on('GUID.dom.import.add', callBack);
 	}
 
-	removeImportHtml(href) {
+	removeImportHtml(args) {
+		let {href} = args;
 		let command = this.commandsFactory.toggleImport({
 			href,
 			forceAddRem : false

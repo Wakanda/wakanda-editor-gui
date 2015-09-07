@@ -30,7 +30,7 @@ class Components {
 		let createInsert = function(compoName) {
 			return function() {
 				let element = _this.htmlComponents.renderComponent(compoName /*, compoName*/ );
-				_this.documentEditor.appendToSelectedElement(element);
+				_this.documentEditor.appendToSelectedElement({element});
 			}
 		};
 

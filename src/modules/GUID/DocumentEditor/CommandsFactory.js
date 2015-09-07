@@ -61,10 +61,7 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({
-			execute,
-			undo
-		});
+		return new Command({ execute, undo });
 	}
 
 	removeElement(args) {
@@ -97,9 +94,7 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({
-			execute, undo
-		});
+		return new Command({ execute, undo });
 	}
 
 	changeAttribute(args) {
@@ -129,9 +124,7 @@ class CommandFactory {
 			}
 		};
 
-		return new Command({
-			execute, undo
-		});
+		return new Command({ execute, undo });
 	}
 
 	toggleClass(args) {
@@ -145,11 +138,11 @@ class CommandFactory {
 
 		let addClass = function() {
 			classList.add(className);
-			events.emit('GUID.dom.class.add', element, className);
+			events.emit('GUID.dom.class.add', {element, className});
 		};
 		let removeClass = function() {
 			classList.remove(className);
-			events.emit('GUID.dom.class.remove', element, className);
+			events.emit('GUID.dom.class.remove', {element, className});
 		};
 
 		let execute, undo;
@@ -166,11 +159,8 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({
-			execute, undo
-		});
+		return new Command({ execute, undo });
 	}
-
 
 	toggleImport(args) {
 		let {
@@ -181,11 +171,11 @@ class CommandFactory {
 
 		let addImport = function() {
 			linkImport.addImport(href);
-			events.emit('GUID.dom.import.add', href);
+			events.emit('GUID.dom.import.add', {href});
 		};
 		let removeImport = function() {
 			linkImport.removeImport(href);
-			events.emit('GUID.dom.import.remove', href);
+			events.emit('GUID.dom.import.remove', {href});
 		};
 
 		let execute, undo;
@@ -203,9 +193,7 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({
-			execute, undo
-		});
+		return new Command({ execute, undo });
 	}
 
 }
