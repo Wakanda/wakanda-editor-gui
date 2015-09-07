@@ -83,7 +83,7 @@ class DocumentEditor {
 	initCommands() {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
-			linkImport : this.linkImport
+			linkImport: this.linkImport
 		});
 	}
 
@@ -133,6 +133,29 @@ class DocumentEditor {
 		this.removeElement({
 			element: _this.selectedElement
 		});
+	}
+	prependElement(args) { // append element before selected element if elementRef is undefined
+		let {
+			element
+		} = args;
+		let elementRef = args.elementRef || this.selectedElement;
+
+		let command = this.commandsFactory.prependElement({
+			element, elementRef
+		});
+		command.afterExecute = function() {
+			_this.selectElement({
+				element
+			});
+		};
+		command.afterUndo = function() {
+			_this.selectElement({
+				element: elementRef
+			});
+		};
+
+		this.broker.createCommand(command)
+			.executeNextCommand();
 	}
 
 	appendToSelectedElement(args) {
@@ -268,12 +291,12 @@ class DocumentEditor {
 		let {href} = args;
 		let command = this.commandsFactory.toggleImport({
 			href,
-			forceAddRem : true
+			forceAddRem: true
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	onAddImport(callBack){
+	onAddImport(callBack) {
 		this.events.on('GUID.dom.import.add', callBack);
 	}
 
@@ -281,12 +304,12 @@ class DocumentEditor {
 		let {href} = args;
 		let command = this.commandsFactory.toggleImport({
 			href,
-			forceAddRem : false
+			forceAddRem: false
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	onRemoveImport(callBack){
+	onRemoveImport(callBack) {
 		this.events.on('GUID.dom.import.remove', callBack);
 	}
 

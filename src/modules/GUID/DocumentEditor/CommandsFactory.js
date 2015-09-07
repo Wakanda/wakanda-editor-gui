@@ -36,6 +36,27 @@ class CommandFactory {
 		this.linkImport = args.linkImport;
 	}
 
+	prependElement(args){
+		let {element, elementRef} = agrs;
+
+		let parent = elementRef.parentElement;
+		let events = this.events;
+		let execute = function(){
+			parent.insertBefore(element, elementRef);
+			events.emit('GUID.dom.element.append', {
+				parent, element, elementRef
+			});
+		};
+		let undo = function(){
+				parent.removeChild(element);
+				events.emit('GUID.dom.element.remove', {
+					parent, child : element
+				});
+		};
+
+		return new Command({execute, undo});
+	}
+
 	appendElement(args) {
 		let { parent, child } = args;
 		let events = this.events;
