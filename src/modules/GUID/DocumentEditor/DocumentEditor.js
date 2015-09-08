@@ -287,6 +287,16 @@ class DocumentEditor {
 		this.events.on('GUID.dom.select', callBack);
 	}
 
+	toggleImportHtml(args){
+		let {
+			href
+		} = args;
+		let command = this.commandsFactory.toggleImport({
+			href
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
 	addImportHtml(args) {
 		let {href} = args;
 		let command = this.commandsFactory.toggleImport({
