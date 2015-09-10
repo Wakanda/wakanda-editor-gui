@@ -23,7 +23,7 @@ var Module = {
 
 				IDE.GUID.userInterface = new UserInterface({
 					documentEditor,
-					cloudEditorContainer :document.querySelector('.cloud-ide-editor')
+					cloudEditorContainer: document.querySelector('.cloud-ide-editor')
 				});
 				IDE.GUID.documentEditorBroker = documentEditor.broker;
 
@@ -31,7 +31,7 @@ var Module = {
 				IDE.GUID.panels = {};
 				// Outline
 				IDE.GUID.panels.outline = new Outline({
-					containerId: 'outline'
+					containerId: 'outline',
 					documentEditor,
 
 				});
