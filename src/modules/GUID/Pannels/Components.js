@@ -5,11 +5,8 @@ import {
 from '../Component';
 
 class Components {
-	constructor(args) {
-		this.documentEditor = args.documentEditor || IDE.GUID.documentEditor;
-		let {
-			containerId
-		} = args;
+	constructor({documentEditor, containerId}) {
+		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
 
 		this.container = document.createElement('ul');
 		document.getElementById(containerId).appendChild(this.container);

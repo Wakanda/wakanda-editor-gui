@@ -1,12 +1,13 @@
 //TODO Join(' > ')
 
 class Outline {
-	constructor(args) {
-		let {
-			containerId
-		} = args;
-		this.documentEditor = args.documentEditor || IDE.GUID.documentEditor;
-		this.userInterface = args.userInterface || IDE.GUID.userInterface;
+	constructor({
+		containerId, documentEditor = IDE.GUID.documentEditor,
+		userInterface = IDE.GUID.userInterface
+	}) {
+		this.documentEditor = documentEditor;
+		this.userInterface = userInterface;
+
 		this.container = document.getElementById(containerId);
 
 		this.elementToIdWP = new WeakMap();
@@ -51,11 +52,10 @@ class Outline {
 		return ret.slice(); // removes the html element
 	}
 
-	getElementFromId(id){
-		if(this.idToElementMap.has(id)){
+	getElementFromId(id) {
+		if (this.idToElementMap.has(id)) {
 			return this.idToElementMap.get(id);
-		}
-		else{
+		} else {
 			console.log('warning');
 		}
 	}
@@ -76,11 +76,8 @@ class Outline {
 		jst.refresh();
 	}
 
-	removeElement(args) {
-		let {
-			element
-		} = args;
-		let id = args.id || this.getDomPath(element).join(' > ');
+	removeElement({element, id}) { // id or element
+		let id = id || this.getDomPath(element).join(' > ');
 		let jst = this.$container.jstree();
 
 		jst.delete_node(id);
@@ -103,9 +100,13 @@ class Outline {
 						Delete: {
 							label: "Remove",
 							action: function(obj) {
-								let {id} = $node;
+								let {
+									id
+								} = $node;
 								let element = _this.getElementFromId(id);
-								_this.documentEditor.removeElement({element});
+								_this.documentEditor.removeElement({
+									element
+								});
 							}
 						}
 					};
@@ -182,25 +183,16 @@ class Outline {
 				}
 			}
 		});
-		this.documentEditor.onElementSelected(function(args) {
-			let {
-				element
-			} = args;
+		this.documentEditor.onElementSelected( ({element}) => {
 			let id = _this.getDomPath(element).join(' > ');
 			let treeInstance = _this.$container.jstree(true);
 			treeInstance.deselect_all();
 			treeInstance.select_node(id);
 		});
-		this.documentEditor.onAppendElement(function(args) {
-			let {
-				child
-			} = args;
+		this.documentEditor.onAppendElement( ({child}) => {
 			_this.addElement(child);
 		});
-		this.documentEditor.onRemoveElement(function(args) {
-			let {
-				child
-			} = args;
+		this.documentEditor.onRemoveElement( ({child}) => {
 			_this.removeElement({
 				element: child
 			});
@@ -210,17 +202,14 @@ class Outline {
 	}
 	syncWihUserInterface() {
 		let _this = this;
-		this.$container.bind("hover_node.jstree", function(e, data) {
+		this.$container.bind("hover_node.jstree", (e, data) => {
 			let element = _this.idToElementMap.get(data.node.id);
 			IDE.GUID.userInterface.highLightElement(element);
 		});
-		this.$container.bind("dehover_node.jstree", function(e, data) {
+		this.$container.bind("dehover_node.jstree", (e, data) => {
 			IDE.GUID.userInterface.clearHighLighting();
 		});
-		this.userInterface.onElementHighLight(function(args) {
-			let {
-				element
-			} = args;
+		this.userInterface.onElementHighLight( ({element}) => {
 			let treeInstance = _this.$container.jstree(true);
 			if (element.tagName.toLowerCase() === 'html') {
 				treeInstance.dehover_node('body');
@@ -230,10 +219,7 @@ class Outline {
 				treeInstance.hover_node(id);
 			}
 		});
-		this.userInterface.onClearHighLighting(function(args) {
-			let {
-				element
-			} = args;
+		this.userInterface.onClearHighLighting( ({element}) => {
 			let treeInstance = _this.$container.jstree(true);
 			if (element.tagName.toLowerCase() === 'html') {
 				treeInstance.dehover_node('body');

@@ -32,15 +32,14 @@ var Module = {
 				// Outline
 				IDE.GUID.panels.outline = new Outline({
 					containerId: 'outline',
-					documentEditor,
-
+					documentEditor
 				});
 				// Components
 				IDE.GUID.panels.htmlComponents = new Components({
 					documentEditor,
 					containerId: 'panel',
 					userInterface: IDE.GUID.userInterface
-				})
+				});
 
 				//undoRedoManagement
 				let plugin = 'GuidHistoryManager',
