@@ -5,9 +5,9 @@ class Outline {
 		let {
 			containerId
 		} = args;
+		this.documentEditor = args.documentEditor || IDE.GUID.documentEditor;
+		this.userInterface = args.userInterface || IDE.GUID.userInterface;
 		this.container = document.getElementById(containerId);
-		this.documentEditor = IDE.GUID.documentEditor;
-		this.userInterface = IDE.GUID.userInterface;
 
 		this.elementToIdWP = new WeakMap();
 		this.render();

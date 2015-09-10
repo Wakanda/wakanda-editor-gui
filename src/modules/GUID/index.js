@@ -21,7 +21,10 @@ var Module = {
 			})
 			.onReady((documentEditor) => {
 
-				IDE.GUID.userInterface = new UserInterface(documentEditor);
+				IDE.GUID.userInterface = new UserInterface({
+					documentEditor,
+					cloudEditorContainer :document.querySelector('.cloud-ide-editor')
+				});
 				IDE.GUID.documentEditorBroker = documentEditor.broker;
 
 				// load Pannels
@@ -29,11 +32,14 @@ var Module = {
 				// Outline
 				IDE.GUID.panels.outline = new Outline({
 					containerId: 'outline'
+					documentEditor,
+
 				});
 				// Components
 				IDE.GUID.panels.htmlComponents = new Components({
 					documentEditor,
-					containerId: 'panel'
+					containerId: 'panel',
+					userInterface: IDE.GUID.userInterface
 				})
 
 				//undoRedoManagement
