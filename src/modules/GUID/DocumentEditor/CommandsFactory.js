@@ -1,12 +1,12 @@
 class Command {
-	constructor(args) {
-		this._execute = args.execute;
-		this._undo = args.undo;
+	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
+		this._execute = execute;
+		this._undo = undo;
 
 		//optional
-		this._thisArg = args.thisArg;
-		this._afterExecute = args.afterExecute;
-		this._afterUndo = args.afterUndo;
+		this._thisArg = thisArg;
+		this._afterExecute = afterExecute;
+		this._afterUndo = afterUndo;
 	}
 
 	execute() {
@@ -31,34 +31,33 @@ class Command {
 }
 
 class CommandFactory {
-	constructor(args) {
-		this.events = args.events;
-		this.linkImport = args.linkImport;
+	constructor({events, linkImport}) {
+		this.events = events;
+		this.linkImport = linkImport;
 	}
 
-	prependElement(args){
-		let {element, elementRef} = agrs;
-
+	prependElement({element, elementRef}) {
 		let parent = elementRef.parentElement;
 		let events = this.events;
-		let execute = function(){
+		let execute = function() {
 			parent.insertBefore(element, elementRef);
 			events.emit('GUID.dom.element.append', {
 				parent, child: element, elementRef
 			});
 		};
-		let undo = function(){
-				parent.removeChild(element);
-				events.emit('GUID.dom.element.remove', {
-					parent, child : element
-				});
+		let undo = function() {
+			parent.removeChild(element);
+			events.emit('GUID.dom.element.remove', {
+				parent, child: element
+			});
 		};
 
-		return new Command({execute, undo});
+		return new Command({
+			execute, undo
+		});
 	}
 
-	appendElement(args) {
-		let { parent, child } = args;
+	appendElement({parent, child}) {
 		let events = this.events;
 
 		let execute = function() {
@@ -82,13 +81,12 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({ execute, undo });
+		return new Command({
+			execute, undo
+		});
 	}
 
-	removeElement(args) {
-		let {
-			element
-		} = args;
+	removeElement({element}) {
 		let events = this.events;
 
 		let nextNode = element.nextSibling;
@@ -115,13 +113,12 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({ execute, undo });
+		return new Command({
+			execute, undo
+		});
 	}
 
-	changeAttribute(args) {
-		let {
-			element, attribute, value
-		} = args;
+	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;
 
@@ -145,13 +142,12 @@ class CommandFactory {
 			}
 		};
 
-		return new Command({ execute, undo });
+		return new Command({
+			execute, undo
+		});
 	}
 
-	toggleClass(args) {
-		let {
-			element, className, forceAddRem
-		} = args;
+	toggleClass({ element, className, forceAddRem }) {
 		let events = this.events;
 
 		let classList = element.classList;
@@ -159,20 +155,24 @@ class CommandFactory {
 
 		let addClass = function() {
 			classList.add(className);
-			events.emit('GUID.dom.class.add', {element, className});
+			events.emit('GUID.dom.class.add', {
+				element, className
+			});
 		};
 		let removeClass = function() {
 			classList.remove(className);
-			events.emit('GUID.dom.class.remove', {element, className});
+			events.emit('GUID.dom.class.remove', {
+				element, className
+			});
 		};
 
 		let execute, undo;
 
-		if (forceAddRem === true) {// add
+		if (forceAddRem === true) { // add
 			[execute, undo] = [addClass, removeClass];
-		} else if (forceAddRem === false) {// remove
+		} else if (forceAddRem === false) { // remove
 			[execute, undo] = [removeClass, addClass];
-		} else if (forceAddRem === undefined) {//toggle
+		} else if (forceAddRem === undefined) { //toggle
 			if (exists) {
 				[execute, undo] = [removeClass, addClass];
 			} else {
@@ -180,33 +180,36 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({ execute, undo });
+		return new Command({
+			execute, undo
+		});
 	}
 
-	toggleImport(args) {
-		let {
-			href, forceAddRem
-		} = args;
+	toggleImport({href, forceAddRem}) {
 		let events = this.events;
 		let linkImport = this.linkImport;
 
 		let addImport = function() {
 			linkImport.addImport(href);
-			events.emit('GUID.dom.import.add', {href});
+			events.emit('GUID.dom.import.add', {
+				href
+			});
 		};
 		let removeImport = function() {
 			linkImport.removeImport(href);
-			events.emit('GUID.dom.import.remove', {href});
+			events.emit('GUID.dom.import.remove', {
+				href
+			});
 		};
 
 		let execute, undo;
 		let exists = linkImport.exists(href);
 
-		if (forceAddRem === true) {// add
+		if (forceAddRem === true) { // add
 			[execute, undo] = [addImport, removeImport];
-		} else if (forceAddRem === false) {// remove
+		} else if (forceAddRem === false) { // remove
 			[execute, undo] = [removeImport, addImport];
-		} else if (forceAddRem === undefined) {//toggle
+		} else if (forceAddRem === undefined) { //toggle
 			if (exists) {
 				[execute, undo] = [removeImport, addImport];
 			} else {
@@ -214,7 +217,9 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({ execute, undo });
+		return new Command({
+			execute, undo
+		});
 	}
 
 }

@@ -8,59 +8,56 @@ import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.j
 class DocumentEditor {
 
 	//TODO rev
-	constructor(args) {
+	constructor({broker = new Broker(), path}) {
 		// let _EventEmitter = require('../../../../lib/micro-events.js');
 		// this.events = new _EventEmitter();
 
 		this.events = new MultiEvent();
 
-		this.broker = args.broker || new Broker();
+		this.broker = broker;
 		this.iframe = document.createElement('iframe');
 		this.iframe.setAttribute('id', 'editor-playground');
 		this.iframe.classList.add('document-editor-iframe');
 		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
 
-		let _this = this;
-
-		let path = args.path;
 		console.log(path);
 		this.documentPromise = this.loadIframe(path)
 			.then((iframeDoc) => {
-				_this.document = iframeDoc;
-				_this.linkImport = new LinkImport({
+				this.document = iframeDoc;
+
+				this.linkImport = new LinkImport({
 					document: iframeDoc
 				});
-				_this.selectedElement = iframeDoc.body || null;
-				_this.initEvents();
-				_this.initCommands();
+
+				this.selectedElement = iframeDoc.body || null;
+				this.initEvents();
+				this.initCommands();
 
 				return iframeDoc;
 			});
 
 	}
 	loadIframe(path) {
-		let _this = this;
 		return new Promise((res, rej) => {
 			if (!path) {
 				rej('invalid path');
 			} else {
-				_this.iframe.onload = function onIframeLoad(args) {
-					_this.window = _this.iframe.contentWindow || _this.iframe.contentDocument || window.WIN;
+				this.iframe.onload = () => {
+					this.window = this.iframe.contentWindow || this.iframe.contentDocument || window.WIN;
 					let iframeDoc;
-					if (_this.window.document) {
-						iframeDoc = _this.window.document || window.DOCUMENT;
+					if (this.window.document) {
+						iframeDoc = this.window.document || window.DOCUMENT;
 					}
 					res(iframeDoc);
 				}
-				_this.iframe.src = path;
+				this.iframe.src = path;
 			}
 		});
 	}
 
 	onReady(callBack) {
-		let _this = this;
-		this.documentPromise.then(function() {
-			callBack(_this);
+		this.documentPromise.then(() => {
+			callBack(this);
 		});
 		return this;
 	}
@@ -88,17 +85,15 @@ class DocumentEditor {
 	}
 
 	initEvents() {
-		let _this = this;
-
 		// GUID.window.resize
-		window.onresize = function(event) {
+		window.onresize = (event) => {
 			//TODO
-			let WINSize = _this.document.body.getBoundingClientRect();
+			let WINSize = this.document.body.getBoundingClientRect();
 
-			let width = (_this.document.body.scrollHeight > _this.document.body.clientHeight) ? WINSize.width : _this.window.innerWidth;
-			let height = (_this.document.body.scrollWidth > _this.document.body.clientWidth) ? WINSize.height : _this.window.innerHeight;
+			let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
+			let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
 
-			_this.events.emit('GUID.window.resize', {
+			this.events.emit('GUID.window.resize', {
 				width, height, event
 			});
 		};
@@ -107,49 +102,40 @@ class DocumentEditor {
 		this.events.on('GUID.window.resize', callBack);
 	}
 
-	removeElement(args) {
-		let {
-			element
-		} = args;
+	removeElement({element}) {
 
-		let _this = this;
+		let command = this.commandsFactory.removeElement({element});
 
-		let command = this.commandsFactory.removeElement({
-			element
-		});
-		let parent = _this.selectedElement.parentElement;
-		command.afterExecute = function() {
-			if (_this.selectedElement === element) {
-				_this.selectElement({
+		let parent = this.selectedElement.parentElement;
+
+		command.afterExecute = () => {
+			if (this.selectedElement === element) {
+				this.selectElement({
 					element: parent
 				});
 			}
 		};
 		this.broker.createCommand(command)
 			.executeNextCommand();
+
 	}
 
 	removeSelectedElement() {
 		this.removeElement({
-			element: _this.selectedElement
+			element: this.selectedElement
 		});
 	}
-	prependElement(args) { // append element before selected element if elementRef is undefined
-		let {
-			element
-		} = args;
-		let elementRef = args.elementRef || this.selectedElement;
-		let _this = this;
+	prependElement({element, elementRef = this.selectedElement}) { // append element before selected element if elementRef is undefined
 		let command = this.commandsFactory.prependElement({
 			element, elementRef
 		});
-		command.afterExecute = function() {
-			_this.selectElement({
+		command.afterExecute = () => {
+			this.selectElement({
 				element
 			});
 		};
-		command.afterUndo = function() {
-			_this.selectElement({
+		command.afterUndo = () => {
+			this.selectElement({
 				element: elementRef
 			});
 		};
@@ -158,11 +144,7 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 
-	appendToSelectedElement(args) {
-		let _this = this;
-
-		let {element} = args
-
+	appendToSelectedElement({element}) {
 		let selElem = this.selectedElement;
 		let events = this.events;
 
@@ -171,13 +153,8 @@ class DocumentEditor {
 			child: element
 		});
 
-		command.afterUndo = function(args) {
-			let {
-				parent
-			} = args;
-			_this.selectElement({
-				element: parent
-			});
+		command.afterUndo = ({parent}) => {
+			this.selectElement({ element: parent });
 		};
 
 		this.broker.createCommand(command)
@@ -190,8 +167,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
-	changeSelectedElementAttribute(args) {
-		let {attribute, value} = args;
+	changeSelectedElementAttribute({attribute, value}) {
 		let command = this.commandsFactory.changeAttribute({
 			element: this.selectedElement,
 			attribute,
@@ -207,9 +183,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.removeAttribute', callBack);
 	}
 
-
-	toggleClassOfSelectedElement(args) {
-		let {className} = args;
+	toggleClassOfSelectedElement({className}) {
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
 			className
@@ -217,7 +191,7 @@ class DocumentEditor {
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	addClassToSelectedElement(className) {
+	addClassToSelectedElement({className}) {
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
 			className,
@@ -255,10 +229,7 @@ class DocumentEditor {
 		return this.selectedElement.getBoundingClientRect();
 	}
 
-	selectElement(args) {
-		let {
-			element
-		} = args;
+	selectElement({element}) {
 		this.selectedElement = element;
 
 		this.events.emit('GUID.dom.select', {
@@ -287,18 +258,14 @@ class DocumentEditor {
 		this.events.on('GUID.dom.select', callBack);
 	}
 
-	toggleImportHtml(args){
-		let {
-			href
-		} = args;
+	toggleImportHtml({href}){
 		let command = this.commandsFactory.toggleImport({
 			href
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	addImportHtml(args) {
-		let {href} = args;
+	addImportHtml({href}) {
 		let command = this.commandsFactory.toggleImport({
 			href,
 			forceAddRem: true
@@ -310,8 +277,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.import.add', callBack);
 	}
 
-	removeImportHtml(args) {
-		let {href} = args;
+	removeImportHtml({href}) {
 		let command = this.commandsFactory.toggleImport({
 			href,
 			forceAddRem: false

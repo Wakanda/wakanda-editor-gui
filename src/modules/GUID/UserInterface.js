@@ -57,22 +57,20 @@ class UserInterface {
 	}
 
 	initHighLighting() {
-		let _this = this;
-
-		this.cloudEditorIDE.addEventListener('mouseleave', function() {
-			_this.clearHighLighting();
+		this.cloudEditorIDE.addEventListener('mouseleave', () => {
+			this.clearHighLighting();
 		});
 
-		this.fabric_canvas.on('mouse:move', function(options) {
+		this.fabric_canvas.on('mouse:move', (options) => {
 			// TODO : DEFER (?)
 			let [x, y] = [options.e.offsetX, options.e.offsetY];
 
 			if (x >= 0 && y > 0) {
-				let elementsAtLocation = _this.documentEditor.getElementFromPoint({
+				let elementsAtLocation = this.documentEditor.getElementFromPoint({
 					x: options.e.offsetX,
 					y: options.e.offsetY
 				});
-				_this.highLightElement(elementsAtLocation);
+				this.highLightElement(elementsAtLocation);
 			}
 		});
 
@@ -152,21 +150,19 @@ class UserInterface {
 	}
 
 	initElementSelection() {
-		let _this = this;
-
-		this.fabric_canvas.on('mouse:up', function(options) {
-			_this.documentEditor.selectElementByPoint({
+		this.fabric_canvas.on('mouse:up', (options) => {
+			this.documentEditor.selectElementByPoint({
 				x: options.e.offsetX,
 				y: options.e.offsetY
 			});
 		});
 
-		this.documentEditor.onElementSelected(function() {
-			_this.updateSelectedElementBorder();
+		this.documentEditor.onElementSelected(() => {
+			this.updateSelectedElementBorder();
 		});
 
-		this.documentEditor.onDocumentSizeChange(function() {
-			_this.updateSelectedElementBorder();
+		this.documentEditor.onDocumentSizeChange(() => {
+			this.updateSelectedElementBorder();
 		});
 	}
 
@@ -195,19 +191,16 @@ class UserInterface {
 	}
 
 	subscribeToDocumentEditorEvents() {
-		let _this = this;
-		this.documentEditor.onDocumentSizeChange(function() {
-			_this.resetCanvasDimentions();
+		this.documentEditor.onDocumentSizeChange(() => {
+			this.resetCanvasDimentions();
 		});
-		this.documentEditor.onAppendElement(function() {
-			_this.updateSelectedElementBorder();
+		this.documentEditor.onAppendElement(() => {
+			this.updateSelectedElementBorder();
 		});
-		this.documentEditor.onRemoveElement(function() {
-			_this.updateSelectedElementBorder();
+		this.documentEditor.onRemoveElement(() => {
+			this.updateSelectedElementBorder();
 		});
 	}
-
-
 }
 
 export default UserInterface;

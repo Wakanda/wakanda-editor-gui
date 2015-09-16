@@ -11,23 +11,20 @@ class Components {
 		this.container = document.createElement('ul');
 		document.getElementById(containerId).appendChild(this.container);
 
-		let _this = this;
-
 		this.documentEditor.documentPromise.then((iframeDoc) => {
-			_this.htmlComponents = new HtmlComponent({
+			this.htmlComponents = new HtmlComponent({
 				document: iframeDoc
 			});
 
-			_this.render();
+			this.render();
 		});
 	}
 
 	render() {
-		let _this = this;
-		let createInsert = function(compoName) {
-			return function() {
-				let element = _this.htmlComponents.renderComponent(compoName /*, compoName*/ );
-				_this.documentEditor.appendToSelectedElement({element});
+		let createInsert = (compoName) => {
+			return () => {
+				let element = this.htmlComponents.renderComponent(compoName /*, compoName*/ );
+				this.documentEditor.appendToSelectedElement({element});
 			}
 		};
 

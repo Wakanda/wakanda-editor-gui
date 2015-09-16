@@ -1,7 +1,7 @@
 
 class Component {
-	constructor(args) {
-		this.documentEditor = (args && args.documentEditor) ? args.document : IDE.GUID.documentEditor;
+	constructor({documentEditor = IDE.GUID.documentEditor}) {
+		this.documentEditor = documentEditor;
 		this.components  = [];
 	}
 
