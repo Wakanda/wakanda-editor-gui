@@ -30,6 +30,34 @@ class Command {
 	}
 }
 
+class AtomicCommand extends command {
+	constructor({commands, afterExecute, afterUndo, thisArg}) {
+		this._commands = commands;
+
+		//optional
+		this._thisArg = thisArg;
+		this._afterExecute = afterExecute;
+		this._afterUndo = afterUndo;
+	}
+
+	execute() {
+		for(let command of this._commands) {
+			command.execute();
+		}
+		if (this._afterExecute) {
+			this._afterExecute.call(this._thisArg, ret);
+		}
+	}
+	undo() {
+		for(let command of this._commands) {
+			command.undo();
+		}
+		if (this._afterUndo) {
+			this._afterUndo.call(this._thisArg, ret);
+		}
+	}
+}
+
 class CommandFactory {
 	constructor({events, linkImport}) {
 		this.events = events;
