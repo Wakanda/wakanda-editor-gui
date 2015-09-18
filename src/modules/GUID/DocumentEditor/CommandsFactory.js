@@ -1,36 +1,5 @@
+
 class Command {
-	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
-		this._execute = execute;
-		this._undo = undo;
-
-		//optional
-		this._thisArg = thisArg;
-		this._afterExecute = afterExecute;
-		this._afterUndo = afterUndo;
-	}
-
-	execute() {
-		let ret = this._execute.call(this._thisArg);
-		if (this._afterExecute) {
-			this._afterExecute.call(this._thisArg, ret);
-		}
-	}
-	undo() {
-		let ret = this._undo.call(this._thisArg);
-		if (this._afterUndo) {
-			this._afterUndo.call(this._thisArg, ret);
-		}
-	}
-
-	set afterExecute(afterExecute) {
-		this._afterExecute = afterExecute;
-	}
-	set afterUndo(afterUndo) {
-		this._afterUndo = afterUndo;
-	}
-}
-
-class AtomicCommand extends command {
 	constructor({commands, afterExecute, afterUndo, thisArg}) {
 		this._commands = commands;
 
@@ -48,6 +17,7 @@ class AtomicCommand extends command {
 			this._afterExecute.call(this._thisArg, ret);
 		}
 	}
+
 	undo() {
 		for(let command of this._commands) {
 			command.undo();
@@ -55,6 +25,50 @@ class AtomicCommand extends command {
 		if (this._afterUndo) {
 			this._afterUndo.call(this._thisArg, ret);
 		}
+	}
+
+	set afterExecute(afterExecute) {
+		this._afterExecute = afterExecute;
+	}
+	set afterUndo(afterUndo) {
+		this._afterUndo = afterUndo;
+	}
+
+	appendCommand({command}){
+		this._commands.push(command);
+		return this;
+	}
+}
+
+class AtomicCommand extends Command {
+	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
+		this._execute = execute;
+		this._undo = undo;
+
+		//optional
+		this._thisArg = thisArg;
+		this._afterExecute = afterExecute;
+		this._afterUndo = afterUndo;
+	}
+
+	execute() {
+		let ret = this._execute.call(this._thisArg);
+		if (this._afterExecute) {
+			this._afterExecute.call(this._thisArg, ret);
+		}
+	}
+
+	undo() {
+		let ret = this._undo.call(this._thisArg);
+		if (this._afterUndo) {
+			this._afterUndo.call(this._thisArg, ret);
+		}
+	}
+
+	appendCommand({command}){
+		return new Command({
+			command : [this, command]
+		});
 	}
 }
 
@@ -80,7 +94,7 @@ class CommandFactory {
 			});
 		};
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
@@ -109,7 +123,7 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
@@ -141,7 +155,7 @@ class CommandFactory {
 			};
 		};
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
@@ -170,7 +184,7 @@ class CommandFactory {
 			}
 		};
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
@@ -208,7 +222,7 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
@@ -245,7 +259,7 @@ class CommandFactory {
 			}
 		}
 
-		return new Command({
+		return new AtomicCommand({
 			execute, undo
 		});
 	}
