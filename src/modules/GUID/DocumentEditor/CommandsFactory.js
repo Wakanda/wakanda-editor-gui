@@ -77,7 +77,7 @@ class AtomicCommand extends Command {
 
 	appendCommands({commands}){
 		return new Command({
-			commands : [this, ...commands];
+			commands : [this, ...commands]
 		});
 	}
 }
