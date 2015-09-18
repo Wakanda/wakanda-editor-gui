@@ -38,6 +38,10 @@ class Command {
 		this._commands.push(command);
 		return this;
 	}
+	appendCommands({commands}){
+		Array.prototype.push.apply(this._commands, commands);
+		return this;
+	}
 }
 
 class AtomicCommand extends Command {
@@ -67,7 +71,13 @@ class AtomicCommand extends Command {
 
 	appendCommand({command}){
 		return new Command({
-			command : [this, command]
+			commands : [this, command]
+		});
+	}
+
+	appendCommands({commands}){
+		return new Command({
+			commands : [this, ...commands];
 		});
 	}
 }
