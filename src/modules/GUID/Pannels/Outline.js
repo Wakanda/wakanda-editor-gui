@@ -77,7 +77,7 @@ class Outline {
 	}
 
 	removeElement({element, id}) { // id or element
-		let id = id || this.getDomPath(element).join(' > ');
+		id = id || this.getDomPath(element).join(' > ');
 		let jst = this.$container.jstree();
 
 		jst.delete_node(id);

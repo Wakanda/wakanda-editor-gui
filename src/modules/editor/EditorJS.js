@@ -1,13 +1,13 @@
 import Editor from "./Editor";
 
-class EditorJS extends Editor {	
+class EditorJS extends Editor {
 	constructor(...args){
-		this.mode = "javascript";
 		super(...args);
-		
+		this.mode = "javascript";
+
 		this.initMode();
 	}
-	
+
 	initMode() {
 		require("../../../lib/ace-min-noconflict/ext-language_tools");
 		this.setOptions({

@@ -46,13 +46,9 @@ class Command {
 
 class AtomicCommand extends Command {
 	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
+		super({commands: [], afterExecute, afterUndo, thisArg})
 		this._execute = execute;
 		this._undo = undo;
-
-		//optional
-		this._thisArg = thisArg;
-		this._afterExecute = afterExecute;
-		this._afterUndo = afterUndo;
 	}
 
 	execute() {
