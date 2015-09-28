@@ -177,10 +177,10 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onElementAttributeChange(callBack) {
-		this.events.on('GUID.dom.changeAttribute', callBack);
+		this.events.on('GUID.dom.attribute.change', callBack);
 	}
 	onElementAttributeRemove(callBack) {
-		this.events.on('GUID.dom.removeAttribute', callBack);
+		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
 	toggleClassOfSelectedElement({className}) {

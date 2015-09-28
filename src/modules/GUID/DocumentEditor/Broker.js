@@ -10,7 +10,6 @@ class Broker {
 
 	createCommand(command) {
 		this.history.splice(this.currentState, Number.MAX_VALUE, command);
-		// this.history.push(command);
 
 		return this;
 	}

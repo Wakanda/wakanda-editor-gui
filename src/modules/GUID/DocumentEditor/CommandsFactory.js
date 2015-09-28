@@ -39,7 +39,7 @@ class Command {
 		this._commands.push(command);
 		return this;
 	}
-	appendCommands({commands}){
+	appendCommands({commands}){// commands is an array of commands
 		Array.prototype.push.apply(this._commands, commands);
 		return this;
 	}
@@ -47,7 +47,9 @@ class Command {
 
 class AtomicCommand extends Command {
 	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
-		super({commands: [], afterExecute, afterUndo, thisArg})
+		super({commands: [], afterExecute, afterUndo, thisArg});
+
+
 		this._execute = execute;
 		this._undo = undo;
 	}
@@ -66,12 +68,14 @@ class AtomicCommand extends Command {
 		}
 	}
 
+	// NOTE: this method retruns a new command that contains 'this' and the given command and do not change 'this'
 	appendCommand({command}){
 		return new Command({
 			commands : [this, command]
 		});
 	}
 
+	// NOTE: this method retruns a new command that contains 'this' and the given commands and do not change 'this'
 	appendCommands({commands}){
 		return new Command({
 			commands : [this, ...commands]
