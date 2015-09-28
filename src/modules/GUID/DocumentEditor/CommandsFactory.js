@@ -19,7 +19,8 @@ class Command {
 	}
 
 	undo() {
-		for(let command of this._commands) {
+		for(let i = this._commands.length-1; i >= 0; i--){
+			let command = this._commands[i];
 			command.undo();
 		}
 		if (this._afterUndo) {
