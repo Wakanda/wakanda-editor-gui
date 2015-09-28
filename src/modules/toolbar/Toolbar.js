@@ -1,6 +1,6 @@
 import {safeClassReplace} from "../Utils";
 
-var IDE = window.IDE;
+var IDE = window.IDE || {};
 
 class Toolbar {
 	constructor(options) {

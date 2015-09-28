@@ -1,4 +1,4 @@
-var IDE = window.IDE;
+var IDE = window.IDE || {};
 
 class Tree {
 	constructor(options) {

@@ -1,6 +1,6 @@
 import {HttpClient} from "../../../lib/aurelia-http-client";
 
-var IDE = window.IDE;
+var IDE = window.IDE || {};
 
 class Request extends HttpClient {
 
