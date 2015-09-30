@@ -167,6 +167,15 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
+	changeElementAttribute({element, attribute, value}) {
+		let command = this.commandsFactory.changeAttribute({
+			element,
+			attribute,
+			value
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
 	changeSelectedElementAttribute({attribute, value}) {
 		let command = this.commandsFactory.changeAttribute({
 			element: this.selectedElement,
