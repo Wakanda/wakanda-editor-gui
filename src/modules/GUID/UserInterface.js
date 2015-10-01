@@ -6,6 +6,8 @@ class UserInterface {
 		// this.events = new _EventEmitter();
 		this.events = new MultiEvent();
 
+		console.log('constructing user interface');
+
 		this.documentEditor = documentEditor;
 		this.canvas = document.createElement('canvas');
 		this.HIGHLIGHT = null;
@@ -24,6 +26,29 @@ class UserInterface {
 		this.initHighLighting();
 		this.initElementSelection();
 		this.subscribeToDocumentEditorEvents();
+
+		let keyboardJS = require('../../../lib/keyboardjs');
+		this.initKeyboardWatchers(keyboardJS);
+	}
+
+	initKeyboardWatchers(keyboardJS) {
+
+		var _this = this;
+
+		//Deselect the selected element if any
+		keyboardJS.bind('esc', () => {
+			_this.documentEditor.deselectElement();
+		});
+
+		//Remove the selected element if any
+		keyboardJS.bind('del', () => {
+
+			let element = _this._highLightedElement;
+
+			if (element.tagName != 'BODY') {
+				_this.documentEditor.removeElement({element});
+			}
+		});
 	}
 
 	resetCanvasDimentions() {
@@ -149,6 +174,13 @@ class UserInterface {
 		this.fabric_canvas.moveTo(this.rectSelected, 0);
 	}
 
+	removeSelectedElementBorder() {
+
+		if (this.rectSelected) {
+			this.fabric_canvas.remove(this.rectSelected);
+		}
+	}
+
 	initElementSelection() {
 		this.fabric_canvas.on('mouse:up', (options) => {
 			this.documentEditor.selectElementByPoint({
@@ -159,6 +191,10 @@ class UserInterface {
 
 		this.documentEditor.onElementSelected(() => {
 			this.updateSelectedElementBorder();
+		});
+
+		this.documentEditor.onElementDeselected(() => {
+			this.removeSelectedElementBorder();
 		});
 
 		this.documentEditor.onDocumentSizeChange(() => {

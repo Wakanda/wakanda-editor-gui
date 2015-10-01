@@ -19,9 +19,14 @@
   right: 0;
 }
 #outline{
-  height: 50%;
+  height: 30%;
 }
 #panel{
-  height: 50%;
-  top: 60%;
+  height: 30%;
+  top: 35%;
+}
+
+#styling {
+  height: 30%;
+  top: 70%;
 }

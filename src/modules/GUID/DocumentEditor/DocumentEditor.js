@@ -55,6 +55,20 @@ class DocumentEditor {
 		});
 	}
 
+	deselectElement() {
+
+		if (this.selectedElement) {
+			this.events.emit('GUID.dom.deselect' , {
+				element: this.selectedElement
+			});
+			this.selectedElement = null;
+		}
+	}
+
+	onElementDeselected(callback) {
+		this.events.on('GUID.dom.deselect', callback);
+	}
+
 	onReady(callBack) {
 		this.documentPromise.then(() => {
 			callBack(this);

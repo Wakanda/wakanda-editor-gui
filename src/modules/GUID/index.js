@@ -8,6 +8,8 @@ var Module = {
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
+			var Styling = require("./Pannels/Styling");
+
 			let path = IDE.qParams.path;
 			// console.log(IDE.qParams.path);
 			let strWebFolder = 'WebFolder';
@@ -39,6 +41,11 @@ var Module = {
 					documentEditor,
 					containerId: 'panel',
 					userInterface: IDE.GUID.userInterface
+				});
+
+				IDE.GUID.panels.styling = new Styling({
+					containerId: 'styling',
+					documentEditor
 				});
 
 				//undoRedoManagement
