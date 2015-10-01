@@ -25,6 +25,11 @@ class DocumentEditor {
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
+				console.log('stylesheet', this.document.styleSheets);
+				this.document.styleSheets[0].rules[0].style.color = 'red';
+
+				this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+
 				this.linkImport = new LinkImport({
 					document: iframeDoc
 				});
@@ -37,6 +42,11 @@ class DocumentEditor {
 			});
 
 	}
+
+	get iframeStyleSheet() {
+		return this.document.styleSheets[0];
+	}
+
 	loadIframe(path) {
 		return new Promise((res, rej) => {
 			if (!path) {
