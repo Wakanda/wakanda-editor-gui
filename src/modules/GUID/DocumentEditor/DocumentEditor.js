@@ -3,6 +3,7 @@ import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import {StyleSheetManager} from '../Styling';
+import ScriptManager from './ScriptManager';
 
 //TODO !important loaded ///./../.
 
@@ -22,7 +23,7 @@ class DocumentEditor {
 		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
 
 		console.log(path);
-		this.documentPromise = this.loadIframe(path)
+		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 				this.stylesheetManager = new StyleSheetManager(this.document.styleSheets[0]);
@@ -31,6 +32,9 @@ class DocumentEditor {
 					document: iframeDoc
 				});
 
+				this.scriptManager = new ScriptManager({
+					document: iframeDoc
+				});
 				this.selectedElement = iframeDoc.body || null;
 				this.initEvents();
 				this.initCommands();
@@ -40,7 +44,8 @@ class DocumentEditor {
 
 	}
 
-	loadIframe(path) {
+	loadIframe({path}) {
+
 		return new Promise((res, rej) => {
 			if (!path) {
 				rej('invalid path');
@@ -97,7 +102,8 @@ class DocumentEditor {
 	initCommands() {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
-			linkImport: this.linkImport
+			linkImport: this.linkImport,
+			scriptManager: this.scriptManager
 		});
 	}
 
