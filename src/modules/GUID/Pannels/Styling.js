@@ -7,6 +7,7 @@ class Styling {
     document.getElementById(containerId).appendChild(this.container);
 
     this.initStyleList();
+    this.subscribeToDocumentEditorEvents();
 
     console.log('Styling pannel loaded');
   }
@@ -14,16 +15,23 @@ class Styling {
   initStyleList() {
 
     let _this = this;
-    let li = document.createElement('li');
-    let input = document.createElement('input');
-    input.className = 'color';
 
-    input.addEventListener('change', (e) => {
-      _this.documentEditor.changeSelectedElementAttribute({attribute: 'style', value:'color: #' + input.value});
+    let liId = document.createElement('li');
+    this.inputId = document.createElement('input');
+    this.inputId.placeholder = 'ID';
+    liId.appendChild(this.inputId);
+    this.container.appendChild(liId);
+
+    let liColor = document.createElement('li');
+    let inputColor = document.createElement('input');
+    inputColor.className = 'color';
+
+    inputColor.addEventListener('change', (e) => {
+      _this.documentEditor.changeSelectedElementAttribute({attribute: 'style', value:'color: #' + inputColor.value});
     });
 
-    li.appendChild(input);
-    this.container.appendChild(li);
+    liColor.appendChild(inputColor);
+    this.container.appendChild(liColor);
 
     let saveButton = document.createElement('button');
     saveButton.textContent = 'Save style';
@@ -32,6 +40,16 @@ class Styling {
       this.stylesheetToString(_this.documentEditor.iframeStyleSheet);
     });
     this.container.appendChild(saveButton);
+  }
+
+  subscribeToDocumentEditorEvents() {
+    let _this = this;
+    this.documentEditor.onElementSelected( ({element}) => {
+      if (element) {
+        let id = element.getAttribute('id');
+          this.inputId.value = id;
+      }
+    });
   }
 
   stylesheetToString(stylesheet) {

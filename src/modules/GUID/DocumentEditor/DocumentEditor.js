@@ -25,10 +25,9 @@ class DocumentEditor {
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
-				console.log('stylesheet', this.document.styleSheets);
-				this.document.styleSheets[0].rules[0].style.color = 'red';
-
-				this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+				// console.log('stylesheet', this.document.styleSheets);
+				// this.document.styleSheets[0].rules[0].style.color = 'red';
+				// this.document.styleSheets[0].addRule('p', 'color:green;', 0);
 
 				this.linkImport = new LinkImport({
 					document: iframeDoc
