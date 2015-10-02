@@ -85,7 +85,7 @@ class DocumentEditor {
 	initCommands() {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
-			linkImport: this.linkImport
+			linkImport: this.linkImport,
 			scriptManager: this.scriptManager
 		});
 	}

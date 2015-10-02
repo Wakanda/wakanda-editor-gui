@@ -8,6 +8,7 @@ var Module = {
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
+			var AngularPanel = require("./Pannels/AngularPanel");
 			let path = IDE.qParams.path;
 			// console.log(IDE.qParams.path);
 			let strWebFolder = 'WebFolder';
