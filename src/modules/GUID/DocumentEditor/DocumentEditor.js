@@ -21,7 +21,7 @@ class DocumentEditor {
 		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
 
 		console.log(path);
-		this.documentPromise = this.loadIframe(path)
+		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
@@ -37,7 +37,8 @@ class DocumentEditor {
 			});
 
 	}
-	loadIframe(path) {
+
+	loadIframe({path}) {
 		return new Promise((res, rej) => {
 			if (!path) {
 				rej('invalid path');
@@ -81,6 +82,7 @@ class DocumentEditor {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
 			linkImport: this.linkImport
+			scriptManager: this.scriptManager
 		});
 	}
 
