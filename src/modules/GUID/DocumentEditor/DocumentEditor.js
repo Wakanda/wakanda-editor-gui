@@ -2,6 +2,7 @@ import LinkImport from './LinkImport';
 import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+import ScriptManager from './ScriptManager';
 
 //TODO !important loaded ///./../.
 
@@ -29,6 +30,9 @@ class DocumentEditor {
 					document: iframeDoc
 				});
 
+				this.scriptManager = new ScriptManager({
+					document: iframeDoc
+				});
 				this.selectedElement = iframeDoc.body || null;
 				this.initEvents();
 				this.initCommands();

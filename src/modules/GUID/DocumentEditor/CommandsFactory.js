@@ -84,9 +84,10 @@ class AtomicCommand extends Command {
 }
 
 class CommandFactory {
-	constructor({events, linkImport}) {
+	constructor({events, linkImport, scriptManager}) {
 		this.events = events;
 		this.linkImport = linkImport;
+		this.scriptManager = scriptManager;
 	}
 
 	prependElement({element, elementRef}) {
