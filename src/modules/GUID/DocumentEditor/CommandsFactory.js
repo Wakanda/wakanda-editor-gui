@@ -171,6 +171,32 @@ class CommandFactory {
 		});
 	}
 
+	changeColor({element, color, stylesheetManager}) {
+		let oldValue = element.style.color;
+		let events = this.events;
+
+		let execute = function() {
+			// element.style.color = color;
+			stylesheetManager.addRule({
+				selector: '#' + element.id,
+				rule: 'color: ' + color + ';'
+			});
+			events.emit('GUID.dom.color.change', {
+				element, oldValue, color
+			});
+		};
+
+		let undo = function() {
+			// element.style.color = oldValue;
+			stylesheetManager.removeLastRule();
+			events.emit('GUID.dom.color.change', {
+				element, oldValue: color, color: oldValue
+			});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
 	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;

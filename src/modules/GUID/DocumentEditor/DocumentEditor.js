@@ -2,6 +2,7 @@ import LinkImport from './LinkImport';
 import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+import {StyleSheetManager} from '../Styling';
 
 //TODO !important loaded ///./../.
 
@@ -24,10 +25,7 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe(path)
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
-
-				// console.log('stylesheet', this.document.styleSheets);
-				// this.document.styleSheets[0].rules[0].style.color = 'red';
-				// this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+				this.stylesheetManager = new StyleSheetManager(this.document.styleSheets[0]);
 
 				this.linkImport = new LinkImport({
 					document: iframeDoc
@@ -40,10 +38,6 @@ class DocumentEditor {
 				return iframeDoc;
 			});
 
-	}
-
-	get iframeStyleSheet() {
-		return this.document.styleSheets[0];
 	}
 
 	loadIframe(path) {
@@ -188,6 +182,16 @@ class DocumentEditor {
 	}
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack)
+	}
+
+	changeSelectedElementColor({color}) {
+		let command = this.commandsFactory.changeColor({
+			element: this.selectedElement,
+			color,
+			stylesheetManager: this.stylesheetManager
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
 	}
 
 	changeElementAttribute({element, attribute, value}) {
