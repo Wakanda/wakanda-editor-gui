@@ -3,7 +3,7 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components"], function(require) {
+		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/AngularPanel"], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
@@ -35,7 +35,13 @@ var Module = {
 					documentEditor
 				});
 				// Components
-				IDE.GUID.panels.htmlComponents = new Components({
+				// IDE.GUID.panels.htmlComponents = new Components({
+				// 	documentEditor,
+				// 	containerId: 'panel',
+				// 	userInterface: IDE.GUID.userInterface
+				// });
+				// angular panel
+				IDE.GUID.panels.angularPanel = new AngularPanel({
 					documentEditor,
 					containerId: 'panel',
 					userInterface: IDE.GUID.userInterface
