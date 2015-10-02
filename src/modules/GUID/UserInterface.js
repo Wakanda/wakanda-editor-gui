@@ -127,9 +127,7 @@ class UserInterface {
 
 	updateSelectedElementBorder() {
 
-		if (this.rectSelected) {
-			this.fabric_canvas.remove(this.rectSelected);
-		}
+		this.removeSelectedElementBorder();
 
 		let style = this.documentEditor.getSelectedElementComputedStyle();
 
@@ -175,7 +173,6 @@ class UserInterface {
 	}
 
 	removeSelectedElementBorder() {
-
 		if (this.rectSelected) {
 			this.fabric_canvas.remove(this.rectSelected);
 		}

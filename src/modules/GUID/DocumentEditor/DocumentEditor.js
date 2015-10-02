@@ -2,6 +2,7 @@ import LinkImport from './LinkImport';
 import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+import ScriptManager from './ScriptManager';
 
 //TODO !important loaded ///./../.
 
@@ -21,7 +22,7 @@ class DocumentEditor {
 		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
 
 		console.log(path);
-		this.documentPromise = this.loadIframe(path)
+		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
@@ -33,6 +34,9 @@ class DocumentEditor {
 					document: iframeDoc
 				});
 
+				this.scriptManager = new ScriptManager({
+					document: iframeDoc
+				});
 				this.selectedElement = iframeDoc.body || null;
 				this.initEvents();
 				this.initCommands();
@@ -41,12 +45,12 @@ class DocumentEditor {
 			});
 
 	}
-
+	// TODO: wraping stylesheet management in a class
 	get iframeStyleSheet() {
 		return this.document.styleSheets[0];
 	}
 
-	loadIframe(path) {
+	loadIframe({path}) {
 		return new Promise((res, rej) => {
 			if (!path) {
 				rej('invalid path');
@@ -103,7 +107,8 @@ class DocumentEditor {
 	initCommands() {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
-			linkImport: this.linkImport
+			linkImport: this.linkImport,
+			scriptManager: this.scriptManager
 		});
 	}
 
