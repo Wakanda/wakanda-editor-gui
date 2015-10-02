@@ -1,7 +1,4 @@
-import {
-	HtmlComponent,
-	PolymerComponent
-}
+import { 	HtmlComponent, PolymerComponent }
 from '../Component';
 
 class Components {

@@ -197,7 +197,10 @@ class Outline {
 				element: child
 			});
 		});
-
+		this.documentEditor.onElementDeselected( () => {
+			let treeInstance = _this.$container.jstree(true);
+			treeInstance.deselect_all();
+		})
 
 	}
 	syncWihUserInterface() {

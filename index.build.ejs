@@ -21,6 +21,8 @@
   <div class="cloud-ide-tree unselectable" id="tree"></div>
   <div class="cloud-ide-tree unselectable" id="outline"></div>
   <div class="cloud-ide-tree unselectable" id="panel"></div>
+
+  <div class="cloud-ide-tree unselectable" id="styling"></div>
   <div class="cloud-ide-tree-editor-handle unselectable">
     <div>.
       <br>.
@@ -32,7 +34,10 @@
     <% } %>
       <script src="./lib/emmet.js"></script>
       <script src="./lib/ace-min-noconflict/ace.js"></script>
+      <script src="./lib/jscolor/jscolor.js"></script>
+      </script>
       <script src="/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
 </body>
+
 
 </html>

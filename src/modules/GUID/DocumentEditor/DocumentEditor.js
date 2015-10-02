@@ -26,6 +26,11 @@ class DocumentEditor {
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
+				console.log('stylesheet', this.document.styleSheets);
+				this.document.styleSheets[0].rules[0].style.color = 'red';
+
+				this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+
 				this.linkImport = new LinkImport({
 					document: iframeDoc
 				});
@@ -40,6 +45,10 @@ class DocumentEditor {
 				return iframeDoc;
 			});
 
+	}
+	// TODO: wraping stylesheet management in a class
+	get iframeStyleSheet() {
+		return this.document.styleSheets[0];
 	}
 
 	loadIframe({path}) {
@@ -58,6 +67,20 @@ class DocumentEditor {
 				this.iframe.src = path;
 			}
 		});
+	}
+
+	deselectElement() {
+
+		if (this.selectedElement) {
+			this.events.emit('GUID.dom.deselect' , {
+				element: this.selectedElement
+			});
+			this.selectedElement = null;
+		}
+	}
+
+	onElementDeselected(callback) {
+		this.events.on('GUID.dom.deselect', callback);
 	}
 
 	onReady(callBack) {
