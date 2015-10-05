@@ -5,6 +5,8 @@ class Script {
 		this.document = d;
 		this.htmlTag = htmlTag;
 
+		// TODO: positions
+		this._parentTag = this.htmlTag.parentElement;
 	}
 
 	get codePromise(){
@@ -13,6 +15,15 @@ class Script {
 
 	save(){
 		console.error('Not yet implemented');
+	}
+
+	removeFromDocument(){
+		let parent = this.htmlTag.parentElement
+		return this;
+	}
+
+	addToDocument(){
+		this.parentElement.appendChild(this.htmlTag);
 	}
 }
 
