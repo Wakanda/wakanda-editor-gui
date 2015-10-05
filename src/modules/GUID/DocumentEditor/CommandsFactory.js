@@ -177,7 +177,7 @@ class CommandFactory {
 		let events = this.events;
 
 		let execute = function() {
-			// element.style.color = color;
+			element.style.color = color;
 			stylesheetManager.addRule({
 				selector: '#' + element.id,
 				rule: 'color: ' + color + ';'
@@ -188,7 +188,7 @@ class CommandFactory {
 		};
 
 		let undo = function() {
-			// element.style.color = oldValue;
+			element.style.color = oldValue;
 			stylesheetManager.removeLastRule();
 			events.emit('GUID.dom.color.change', {
 				element, oldValue: color, color: oldValue
