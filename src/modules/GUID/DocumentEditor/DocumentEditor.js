@@ -26,10 +26,10 @@ class DocumentEditor {
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
-				console.log('stylesheet', this.document.styleSheets);
-				this.document.styleSheets[0].rules[0].style.color = 'red';
+				// console.log('stylesheet', this.document.styleSheets);
+				// this.document.styleSheets[0].rules[0].style.color = 'red';
 
-				this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+				// this.document.styleSheets[0].addRule('p', 'color:green;', 0);
 
 				this.linkImport = new LinkImport({
 					document: iframeDoc
@@ -38,6 +38,7 @@ class DocumentEditor {
 				this.scriptManager = new ScriptManager({
 					document: iframeDoc
 				});
+
 				this.selectedElement = iframeDoc.body || null;
 				this.initEvents();
 				this.initCommands();
