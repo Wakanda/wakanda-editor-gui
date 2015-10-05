@@ -111,7 +111,7 @@ class CommandFactory {
 		});
 	}
 
-	changeTextOfdElement({text, element}){
+	changeElementText({text, element}){
 		let events = this.events;
 
 		let childNodes = element.childNodes;

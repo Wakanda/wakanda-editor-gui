@@ -329,7 +329,7 @@ class DocumentEditor {
 	}
 
 	changeSelectedElementText({text}){
-		let command = this.commandsFactory.changeTextOfdElement({
+		let command = this.commandsFactory.changeElementText({
 			element: this.selectedElement,
 			text
 		});
