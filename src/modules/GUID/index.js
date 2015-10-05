@@ -52,7 +52,7 @@ var Module = {
 
 				IDE.GUID.panels.styling = new Styling({
 					containerId: 'styling',
-					documentEditor
+					documentEditor: documentEditor
 				});
 
 				//undoRedoManagement

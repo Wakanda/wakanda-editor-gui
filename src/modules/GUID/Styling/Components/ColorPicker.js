@@ -7,6 +7,8 @@ class ColorPicker {
     this.htmlElement.id = id;
     this.htmlElement.className = 'color';
     this.htmlElement.placeholder = placeholder;
+
+    this._subscribeToDocumentEditorEvents();
   }
 
   get colorValueHexFormat() {
@@ -15,9 +17,6 @@ class ColorPicker {
 
   appendToElement(element) {
     element.appendChild(this.htmlElement);
-
-    //Subscribe to events only when element has been bound to DOM
-    this._subscribeToDocumentEditorEvents();
   }
 
   onColorChange(callback) {
@@ -32,22 +31,30 @@ class ColorPicker {
     return {r: arr[0], g: arr[1], b: arr[2]};
   }
 
-  _subscribeToDocumentEditorEvents() {
-    let colorPicker = document.getElementById(this.htmlElement.id); //Need to do that to access color() function that is bound later
+  _cleanPicker() {
+    this.htmlElement.color.fromRGB(1, 1, 1);
+    this.htmlElement.value = null;
+  }
 
+  _subscribeToDocumentEditorEvents() {
+
+    //TODO: BUG, body fires onElementSelected on UI when selected but not here, can not find out why...
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
 
       if (selectedElement) {
         if (selectedElement.style.color) {
           console.log('color picked', selectedElement.style.color);
           let {r, g, b} = this._rgbStringToRgbObj(selectedElement.style.color);
-          colorPicker.color.fromRGB(r, g, b);
+          this.htmlElement.color.fromRGB(r, g, b);
         }
         else {
-          colorPicker.color.fromRGB(1, 1, 1);
-          this.htmlElement.value = null;
+          this._cleanPicker();
         }
       }
+    });
+
+    this.documentEditor.onElementDeselected(() => {
+      this._cleanPicker();
     });
   }
 }

@@ -1,4 +1,5 @@
 import ColorPicker from '../Styling/Components/ColorPicker';
+import HtmlAttributeInput from '../Styling/Components/HtmlAttributeInput';
 
 class Styling {
   constructor({
@@ -9,21 +10,19 @@ class Styling {
     document.getElementById(containerId).appendChild(this.container);
 
     this.initStyleList();
-    this.subscribeToDocumentEditorEvents();
     this.stylesheetManager = this.documentEditor.stylesheetManager;
-
-    console.log('Styling pannel loaded');
   }
 
   initStyleList() {
 
     let _this = this;
 
-    let liId = document.createElement('li');
-    this.inputId = document.createElement('input');
-    this.inputId.placeholder = 'ID';
-    liId.appendChild(this.inputId);
-    this.container.appendChild(liId);
+    let idInput = new HtmlAttributeInput({
+      documentEditor: this.documentEditor,
+      attributeName: 'id',
+      placeholder: 'ID'
+    });
+    idInput.appendToElement(this.container);
 
     this.colorPicker = new ColorPicker({
       documentEditor: this.documentEditor,
@@ -43,17 +42,6 @@ class Styling {
       console.log("CSS dump\n", _this.stylesheetManager.toString());
     });
     this.container.appendChild(saveButton);
-  }
-
-  subscribeToDocumentEditorEvents() {
-    let _this = this;
-
-    this.documentEditor.onElementSelected( ({element}) => {
-      if (element) {
-        let id = element.getAttribute('id');
-        this.inputId.value = id;
-      }
-    });
   }
 }
 
