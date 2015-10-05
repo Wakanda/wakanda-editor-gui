@@ -327,6 +327,18 @@ class DocumentEditor {
 		this.events.on('GUID.dom.import.remove', callBack);
 	}
 
+	changeSelectedElementText({text}){
+		let command = this.commandsFactory.changeTextOfdElement({
+			element: this.selectedElement,
+			text
+		});
+		this.broker.createCommand(command)
+							 .executeNextCommand();
+	}
+	onElementTextChange(callBack){
+		this.events.on('GUID.dom.element.changeText', callBack);
+	}
+
 }
 
 

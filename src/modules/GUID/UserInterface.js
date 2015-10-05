@@ -197,6 +197,9 @@ class UserInterface {
 		this.documentEditor.onDocumentSizeChange(() => {
 			this.updateSelectedElementBorder();
 		});
+		this.documentEditor.onElementTextChange(()=> {
+			this.updateSelectedElementBorder();
+		});
 	}
 
 	highLightArea(coords) {

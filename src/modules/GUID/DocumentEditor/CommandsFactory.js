@@ -111,6 +111,53 @@ class CommandFactory {
 		});
 	}
 
+	changeTextOfdElement({text, element}){
+		let events = this.events;
+
+		let childNodes = element.childNodes;
+		let command;
+		if(childNodes.length > 1){
+			console.error('not yet implemented, the command returned will be null');
+			command = null;
+		}else{
+			let execute, undo;
+
+			if (childNodes.length === 0) {
+			 let oldVal = element.innerText;
+			 execute = function(){
+				 element.innerText = text;
+				 events.emit('GUID.dom.element.changeText', {
+					 element, text
+				 });
+			 };
+			 undo = function(){
+				 element.innerText = oldVal;
+				 events.emit('GUID.dom.element.changeText', {
+					 element, text: oldVal
+				 });
+			 }
+		 }else /*if (childNodes.length === 1)*/ {
+			 let oldVal = childNodes[0].nodeValue;
+			 execute = function(){
+				 element.innerText = text;
+				 events.emit('GUID.dom.element.changeText', {
+					 element, text
+				 });
+			 };
+			 undo = function(){
+				 childNodes[0].nodeValue = oldVal;
+				 events.emit('GUID.dom.element.changeText', {
+					 element, text: oldVal
+				 });
+			 }
+		 }
+
+		 command = new AtomicCommand({execute, undo});
+		}
+
+		return command; //it can be null if the element contains other elements
+	}
+
 	appendElement({parent, child}) {
 		let events = this.events;
 

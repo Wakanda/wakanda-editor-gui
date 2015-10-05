@@ -9,7 +9,11 @@ class Broker {
 	}
 
 	createCommand(command) {
-		this.history.splice(this.currentState, Number.MAX_VALUE, command);
+		if(command){
+			this.history.splice(this.currentState, Number.MAX_VALUE, command);
+		}else{
+			console.error('the commanf given is null');
+		}
 
 		return this;
 	}
