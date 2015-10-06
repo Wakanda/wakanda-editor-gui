@@ -44,11 +44,15 @@ var Module = {
 				// 	userInterface: IDE.GUID.userInterface
 				// });
 				// angular panel
-				IDE.GUID.panels.angularPanel = new AngularPanel({
+				let angularPanel = IDE.GUID.panels.angularPanel = new AngularPanel({
 					documentEditor,
 					containerId: 'panel',
 					userInterface: IDE.GUID.userInterface
 				});
+
+				angularPanel.finalSctiptsPromise.then((scripts)=>{
+					console.log(scripts);
+				})
 
 				IDE.GUID.panels.styling = new Styling({
 					containerId: 'styling',

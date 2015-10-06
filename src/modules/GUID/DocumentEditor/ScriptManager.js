@@ -19,11 +19,13 @@ class Script {
 
 	removeFromDocument(){
 		let parent = this.htmlTag.parentElement
+		parent.removeChild(this.htmlTag);
 		return this;
 	}
 
 	addToDocument(){
 		this.parentElement.appendChild(this.htmlTag);
+		return this;
 	}
 }
 
@@ -63,7 +65,7 @@ class SctriptFile extends Script {
 
 	toAbsoluteUrl({src}){
 		// TODO: !important rewrite this methode
-		return `${this.document.location.origin}/${src}`;
+		return `${this.document.location.origin}${src}`;
 	}
 
 	loadCode(){
@@ -85,6 +87,20 @@ class ScriptManager{
 
 	get scripts(){
 		return this._scripts;
+	}
+
+	// TODO: temporary code for poc only
+	createEmbdedScript({content}){
+		let scriptTag = this.document.createElement('script');
+
+		scriptTag.setAttribute('type','text/javascript');
+		scriptTag.innerHTML = content;
+		this.document.body.appendChild(scriptTag);
+
+		return new ScriptEmbded({
+			document: this.document,
+			htmlTag: scriptTag
+		});
 	}
 
 	initScripts(){

@@ -1,76 +1,145 @@
 let helpers = {
-	createInputWithLabel({labelContent, content, id, withLi}){
-		id = id || (labelContent + '-id');
+	editScript(script) {
+			let scriptEditorDiv = document.createElement('div');
+			let editor = ace.edit(scriptEditorDiv);
+			editor.setTheme("ace/theme/monokai");
+			editor.getSession().setMode("ace/mode/javascript");
+			editor.setValue(script.htmlTag.innerText);
+			editor.setOptions({
+				maxLines: Infinity
+			});
+			editor.session.setNewLineMode("windows");
 
-		let label = document.createElement('label');
-		label.setAttribute('for', id);
-		label.textContent = labelContent;
+			let _this = this;
 
-		let input	= document.createElement('input');
-		input.setAttribute('id', id);
-		input.setAttribute('id', 'text');
+			bootbox.dialog({
+				message: scriptEditorDiv,
+				title: "Edit Script",
+				buttons: {
+					success: {
+						label: "Save changes",
+						className: "btn-success",
+						callback: () => {
+							let content = editor.getSession().getValue();
+							script.htmlTag.innerHTML = content;
+						}
+					}
+				}
+			});
 
-		if(content){
-			input.value = content;
+		},
+		createInputWithLabel({ labelContent, content, id, withLi }) {
+			id = id || (labelContent + '-id');
+
+			let label = document.createElement('label');
+			label.setAttribute('for', id);
+			label.textContent = labelContent;
+
+			let input = document.createElement('input');
+			input.setAttribute('id', id);
+			input.setAttribute('id', 'text');
+
+			if (content) {
+				input.value = content;
+			}
+
+			label.appendChild(input);
+
+			let li;
+			if (withLi) {
+				li = document.createElement('li');
+				li.appendChild(label);
+			}
+
+			return {
+				label, input, li
+			};
 		}
-
-		label.appendChild(input);
-
-		let li;
-		if(withLi){
-			li = document.createElement('li');
-			li.appendChild(label);
-		}
-
-		return {label, input, li};
-	}
 };
 
 
-
-class AngularInfoExtractor{
-	constructor({code}){
-		this.code = code;
+class AngularInfoExtractor {
+	constructor({ script }) {
+		this.script = script;
 	}
 
-	extractInfos(){
-		let allCode = `
-${this.theMagicString}
-(function(angular){
-	${this.code}
-	return infos;
-})(magicAngular);
-		`;
-		return eval(allCode);
+	// NOTE: Experimental
+	extractInfos() {
+		return this.script
+			.codePromise
+			.then((code) => {
+				let allCode = `
+				${this.theMagicAngular}
+				(function(angular){
+					${code}
+					return infos;
+				})(magicAngular);
+			`;
+
+				let infos = eval(allCode);
+
+				return {
+					extractorInstance: this,
+					infos
+				};
+			});
+
 	}
 
-	get theMagicString(){
+	get theMagicAngular() {
 		return `
-var magicAngular = {};
-var infos = {};
-var anApp = {};
+    var magicAngular = {};
+    var infos = {
+      applications: []
+    };
 
-magicAngular.module = function(){
-	infos.modules = infos.modules || [];
-	infos.modules.push(arguments);
-	return anApp;
-}
+    var createControllerFunction = function(application) {
+      return function(controllerName, controllerContent) {
+        application.controllers = application.controllers || [];
+        var controller = {
+          controllerName: controllerName,
+					controllerContent: controllerContent
+					  //injections ...
+        }
+        application.controllers.push(controller);
+        return application;
+      };
+    }
 
-anApp.controller = function(){
-	infos.controllers = infos.controllers || [];
-	infos.controllers.push(arguments);
-};
+    magicAngular.module = function(appName, dependencies) {
+      var newApp = {
+        applicationName: appName
+      };
+
+      var index = infos.applications.map(function(application) {
+        return application.applicationName;
+      }).indexOf(appName);
+
+      var application = infos.applications[index] || newApp;
+
+      if (index == -1) {
+        infos.applications.push(application);
+      }
+
+      var controllerFunction = createControllerFunction(application);
+      application.controller = controllerFunction;
+      if (dependencies) {
+        application.dependencies = dependencies;
+      }
+
+      return application;
+    };
 		`;
 	}
 
 }
 
 class AngularPanel {
-	constructor({documentEditor, containerId}) {
+	constructor({ documentEditor, containerId }) {
 		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
 		this.panelContainer = document.getElementById(containerId);
 
-		let {label, input} = helpers.createInputWithLabel({
+		let { label, input } = helpers.createInputWithLabel({
 			id: 'application-name',
 			labelContent: 'Angular Application Name'
 		});
@@ -78,6 +147,7 @@ class AngularPanel {
 		this.panelContainer.appendChild(label);
 
 		this.applicationNameInput = input;
+		this.applicationNameLabel = label;
 
 		this.angularAttributes = document.createElement('ul');
 		this.angularControllers = document.createElement('ul');
@@ -85,49 +155,151 @@ class AngularPanel {
 		this.panelContainer.appendChild(this.angularControllers);
 		this.panelContainer.appendChild(this.angularAttributes);
 		// extract informations from script
-		this.magicMapPromise = this.getInfosFromScripts();
 
-		this.SubscribeToDocumentEditorEvents();
-	}
+		this.applicationToScriptMap = new Map();
+		this.applicationControllerToScriptMap = new Map();
 
-	getInfosFromScripts(){
-		let scriptManager = this.documentEditor.scriptManager;
-		let scripts = scriptManager.scripts;
+		this.finalSctiptsPromise = this.getInfosFromScripts().then((infos) => {
+			let allApplications = new Set(); // contain names of applications
+			let allControllers = [];
+			// {
+			// 	applicationName
+			// 	controllerName,
+			// 	controllerfunction
+			// }
 
-		let promiseCodeArray = scripts.map((script) => {
-			return script.codePromise.then((code) => {
-				return {code, script};
-			});
-		});
-		return Promise.all(promiseCodeArray).then((codeArray) => {
-			let magicMap = new Map();
+			infos.forEach((info) => {
+				let applications = info.applications;
+				applications.forEach((application) => {
+					let applicationName = application.applicationName;
+					allApplications.add(applicationName);
+					let controllers = application.controllers;
+					controllers.forEach((controller) => {
+						let controllerToAdd = {};
 
-			codeArray.forEach(({code, script})=>{
-				// TODO: rewrite it !
-				let extractor = new AngularInfoExtractor({code});
-				let angularInformations = extractor.extractInfos();
+						controllerToAdd.applicationName = applicationName;
+						controllerToAdd.controllerName = controller.controllerName;
+						controllerToAdd.controllerFunction = controller.controllerContent;
 
-				let controllers = angularInformations.controllers;
-				controllers.forEach((controller)=>{
-					console.log({
-						controllerName: controller[0],
-						scriptSrc: script.src
+						allControllers.push(controllerToAdd);
 					});
 				});
 			});
+
+			//CreateApplications declaration
+			let applicationsScripts = Array.from(allApplications).map((applicationName) => {
+				let codeContent = `
+// ${applicationName} declaration
+angular.module('${applicationName}', []); // no dependecies
+				`;
+
+				let applicationScript = this.documentEditor.scriptManager.createEmbdedScript({
+					content: codeContent
+				});
+				this.applicationToScriptMap.set(applicationName, applicationScript);
+
+				return applicationScript;
+			});
+
+			let controllersScripts = allControllers.map((controller) => {
+				// {
+				// 	applicationName
+				// 	controllerName,
+				// 	controllerfunction
+				// }
+				let controllerContent;
+				if (typeof controller.controllerFunction === 'function') {
+					controllerContent = controller.controllerFunction.toString();
+				} else {
+					let theFunc = controller.controllerFunction.pop();
+					let dependecies = controller.controllerFunction;
+					let dependenciesStr = dependecies.map((dep) => "'" + dep + "'").join(', ');
+					controllerContent = `[${dependenciesStr}, ${theFunc.toString()}]`;
+				}
+				let codeContent = `
+(function(){
+	var app = angular.module('${controller.applicationName}');
+
+	app.controller('${controller.controllerName}', ${controllerContent});
+})();
+				`;
+
+				let controllerScript = this.documentEditor.scriptManager.createEmbdedScript({
+					content: codeContent
+				});
+				this.applicationControllerToScriptMap.set(`${controller.applicationName}.${controller.controllerName}`, controllerScript);
+				return controllerScript;
+			})
+
+			return {
+				applicationsScripts, controllersScripts
+			};
+		});
+
+		this.finalSctiptsPromise.then(( /*{applicationsScripts, controllersScripts}*/ ) => {
+
+			this.SubscribeToDocumentEditorEvents();
+		});
+
+	}
+
+
+	getInfosFromScripts() {
+		let scriptManager = this.documentEditor.scriptManager;
+		let scripts = scriptManager.scripts;
+
+		let extractorsPromise = scripts
+			.map((script) => {
+				let magicExtractor = new AngularInfoExtractor({
+					script
+				});
+				return magicExtractor.extractInfos();
+			});
+
+		return Promise.all(extractorsPromise)
+			.then((extraIns) => {
+				return extraIns.map(({
+					extractorInstance, infos
+				}) => {
+					let script = extractorInstance.script;
+
+					// NOTE: remove scripts
+					script.removeFromDocument();
+
+					// console.log(script.htmlTag);
+					infos.applications.forEach((application) => {
+						// console.log('Application: ' + application.applicationName);
+						application.controllers.forEach((controller) => {
+							// console.log('Controller: ' + controller.controllerName);
+						});
+					});
+
+					return infos;
+				});
+			});
+
+	}
+
+	SubscribeToDocumentEditorEvents() {
+		this.documentEditor.onElementSelected(({
+			element
+		}) => {
+			this.renderApplicationName({
+				element
+			});
+			this.renderControllers({
+				element
+			});
+			this.renderAttributes({
+				element
+			});
 		});
 	}
 
-	SubscribeToDocumentEditorEvents(){
-		this.documentEditor.onElementSelected(({element}) => {
-			this.renderApplicationName({element});
-			this.renderControllers({element});
-			this.renderAttributes({element});
-		});
-	}
-
-	renderAttributes({element}){
-		let isNg = function(att){
+	renderAttributes({
+		element
+	}) {
+		let isNg = function(att) {
 			let ngAtt = att.name.indexOf('ng-') === 0;
 			ngAtt = ngAtt && (att.name.toLowerCase() !== 'ng-app');
 			ngAtt = ngAtt && (att.name.toLowerCase() !== 'ng-controller');
@@ -137,8 +309,10 @@ class AngularPanel {
 
 		Array.from(element.attributes)
 			.filter(isNg)
-			.forEach((ngAttribute)=>{
-				let {label, input, li} = helpers.createInputWithLabel({
+			.forEach((ngAttribute) => {
+				let {
+					label, input, li
+				} = helpers.createInputWithLabel({
 					labelContent: ngAttribute.name,
 					content: ngAttribute.value,
 					withLi: true
@@ -152,21 +326,42 @@ class AngularPanel {
 			});
 	}
 
-	renderApplicationName({element}){
-		let attribute = 'ng-app';
-		this.applicationNameInput.value = '';
-		let {parent, value} = AngularPanel.findParrentWithAttribute({element, attribute})
-		this.applicationNameInput.value = value;
-		this.bindChanges({element, input: this.applicationNameInput, attribute});
-	}
-	// TODO:  generators
-	renderControllers({element}){
+	renderApplicationName({
+			element
+		}) {
+			let attribute = 'ng-app';
+			this.applicationNameInput.value = '';
+			let {
+				parent, value
+			} = AngularPanel.findParrentWithAttribute({
+				element, attribute
+			})
+			this.applicationNameInput.value = value;
+			this.bindChanges({
+				element, input: this.applicationNameInput, attribute
+			});
+
+			let _this = this;
+			this.applicationNameLabel.onclick = () => {
+				helpers.editScript(_this.applicationToScriptMap.get(_this.applicationNameInput.value));
+			};
+		}
+		// TODO:  generators
+	renderControllers({
+		element
+	}) {
 		let attribute = 'ng-controller';
 		this.angularControllers.innerHTML = '';
-		let controllers = AngularPanel.getParentsWithAttribute({element, attribute});
-		controllers.forEach(({parent, value}, index, array) => {
-			let {input, label, li} = helpers.createInputWithLabel({
-				labelContent: 'controller' + (array.length > 1 ? ( ' ' + ( index + 1 ) ) : '' ),
+		let controllers = AngularPanel.getParentsWithAttribute({
+			element, attribute
+		});
+		controllers.reverse().forEach(({
+			parent, value
+		}, index, array) => {
+			let {
+				input, label, li
+			} = helpers.createInputWithLabel({
+				labelContent: 'controller' + (array.length > 1 ? (' ' + (index + 1)) : ''),
 				content: value,
 				withLi: true
 			});
@@ -176,35 +371,59 @@ class AngularPanel {
 				input,
 				attribute
 			});
+
+			let _this = this;
+			label.onclick = () => {
+				helpers.editScript(_this.applicationControllerToScriptMap.get(`${_this.applicationNameInput.value}.${input.value}`));
+			};
 		});
+
 	}
 
-	static findParrentWithAttribute({element, attribute}){
+	static findParrentWithAttribute({
+		element, attribute
+	}) {
 		let value,
-				tagName,
-				elementIterate = element;
-		do{
+			tagName,
+			elementIterate = element;
+		do {
 			value = elementIterate.getAttribute(attribute);
 			tagName = elementIterate.tagName.toLowerCase();
 			elementIterate = elementIterate.parentElement;
-		}while(tagName !== 'body' && ! value);
+		} while (tagName !== 'body' && !value);
 
-		return {parent: elementIterate, value}; //{element, value}
+		return {
+			parent: elementIterate,
+			value
+		}; //{element, value}
 	}
 
-	static getParentsWithAttribute({element, attribute}){
+	static getParentsWithAttribute({
+		element, attribute
+	}) {
 		let parents = [];
-		let {parent, value} = AngularPanel.findParrentWithAttribute({element, attribute});
+		let {
+			parent, value
+		} = AngularPanel.findParrentWithAttribute({
+			element, attribute
+		});
 		while (value) {
-			parents.push({parent, value});
-			let o = AngularPanel.findParrentWithAttribute({element: parent, attribute});
+			parents.push({
+				parent, value
+			});
+			let o = AngularPanel.findParrentWithAttribute({
+				element: parent,
+				attribute
+			});
 			parent = o.parent
 			value = o.value;
 		}
 		return parents;
 	}
 
-	bindChanges({element, input, attribute}){
+	bindChanges({
+		element, input, attribute
+	}) {
 		let _this = this;
 		input.addEventListener('change', () => {
 			console.log(this, arguments);
@@ -217,106 +436,18 @@ class AngularPanel {
 		});
 
 		// element attribute change
-		this.documentEditor.onElementAttributeChange(({element: changedElement, attribute, value})=>{
-			if(element === changedElement && attribute.name === attribute){
-				if(input){
+		this.documentEditor.onElementAttributeChange(({
+			element: changedElement,
+			attribute,
+			value
+		}) => {
+			if (element === changedElement && attribute.name === attribute) {
+				if (input) {
 					input.value = value;
 				}
 			}
 		});
 	}
-
-	// TODO: remove it
-	// static renderLiOfAttribute({element, attribute}){
-	// 	let li = document.createElement('li');
-	//
-	// 	let {label, input} = helpers.createInputWithLabel({
-	// 		labelContent: attribute.name,
-	// 		content: attribute.value
-	// 	});
-	// 	li.appendChild(label);
-	//
-	// 	return li;
-	// }
-
-	// renderArrayOfControllers({element}){
-	// 	let controllers = [];
-	//
-	// 	let controllers = AngularPanel.getControllersFromElement({element});
-	// 	controllers.forEach(({element:el, controllersName: ctrlName}, index, array)=>{
-	// 		let li = document.createElement('li');
-	//
-	// 		let {label, input} = helpers.createInputWithLabel({
-	// 			labelContent: 'Controller ' + index,
-	// 			content: ctrlName
-	// 		});
-	// 		li.appendChild(label);
-	//
-	// 		this.bindChanges({element:el, input, attribute: 'ng-controller'});
-	//
-	// 		controllers.push(li);
-	// 	});
-	//
-	// 	return controllers;
-	// }
-
-  // SubscribeToDocumentEditorEvents_old(){
-  //   this.documentEditor.onElementSelected(({element}) => {
-	//
-	// 		this.angularAttributes.innerHTML = '';
-	//
-	// 		for (let i = 0; i < element.attributes.length; i++) {
-	//
-	// 		  let attrib = element.attributes[i];
-	//
-	// 			if(attrib.name.indexOf('ng-') === 0){
-	// 				// attributes
-	// 				let li = AngularPanel.renderLiOfAttribute({element, attribute: attrib});
-	//
-	// 				this.bindChanges({element, li, attribute: attrib});
-	//
-	// 				this.angularAttributes.appendChild(li);
-	//
-	// 				// controllers
-	//
-	//
-	// 			}
-	// 		}
-	//
-	// 	});
-  // }
-
-	// static getAppnameFromElement({element}){
-	// 		let ngApp, tagName,
-	// 				elementIterate = element;
-	// 		do{
-	// 			ngApp = elementIterate.getAttribute('ng-app');
-	// 			tagName = elementIterate.tagName.toLowerCase();
-	// 			elementIterate = elementIterate.parentElement;
-	// 		}while(tagName !== 'body' && ! ngApp);
-	//
-	// 		return ngApp;
-	// }
-
-	// static getControllersFromElement({element}){
-	// 	let controllers = [],
-	// 			tagName,
-	// 			elementIterate = element;
-	//
-	// 	do{
-	// 		 let ctrl = elementIterate.getAttribute('ng-controller');
-	// 		 if(ctrl){
-	// 			 controllersNames.push({
-	// 				 element: elementIterate,
-	// 				 controllersName: ctrl
-	// 			 });
-	// 		 }
-	// 		 tagName = elementIterate.tagName.toLowerCase();
-	// 		 elementIterate = elementIterate.parentElement;
-	// 	}while(tagName !== 'body');
-	//
-	// 	return controllers;// {element, controllersName}
-	// }
 
 }
 
