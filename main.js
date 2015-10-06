@@ -25,6 +25,7 @@ IDE.Core.onReady(function(){
 		// IDE.plugins.activate("history");
 		IDE.plugins.activate("save");
 		IDE.plugins.activate("GuidHistoryManager");
+		IDE.plugins.activate("ScriptEditor");
 		IDE.plugins.activate("autocomplete");
 		IDE.plugins.events.emit("all_activated");
 	});
@@ -33,6 +34,7 @@ IDE.Core.onReady(function(){
 		// "history",
 		"GuidHistoryManager",
 		"save",
-		"autocomplete"
+		"autocomplete",
+		"ScriptEditor"
 	]);
 });

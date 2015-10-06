@@ -236,6 +236,9 @@ class UserInterface {
 		this.documentEditor.onRemoveElement(() => {
 			this.updateSelectedElementBorder();
 		});
+		this.documentEditor.onElementStyleAttributeChange(() => {
+			this.updateSelectedElementBorder();
+		})
 	}
 }
 

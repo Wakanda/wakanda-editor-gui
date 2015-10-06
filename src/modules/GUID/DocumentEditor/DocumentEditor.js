@@ -3,6 +3,7 @@ import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
+import StyleManager from './Styling/StyleManager';
 
 //TODO !important loaded ///./../.
 
@@ -25,11 +26,10 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
-
-				// console.log('stylesheet', this.document.styleSheets);
-				// this.document.styleSheets[0].rules[0].style.color = 'red';
-
-				// this.document.styleSheets[0].addRule('p', 'color:green;', 0);
+				
+				this.styleManager = new StyleManager({
+					document: iframeDoc
+				});
 
 				this.linkImport = new LinkImport({
 					document: iframeDoc
@@ -45,14 +45,10 @@ class DocumentEditor {
 
 				return iframeDoc;
 			});
-
-	}
-	// TODO: wraping stylesheet management in a class
-	get iframeStyleSheet() {
-		return this.document.styleSheets[0];
 	}
 
 	loadIframe({path}) {
+
 		return new Promise((res, rej) => {
 			if (!path) {
 				rej('invalid path');
@@ -110,7 +106,8 @@ class DocumentEditor {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
 			linkImport: this.linkImport,
-			scriptManager: this.scriptManager
+			scriptManager: this.scriptManager,
+			styleManager: this.styleManager
 		});
 	}
 
@@ -195,6 +192,28 @@ class DocumentEditor {
 	}
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack)
+	}
+
+	getSelectedElementStyleAttribute({attribute}){
+		return this.styleManager.getInlineStyleAttribute({
+			element: this.selectedElement,
+			attribute
+		});
+	}
+
+	changeSelectedElementStyleAttribute({attribute, value}) {
+		if (this.selectedElement) {
+			let command = this.commandsFactory.changeStyleAttribute({
+				element: this.selectedElement,
+				attribute,
+				value
+			});
+			this.broker.createCommand(command).executeNextCommand();
+		}
+	}
+
+	onElementStyleAttributeChange(callback) {
+		this.events.on('GUID.dom.style.change', callback);
 	}
 
 	changeElementAttribute({element, attribute, value}) {
