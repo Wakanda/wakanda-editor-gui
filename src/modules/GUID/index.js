@@ -9,7 +9,7 @@ var Module = {
 			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
 			var AngularPanel = require("./Pannels/AngularPanel");
-			var Styling = require("./Pannels/Styling");
+			var Styling = require("./Pannels/Styling/");
 
 			let path = IDE.qParams.path;
 			// console.log(IDE.qParams.path);
