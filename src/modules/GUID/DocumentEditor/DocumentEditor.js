@@ -216,15 +216,6 @@ class DocumentEditor {
 		}
 	}
 
-	changeSelectedElementColor({color}) {
-		let command = this.commandsFactory.changeColor({
-			element: this.selectedElement,
-			color
-		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
-	}
-
 	changeElementAttribute({element, attribute, value}) {
 		let command = this.commandsFactory.changeAttribute({
 			element,

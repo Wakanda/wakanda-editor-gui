@@ -200,33 +200,6 @@ class CommandFactory {
 		return new AtomicCommand({execute, undo});
 	}
 
-	changeColor({element, color}) {
-		let oldValue = element.style.color;
-		let events = this.events;
-		let _this = this;
-
-		let execute = function() {
-			element.style.color = color;
-			_this.stylesheetManager.addRule({
-				selector: '#' + element.id,
-				rule: 'color: ' + color + ';'
-			});
-			events.emit('GUID.dom.color.change', {
-				element, oldValue, color
-			});
-		};
-
-		let undo = function() {
-			element.style.color = oldValue;
-			_this.stylesheetManager.removeLastRule();
-			events.emit('GUID.dom.color.change', {
-				element, oldValue: color, color: oldValue
-			});
-		};
-
-		return new AtomicCommand({execute, undo});
-	}
-
 	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;
