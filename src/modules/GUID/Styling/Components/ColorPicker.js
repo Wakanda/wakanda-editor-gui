@@ -20,7 +20,9 @@ class ColorPicker {
   }
 
   onColorChange(callback) {
-    this.htmlElement.addEventListener('change', callback);
+    this.htmlElement.addEventListener('change', () => {
+      callback(this.colorValueHexFormat);
+    });
   }
 
   _rgbStringToRgbObj(rgbString) {
@@ -42,9 +44,11 @@ class ColorPicker {
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
 
       if (selectedElement) {
-        if (selectedElement.style.color) {
-          console.log('color picked', selectedElement.style.color);
-          let {r, g, b} = this._rgbStringToRgbObj(selectedElement.style.color);
+        let styleManager = this.documentEditor.getElementStyleManager(selectedElement);
+        let color = styleManager.getAttributeValue('color');
+        if (color) {
+          console.log('color picked', color);
+          let {r, g, b} = this._rgbStringToRgbObj(color);
           this.htmlElement.color.fromRGB(r, g, b);
         }
         else {

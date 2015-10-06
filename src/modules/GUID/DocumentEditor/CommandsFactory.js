@@ -173,6 +173,33 @@ class CommandFactory {
 		});
 	}
 
+	changeStyleAttribute({elementStyleManager, attribute, value}) {
+		let oldValue = elementStyleManager.getAttributeValue(attribute);
+		let events = this.events;
+
+		let execute = () => {
+			elementStyleManager.changeStyleAttribute({
+				attributeName: attribute,
+				value
+			})
+			events.emit('GUID.dom.style.change', {
+				elementStyleManager, attribute, oldValue, value
+			});
+		};
+
+		let undo = () => {
+			elementStyleManager.changeStyleAttribute({
+				attributeName: attribute,
+				value: oldValue
+			});
+			events.emit('GUID.dom.style.change', {
+				elementStyleManager, attribute, oldValue: value, value: oldValue
+			});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
 	changeColor({element, color}) {
 		let oldValue = element.style.color;
 		let events = this.events;

@@ -2,6 +2,7 @@ import ColorPicker from '../Styling/Components/ColorPicker';
 import HtmlAttributeInput from '../Styling/Components/HtmlAttributeInput';
 
 class Styling {
+
   constructor({
     containerId, documentEditor
   }){
@@ -30,9 +31,10 @@ class Styling {
       placeholder: 'Text color'
     });
     this.colorPicker.appendToElement(this.container);
-    this.colorPicker.onColorChange(() => {
-      _this.documentEditor.changeSelectedElementColor({
-        color: '#' + _this.colorPicker.colorValueHexFormat
+    this.colorPicker.onColorChange((colorHexFormat) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'color',
+        value: '#' + colorHexFormat
       });
     });
 

@@ -4,6 +4,7 @@ import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import {StyleSheetManager} from '../Styling';
 import ScriptManager from './ScriptManager';
+import StyleManager from '../Styling/StyleManager';
 
 //TODO !important loaded ///./../.
 
@@ -42,6 +43,8 @@ class DocumentEditor {
 				return iframeDoc;
 			});
 
+			//Should be const, but ES6 does not allow it
+	    this.STYLE_MANAGER_KEY = '_styleManager';
 	}
 
 	loadIframe({path}) {
@@ -189,6 +192,28 @@ class DocumentEditor {
 	}
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack)
+	}
+
+	getElementStyleManager(element) {
+		if (!element[this.STYLE_MANAGER_KEY]) {
+			element[this.STYLE_MANAGER_KEY] = new StyleManager({
+				element,
+				documentEditor: this
+			});
+		}
+		return element[this.STYLE_MANAGER_KEY];
+	}
+
+	changeSelectedElementStyleAttribute({attribute, value}) {
+		if (this.selectedElement) {
+			let styleManager = this.getElementStyleManager(this.selectedElement);
+			let command = this.commandsFactory.changeStyleAttribute({
+				elementStyleManager: styleManager,
+				attribute,
+				value
+			});
+			this.broker.createCommand(command).executeNextCommand();
+		}
 	}
 
 	changeSelectedElementColor({color}) {
