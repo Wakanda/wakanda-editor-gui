@@ -1,0 +1,15 @@
+.page-toolbar-item-script-enabled  {
+	background-image: url("./images/script.png");
+}
+
+.page-toolbar-item-script {
+	background-image: url("./images/script.png");
+}
+
+.page-toolbar-item-preview-enabled  {
+	background-image: url("./images/preview.png");
+}
+
+.page-toolbar-item-preview {
+	background-image: url("./images/preview.png");
+}
