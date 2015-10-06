@@ -103,7 +103,8 @@ class DocumentEditor {
 		this.commandsFactory = new commandsFactory({
 			events: this.events,
 			linkImport: this.linkImport,
-			scriptManager: this.scriptManager
+			scriptManager: this.scriptManager,
+			stylesheetManager: this.stylesheetManager
 		});
 	}
 
@@ -193,8 +194,7 @@ class DocumentEditor {
 	changeSelectedElementColor({color}) {
 		let command = this.commandsFactory.changeColor({
 			element: this.selectedElement,
-			color,
-			stylesheetManager: this.stylesheetManager
+			color
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();

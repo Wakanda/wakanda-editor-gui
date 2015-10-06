@@ -84,10 +84,11 @@ class AtomicCommand extends Command {
 }
 
 class CommandFactory {
-	constructor({events, linkImport, scriptManager}) {
+	constructor({events, linkImport, scriptManager, stylesheetManager}) {
 		this.events = events;
 		this.linkImport = linkImport;
 		this.scriptManager = scriptManager;
+		this.stylesheetManager = stylesheetManager;
 	}
 
 	prependElement({element, elementRef}) {
@@ -172,13 +173,14 @@ class CommandFactory {
 		});
 	}
 
-	changeColor({element, color, stylesheetManager}) {
+	changeColor({element, color}) {
 		let oldValue = element.style.color;
 		let events = this.events;
+		let _this = this;
 
 		let execute = function() {
 			element.style.color = color;
-			stylesheetManager.addRule({
+			_this.stylesheetManager.addRule({
 				selector: '#' + element.id,
 				rule: 'color: ' + color + ';'
 			});
@@ -189,7 +191,7 @@ class CommandFactory {
 
 		let undo = function() {
 			element.style.color = oldValue;
-			stylesheetManager.removeLastRule();
+			_this.stylesheetManager.removeLastRule();
 			events.emit('GUID.dom.color.change', {
 				element, oldValue: color, color: oldValue
 			});
