@@ -1,5 +1,6 @@
 import ColorPicker from '../Styling/Components/ColorPicker';
 import HtmlAttributeInput from '../Styling/Components/HtmlAttributeInput';
+import FontSizePicker from '../Styling/Components/FontSizePicker';
 
 class Styling {
 
@@ -38,12 +39,23 @@ class Styling {
       });
     });
 
-    let saveButton = document.createElement('button');
-    saveButton.textContent = 'Save style';
-    saveButton.addEventListener('click', () => {
-      console.log("CSS dump\n", _this.stylesheetManager.toString());
+    this.fontSizePicker = new FontSizePicker({
+      documentEditor: this.documentEditor
     });
-    this.container.appendChild(saveButton);
+    this.fontSizePicker.appendToElement(this.container);
+    this.fontSizePicker.onValueChange((size) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'font-size',
+        value: size
+      });
+    });
+
+    // let saveButton = document.createElement('button');
+    // saveButton.textContent = 'Save style';
+    // saveButton.addEventListener('click', () => {
+    //   console.log("CSS dump\n", _this.stylesheetManager.toString());
+    // });
+    // this.container.appendChild(saveButton);
   }
 }
 

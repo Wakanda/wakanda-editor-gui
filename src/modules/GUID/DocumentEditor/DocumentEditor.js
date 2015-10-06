@@ -216,6 +216,10 @@ class DocumentEditor {
 		}
 	}
 
+	onElementStyleAttributeChange(callback) {
+		this.events.on('GUID.dom.style.change', callback);
+	}
+
 	changeElementAttribute({element, attribute, value}) {
 		let command = this.commandsFactory.changeAttribute({
 			element,
