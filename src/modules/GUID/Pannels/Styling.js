@@ -1,5 +1,6 @@
 import ColorPicker from '../Styling/Components/ColorPicker';
 import HtmlAttributeInput from '../Styling/Components/HtmlAttributeInput';
+import FontSizePicker from '../Styling/Components/FontSizePicker';
 
 class Styling {
 
