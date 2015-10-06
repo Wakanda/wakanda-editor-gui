@@ -39,12 +39,23 @@ class Styling {
       });
     });
 
-    let saveButton = document.createElement('button');
-    saveButton.textContent = 'Save style';
+    this.fontSizePicker = new FontSizePicker({
+      documentEditor: this.documentEditor
+    });
+    this.fontSizePicker.appendToElement(this.container);
+    this.fontSizePicker.onValueChange((size) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'font-size',
+        value: size
+      });
+    });
+
+    // let saveButton = document.createElement('button');
+    // saveButton.textContent = 'Save style';
     // saveButton.addEventListener('click', () => {
     //   console.log("CSS dump\n", _this.stylesheetManager.toString());
     // });
-    this.container.appendChild(saveButton);
+    // this.container.appendChild(saveButton);
   }
 }
 

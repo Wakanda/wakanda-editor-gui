@@ -50,8 +50,7 @@ export default class FontSizePicker {
 
     this.documentEditor.onElementSelected( ({element}) => {
       if (element) {
-        let styleManager = this.documentEditor.getElementStyleManager(element);
-        let size = styleManager.getAttributeValue('font-size');
+        let size = this.documentEditor.getSelectedElementStyleAttribute({attribute: 'font-size'});
         if (size) {
           this.htmlElement.value = size;
         }

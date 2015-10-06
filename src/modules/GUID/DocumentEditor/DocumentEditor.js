@@ -192,9 +192,6 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
-	// getElementStyleManager(element) {
-	// 	return this.styleManager.getElementStyleManager({element});
-	// }
 	getSelectedElementStyleAttribute({attribute}){
 		return this.styleManager.getInlineStyleAttribute({
 			element: this.selectedElement,
