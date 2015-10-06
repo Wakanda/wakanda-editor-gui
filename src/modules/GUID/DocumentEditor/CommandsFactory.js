@@ -68,14 +68,14 @@ class AtomicCommand extends Command {
 		}
 	}
 
-	// NOTE: this method retruns a new command that contains 'this' and the given command and do not change 'this'
+	// NOTE: this method retruns a new command that contains 'this' and the command (this) is not changed
 	appendCommand({command}){
 		return new Command({
 			commands : [this, command]
 		});
 	}
 
-	// NOTE: this method retruns a new command that contains 'this' and the given commands and do not change 'this'
+	// NOTE: this method retruns a new command that contains 'this' and the commands (this) is not changed
 	appendCommands({commands}){
 		return new Command({
 			commands : [this, ...commands]
