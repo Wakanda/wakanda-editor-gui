@@ -1,8 +1,6 @@
-export default class StyleManager {
-
-  constructor({element, documentEditor}) {
+class ElementStyleManager{
+  constructor({element}) {
     this.element = element;
-    this.documentEditor = documentEditor;
   }
 
   getAttributeValue(attributeName) {
@@ -16,4 +14,8 @@ export default class StyleManager {
       this.element.style[attributeName] = value;
     }
   }
+
 }
+
+
+export default ElementStyleManager;

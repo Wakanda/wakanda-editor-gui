@@ -2,9 +2,8 @@ import LinkImport from './LinkImport';
 import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
-import {StyleSheetManager} from '../Styling';
 import ScriptManager from './ScriptManager';
-import StyleManager from '../Styling/StyleManager';
+import StyleManager from './Styling/StyleManager';
 
 //TODO !important loaded ///./../.
 
@@ -27,7 +26,9 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
-				this.stylesheetManager = new StyleSheetManager(this.document.styleSheets[0]);
+				this.styleManager = new StyleManager({
+					document: iframeDoc
+				});
 
 				this.linkImport = new LinkImport({
 					document: iframeDoc
@@ -42,9 +43,6 @@ class DocumentEditor {
 
 				return iframeDoc;
 			});
-
-			//Should be const, but ES6 does not allow it
-	    this.STYLE_MANAGER_KEY = '_styleManager';
 	}
 
 	loadIframe({path}) {
@@ -107,7 +105,7 @@ class DocumentEditor {
 			events: this.events,
 			linkImport: this.linkImport,
 			scriptManager: this.scriptManager,
-			stylesheetManager: this.stylesheetManager
+			styleManager: this.styleManager
 		});
 	}
 
@@ -194,21 +192,20 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.remove', callBack)
 	}
 
-	getElementStyleManager(element) {
-		if (!element[this.STYLE_MANAGER_KEY]) {
-			element[this.STYLE_MANAGER_KEY] = new StyleManager({
-				element,
-				documentEditor: this
-			});
-		}
-		return element[this.STYLE_MANAGER_KEY];
+	// getElementStyleManager(element) {
+	// 	return this.styleManager.getElementStyleManager({element});
+	// }
+	getSelectedElementStyleAttribute({attribute}){
+		return this.styleManager.getInlineStyleAttribute({
+			element: this.selectedElement,
+			attribute
+		});
 	}
 
 	changeSelectedElementStyleAttribute({attribute, value}) {
 		if (this.selectedElement) {
-			let styleManager = this.getElementStyleManager(this.selectedElement);
 			let command = this.commandsFactory.changeStyleAttribute({
-				elementStyleManager: styleManager,
+				element: this.selectedElement,
 				attribute,
 				value
 			});

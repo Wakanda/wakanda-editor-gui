@@ -84,11 +84,11 @@ class AtomicCommand extends Command {
 }
 
 class CommandFactory {
-	constructor({events, linkImport, scriptManager, stylesheetManager}) {
+	constructor({events, linkImport, scriptManager, styleManager}) {
 		this.events = events;
 		this.linkImport = linkImport;
 		this.scriptManager = scriptManager;
-		this.stylesheetManager = stylesheetManager;
+		this.styleManager = styleManager;
 	}
 
 	prependElement({element, elementRef}) {
@@ -173,27 +173,29 @@ class CommandFactory {
 		});
 	}
 
-	changeStyleAttribute({elementStyleManager, attribute, value}) {
-		let oldValue = elementStyleManager.getAttributeValue(attribute);
+	changeStyleAttribute({element, attribute, value}) {
+		let oldValue = this.styleManager.getInlineStyleAttribute({element, attribute});
 		let events = this.events;
 
 		let execute = () => {
-			elementStyleManager.changeStyleAttribute({
+			this.styleManager.changeInlineStyleAttribute({
+				element,
 				attributeName: attribute,
 				value
 			})
 			events.emit('GUID.dom.style.change', {
-				elementStyleManager, attribute, oldValue, value
+				element, attribute, oldValue, value
 			});
 		};
 
 		let undo = () => {
-			elementStyleManager.changeStyleAttribute({
+			this.styleManager.changeInlineStyleAttribute({
+				element,
 				attributeName: attribute,
 				value: oldValue
 			});
 			events.emit('GUID.dom.style.change', {
-				elementStyleManager, attribute, oldValue: value, value: oldValue
+				element, attribute, oldValue: value, value: oldValue
 			});
 		};
 

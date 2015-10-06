@@ -11,7 +11,7 @@ class Styling {
     document.getElementById(containerId).appendChild(this.container);
 
     this.initStyleList();
-    this.stylesheetManager = this.documentEditor.stylesheetManager;
+    // this.stylesheetManager = this.documentEditor.stylesheetManager;
   }
 
   initStyleList() {
@@ -40,9 +40,9 @@ class Styling {
 
     let saveButton = document.createElement('button');
     saveButton.textContent = 'Save style';
-    saveButton.addEventListener('click', () => {
-      console.log("CSS dump\n", _this.stylesheetManager.toString());
-    });
+    // saveButton.addEventListener('click', () => {
+    //   console.log("CSS dump\n", _this.stylesheetManager.toString());
+    // });
     this.container.appendChild(saveButton);
   }
 }

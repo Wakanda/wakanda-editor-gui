@@ -44,8 +44,7 @@ class ColorPicker {
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
 
       if (selectedElement) {
-        let styleManager = this.documentEditor.getElementStyleManager(selectedElement);
-        let color = styleManager.getAttributeValue('color');
+        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:'color'});
         if (color) {
           console.log('color picked', color);
           let {r, g, b} = this._rgbStringToRgbObj(color);
