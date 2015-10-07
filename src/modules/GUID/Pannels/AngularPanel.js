@@ -342,7 +342,7 @@ angular.module('${applicationName}', []); // no dependecies
 			});
 
 			let _this = this;
-			this.applicationNameLabel.onclick = () => {
+			this.applicationNameLabel.ondblclick = () => {
 				helpers.editScript(_this.applicationToScriptMap.get(_this.applicationNameInput.value));
 			};
 		}
@@ -373,7 +373,7 @@ angular.module('${applicationName}', []); // no dependecies
 			});
 
 			let _this = this;
-			label.onclick = () => {
+			label.ondblclick = () => {
 				helpers.editScript(_this.applicationControllerToScriptMap.get(`${_this.applicationNameInput.value}.${input.value}`));
 			};
 		});
