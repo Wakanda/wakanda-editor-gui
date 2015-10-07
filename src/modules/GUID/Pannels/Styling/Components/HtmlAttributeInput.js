@@ -13,6 +13,13 @@ class HtmlAttributeInput {
     element.appendChild(this.htmlElement);
   }
 
+  onValueChange(callBack) {
+    let _this =  this;
+    this.htmlElement.addEventListener('change', function () {
+      callBack(_this.htmlElement.value);
+    });
+  }
+
   _subscribeToDocumentEditorEvents() {
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
       if (selectedElement) {

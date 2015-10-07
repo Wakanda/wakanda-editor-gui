@@ -25,6 +25,12 @@ class Styling {
       placeholder: 'ID'
     });
     idInput.appendToElement(this.container);
+    idInput.onValueChange((value) => {
+      this.documentEditor.changeSelectedElementAttribute({
+        attribute: 'id',
+        value: value
+      });
+    });
 
     this.colorPicker = new ColorPicker({
       documentEditor: this.documentEditor,
