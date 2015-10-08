@@ -35,7 +35,7 @@ class StyleSheetManager {
         let ruleObj = rules[rule];
         for (var declaration in ruleObj) {
           if (ruleObj.hasOwnProperty(declaration)) {
-            string += "\t" + declaration + ": " + ruleObj[declaration] + ";\n"
+            string += "\t" + declaration + ": " + ruleObj[declaration] + ";\n";
           }
         }
         string += "}\n\n";

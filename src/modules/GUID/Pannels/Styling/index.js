@@ -1,6 +1,7 @@
 import ColorPicker from './Components/ColorPicker';
 import HtmlAttributeInput from './Components/HtmlAttributeInput';
 import FontSizePicker from './Components/FontSizePicker';
+import FlexgridManager from './Components/FlexgridManager';
 
 class Styling {
 
@@ -54,6 +55,10 @@ class Styling {
         attribute: 'font-size',
         value: size
       });
+    });
+
+    let flexgridManager = new FlexgridManager({
+      documentEditor: this.documentEditor
     });
 
     // let saveButton = document.createElement('button');
