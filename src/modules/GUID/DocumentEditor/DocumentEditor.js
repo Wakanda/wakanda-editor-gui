@@ -26,7 +26,7 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
-				
+
 				this.styleManager = new StyleManager({
 					document: iframeDoc
 				});
@@ -85,6 +85,12 @@ class DocumentEditor {
 			callBack(this);
 		});
 		return this;
+	}
+
+	onDomEncapsulated(callback) {
+		this.events.on('GUID.dom.encapsulated', () => {
+			callback(this.document);
+		});
 	}
 
 	get document() {
