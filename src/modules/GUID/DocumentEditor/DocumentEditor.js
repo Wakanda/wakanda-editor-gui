@@ -26,7 +26,7 @@ class DocumentEditor {
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
-				
+
 				this.styleManager = new StyleManager({
 					document: iframeDoc
 				});
@@ -39,7 +39,7 @@ class DocumentEditor {
 					document: iframeDoc
 				});
 
-				this.selectedElement = iframeDoc.body || null;
+				this.selectedElement = /*iframeDoc.body || */ null;
 				this.initEvents();
 				this.initCommands();
 
