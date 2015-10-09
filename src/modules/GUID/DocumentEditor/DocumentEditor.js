@@ -20,7 +20,8 @@ class DocumentEditor {
 		this.iframe = document.createElement('iframe');
 		this.iframe.setAttribute('id', 'editor-playground');
 		this.iframe.classList.add('document-editor-iframe');
-		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
+		this.cloudEditorIDE = document.querySelector('.cloud-ide-editor');
+		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
 		this.documentPromise = this.loadIframe({path})
@@ -60,7 +61,7 @@ class DocumentEditor {
 						iframeDoc = this.window.document || window.DOCUMENT;
 					}
 					res(iframeDoc);
-				}
+				};
 				this.iframe.src = path;
 			}
 		});
@@ -77,7 +78,17 @@ class DocumentEditor {
 	}
 
 	changeDocumentWidth(value) {
-		this.iframe.style.width = value;
+
+		//In order not to have a div wider than the screen size.
+		//Deleting the width will make it take all the remaining space by default
+		value = value === "100%" ? null : value;
+
+		this.cloudEditorIDE.style.width = value;
+		this.events.emit('GUID.canvas.resize');
+	}
+
+	onResizeDocumentContainer(callback) {
+		this.events.on('GUID.canvas.resize', callback);
 	}
 
 	onElementDeselected(callback) {
@@ -201,7 +212,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.append', callBack);
 	}
 	onRemoveElement(callBack) {
-		this.events.on('GUID.dom.element.remove', callBack)
+		this.events.on('GUID.dom.element.remove', callBack);
 	}
 
 	getSelectedElementStyleAttribute({attribute}){

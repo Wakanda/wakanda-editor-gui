@@ -238,7 +238,11 @@ class UserInterface {
 		});
 		this.documentEditor.onElementStyleAttributeChange(() => {
 			this.updateSelectedElementBorder();
-		})
+		});
+		this.documentEditor.onResizeDocumentContainer(() => {
+			this.resetCanvasDimentions();
+			this.updateSelectedElementBorder();
+		});
 	}
 }
 

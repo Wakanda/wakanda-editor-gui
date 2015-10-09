@@ -1,3 +1,7 @@
+.cloud-ide-editor {
+  margin: auto;
+}
+
 .document-editor-iframe {
   position: absolute;
   width: 100%;
@@ -7,7 +11,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  margin: auto;
 }
 #user-interface-canvas {
   position: absolute;

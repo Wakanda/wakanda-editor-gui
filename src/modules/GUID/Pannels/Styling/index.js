@@ -67,7 +67,6 @@ class Styling {
     });
     responsiveSelector.appendToElement(this.container);
     responsiveSelector.onValueChange((value) => {
-      console.log('responsive canvas value change', value);
       this.documentEditor.changeDocumentWidth(value);
     });
 
