@@ -62,7 +62,6 @@ class FlexgridManager {
       }
     }
 
-    console.log('emitting event GUID.dom.encapsulated');
     this.documentEditor.events.emit('GUID.dom.encapsulated');
     this.bodyContainer = container;
   }

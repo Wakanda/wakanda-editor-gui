@@ -2,6 +2,7 @@ import ColorPicker from './Components/ColorPicker';
 import HtmlAttributeInput from './Components/HtmlAttributeInput';
 import FontSizePicker from './Components/FontSizePicker';
 import FlexgridManager from './Components/FlexgridManager';
+import ResponsiveSelector from './Components/ResponsiveSelector';
 
 class Styling {
 
@@ -59,6 +60,15 @@ class Styling {
 
     let flexgridManager = new FlexgridManager({
       documentEditor: this.documentEditor
+    });
+
+    let responsiveSelector = new ResponsiveSelector({
+      documentEditor: this.documentEditor
+    });
+    responsiveSelector.appendToElement(this.container);
+    responsiveSelector.onValueChange((value) => {
+      console.log('responsive canvas value change', value);
+      this.documentEditor.changeDocumentWidth(value);
     });
 
     // let saveButton = document.createElement('button');

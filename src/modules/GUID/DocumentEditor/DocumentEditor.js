@@ -76,6 +76,10 @@ class DocumentEditor {
 		}
 	}
 
+	changeDocumentWidth(value) {
+		this.iframe.style.width = value;
+	}
+
 	onElementDeselected(callback) {
 		this.events.on('GUID.dom.deselect', callback);
 	}
