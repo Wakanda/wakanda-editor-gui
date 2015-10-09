@@ -4,6 +4,14 @@ import {HttpClient} from "../../lib/aurelia-http-client";
 
 require("./style.css");
 
+var helpers = {
+	domElementToString({element}){
+		let span = document.createElement('span');
+		span.appendChild(element);
+		return span.innerHTML;
+	}
+};
+
 export default {
 
 	activate() {
@@ -54,9 +62,11 @@ export default {
 		let cloneHtml = html.cloneNode(true);
 
 		let head = cloneHtml.querySelector('head');
-		head.appendChild(this.angularScriptTag);
+		let firstScript = head.querySelector('script');
+		head.insertBefore(this.angularScriptTag, firstScript);
 
-		let fileContent = '<html>' + cloneHtml.innerHTML + '</html>';
+
+		let fileContent = helpers.domElementToString({element:cloneHtml});
 
 		let client = new HttpClient().configure(x => {
 	    x.withHeader('Content-Type', 'application/json');
