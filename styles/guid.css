@@ -8,7 +8,7 @@
   left: 0;
   right: 0;
 }
-#user-interface-canvas {
+.user-interface-canvas {
   position: absolute;
   width: 100%;
   height: 100%;

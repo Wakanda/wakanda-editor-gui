@@ -18,9 +18,9 @@ class DocumentEditor {
 
 		this.broker = broker;
 		this.iframe = document.createElement('iframe');
-		this.iframe.setAttribute('id', 'editor-playground');
 		this.iframe.classList.add('document-editor-iframe');
-		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
+		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
+		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
 		this.documentPromise = this.loadIframe({path})

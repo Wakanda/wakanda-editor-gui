@@ -1,7 +1,7 @@
 import MultiEvent from '../../../lib/multi-event-master/src/multi-event-es6.js';
 
 class UserInterface {
-	constructor({documentEditor, cloudEditorContainer = document.querySelector('.cloud-ide-editor')}) {
+	constructor({documentEditor}) {
 		// let _EventEmitter = require('../../../lib/micro-events.js');
 		// this.events = new _EventEmitter();
 		this.events = new MultiEvent();
@@ -13,8 +13,8 @@ class UserInterface {
 		this.HIGHLIGHT = null;
 		this._highLightedElement = null;
 
-		this.canvas.setAttribute('id', 'user-interface-canvas');
-		this.cloudEditorIDE = cloudEditorContainer;
+		this.canvas.classList.add('user-interface-canvas');
+		this.cloudEditorIDE = documentEditor.cloudEditorIDE;
 		this.cloudEditorIDE.appendChild(this.canvas);
 
 		let fabric = require('../../../lib/fabric.js');
