@@ -54,7 +54,7 @@ class UserInterface {
 	resetCanvasDimentions() {
 		let {
 			width, height
-		} = this.cloudEditorIDE.getBoundingClientRect();
+		} = this.documentEditor.dimensions;
 		this.fabric_canvas.setDimensions({
 			width, height
 		});
@@ -126,50 +126,52 @@ class UserInterface {
 	}
 
 	updateSelectedElementBorder() {
-
 		this.removeSelectedElementBorder();
 
-		let style = this.documentEditor.getSelectedElementComputedStyle();
+		if(this.documentEditor.selectedElement){
+			let style = this.documentEditor.getSelectedElementComputedStyle();
 
-		let lineColor,
-			selectable = true;
-		switch (style.position) {
-			case 'absolute':
-				lineColor = 'green';
-				break;
-			case 'relative':
-				lineColor = 'blue';
-				break;
-			case 'fixed':
-				lineColor = 'orange';
-				//selectable = false;
-				break;
-			case 'static':
-				lineColor = 'brown';
-				selectable = false;
-				break;
-			default:
-				lineColor = 'yellow';
+			let lineColor,
+				selectable = true;
+			switch (style.position) {
+				case 'absolute':
+					lineColor = 'green';
+					break;
+				case 'relative':
+					lineColor = 'blue';
+					break;
+				case 'fixed':
+					lineColor = 'orange';
+					//selectable = false;
+					break;
+				case 'static':
+					lineColor = 'brown';
+					selectable = false;
+					break;
+				default:
+					lineColor = 'yellow';
+			}
+
+			let boundingClientRect = this.documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
+
+			let {
+				left, top, width, height
+			} = boundingClientRect;
+
+			this.rectSelected = new fabric.Rect({
+				left: left,
+				top: top,
+				fill: '',
+				stroke: lineColor,
+				strokeWidth: 1,
+				width: width,
+				height: height,
+				selectable: selectable
+			});
+
+			this.fabric_canvas.add(this.rectSelected);
+			this.fabric_canvas.moveTo(this.rectSelected, 0);
 		}
-		let boundingClientRect = this.documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
-
-		let {
-			left, top, width, height
-		} = boundingClientRect;
-
-		this.rectSelected = new fabric.Rect({
-			left: left,
-			top: top,
-			fill: '',
-			stroke: lineColor,
-			strokeWidth: 1,
-			width: width,
-			height: height,
-			selectable: selectable
-		});
-
-		this.fabric_canvas.add(this.rectSelected);
-		this.fabric_canvas.moveTo(this.rectSelected, 0);
 	}
 
 	removeSelectedElementBorder() {
@@ -187,6 +189,10 @@ class UserInterface {
 		});
 
 		this.documentEditor.onElementSelected(() => {
+			this.updateSelectedElementBorder();
+		});
+
+		this.documentEditor.onDocumentScroll(()=>{
 			this.updateSelectedElementBorder();
 		});
 
