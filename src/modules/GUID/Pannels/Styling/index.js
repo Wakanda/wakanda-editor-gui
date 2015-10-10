@@ -67,7 +67,7 @@ class Styling {
     });
     responsiveSelector.appendToElement(this.container);
     responsiveSelector.onValueChange((value) => {
-      this.documentEditor.changeDocumentWidth(value);
+      this.documentEditor.changeDocumentSize({width: value});
     });
 
     // let saveButton = document.createElement('button');
