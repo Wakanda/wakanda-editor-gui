@@ -40,7 +40,7 @@ class DocumentEditor {
 					document: iframeDoc
 				});
 
-				this.selectedElement = iframeDoc.body || null;
+				this.selectedElement = /*iframeDoc.body || */ null;
 				this.initEvents();
 				this.initCommands();
 
