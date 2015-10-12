@@ -1,3 +1,6 @@
+import AngularInfoExtractor from './AngularInfoExtractor';
+import AngularApplication from './AngularApplication';
+
 let helpers = {
 	editScript(script) {
 			let scriptEditorDiv = document.createElement('div');
@@ -57,83 +60,6 @@ let helpers = {
 		}
 };
 
-
-class AngularInfoExtractor {
-	constructor({ script }) {
-		this.script = script;
-	}
-
-	// NOTE: Experimental
-	extractInfos() {
-		return this.script
-			.codePromise
-			.then((code) => {
-				let allCode = `
-				${this.theMagicAngular}
-				(function(angular){
-					${code}
-					return infos;
-				})(magicAngular);
-			`;
-
-				let infos = eval(allCode);
-
-				return {
-					extractorInstance: this,
-					infos
-				};
-			});
-
-	}
-
-	get theMagicAngular() {
-		return `
-    var magicAngular = {};
-    var infos = {
-      applications: []
-    };
-
-    var createControllerFunction = function(application) {
-      return function(controllerName, controllerContent) {
-        application.controllers = application.controllers || [];
-        var controller = {
-          controllerName: controllerName,
-					controllerContent: controllerContent
-					  //injections ...
-        }
-        application.controllers.push(controller);
-        return application;
-      };
-    }
-
-    magicAngular.module = function(appName, dependencies) {
-      var newApp = {
-        applicationName: appName
-      };
-
-      var index = infos.applications.map(function(application) {
-        return application.applicationName;
-      }).indexOf(appName);
-
-      var application = infos.applications[index] || newApp;
-
-      if (index == -1) {
-        infos.applications.push(application);
-      }
-
-      var controllerFunction = createControllerFunction(application);
-      application.controller = controllerFunction;
-      if (dependencies) {
-        application.dependencies = dependencies;
-      }
-
-      return application;
-    };
-		`;
-	}
-
-}
-
 class AngularPanel {
 	constructor({ documentEditor, containerId }) {
 		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
@@ -171,9 +97,12 @@ class AngularPanel {
 			infos.forEach((info) => {
 				let applications = info.applications;
 				applications.forEach((application) => {
+					let angularApplication = new AngularApplication({application});
+					console.log(angularApplication);
+
 					let applicationName = application.applicationName;
 					allApplications.add(applicationName);
-					let controllers = application.controllers;
+					let controllers = application.controllers || [];
 					controllers.forEach((controller) => {
 						let controllerToAdd = {};
 
@@ -237,7 +166,6 @@ angular.module('${applicationName}', []); // no dependecies
 		});
 
 		this.finalSctiptsPromise.then(( /*{applicationsScripts, controllersScripts}*/ ) => {
-
 			this.SubscribeToDocumentEditorEvents();
 		});
 
@@ -258,18 +186,18 @@ angular.module('${applicationName}', []); // no dependecies
 
 		return Promise.all(extractorsPromise)
 			.then((extraIns) => {
-				return extraIns.map(({
-					extractorInstance, infos
-				}) => {
+
+				return extraIns.map(({ extractorInstance, infos }) => {
+
 					let script = extractorInstance.script;
 
 					// NOTE: remove scripts
 					script.removeFromDocument();
 
 					// console.log(script.htmlTag);
-					infos.applications.forEach((application) => {
+					(infos.applications || []).forEach((application) => {
 						// console.log('Application: ' + application.applicationName);
-						application.controllers.forEach((controller) => {
+						(application.controllers || []).forEach((controller) => {
 							// console.log('Controller: ' + controller.controllerName);
 						});
 					});
@@ -281,24 +209,16 @@ angular.module('${applicationName}', []); // no dependecies
 	}
 
 	SubscribeToDocumentEditorEvents() {
-		this.documentEditor.onElementSelected(({
-			element
-		}) => {
-			this.renderApplicationName({
-				element
-			});
-			this.renderControllers({
-				element
-			});
-			this.renderAttributes({
-				element
-			});
+		this.documentEditor.onElementSelected(({ element }) => {
+			this.renderApplicationName({ element });
+			this.renderControllers({ element });
+			this.renderAttributes({	element	});
 		});
 	}
 
-	renderAttributes({
-		element
-	}) {
+	renderAttributes({ element }) {
+
+
 		let isNg = function(att) {
 			let ngAtt = att.name.indexOf('ng-') === 0;
 			ngAtt = ngAtt && (att.name.toLowerCase() !== 'ng-app');
@@ -326,16 +246,16 @@ angular.module('${applicationName}', []); // no dependecies
 			});
 	}
 
-	renderApplicationName({
-			element
-		}) {
+	renderApplicationName({ element }) {
+
+
 			let attribute = 'ng-app';
 			this.applicationNameInput.value = '';
-			let {
-				parent, value
-			} = AngularPanel.findParrentWithAttribute({
-				element, attribute
-			})
+
+
+			let { parent, value	} = AngularPanel.findParrentWithAttribute({ element, attribute });
+
+
 			this.applicationNameInput.value = value;
 			this.bindChanges({
 				element, input: this.applicationNameInput, attribute
@@ -347,17 +267,17 @@ angular.module('${applicationName}', []); // no dependecies
 			};
 		}
 		// TODO:  generators
-	renderControllers({
-		element
-	}) {
+	renderControllers({ element }) {
+
+
 		let attribute = 'ng-controller';
 		this.angularControllers.innerHTML = '';
-		let controllers = AngularPanel.getParentsWithAttribute({
-			element, attribute
-		});
-		controllers.reverse().forEach(({
-			parent, value
-		}, index, array) => {
+		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
+
+
+		controllers.reverse().forEach(({ parent, value }, index, array) => {
+
+
 			let {
 				input, label, li
 			} = helpers.createInputWithLabel({
@@ -380,37 +300,41 @@ angular.module('${applicationName}', []); // no dependecies
 
 	}
 
-	static findParrentWithAttribute({
-		element, attribute
-	}) {
+	// TODO: usegen
+	static findParrentWithAttribute({ element, attribute }) {
+
+
 		let value,
-			tagName,
-			elementIterate = element;
-		do {
+				tagName,
+				elementIterate = element;
+
+		while (elementIterate && !value) {
+
 			value = elementIterate.getAttribute(attribute);
-			tagName = elementIterate.tagName.toLowerCase();
+
 			elementIterate = elementIterate.parentElement;
-		} while (tagName !== 'body' && !value);
+		};
+
 
 		return {
-			parent: elementIterate,
+			parent: value ? elementIterate : null,
 			value
 		}; //{element, value}
 	}
 
-	static getParentsWithAttribute({
-		element, attribute
-	}) {
+	static getParentsWithAttribute({ element, attribute }) {
+
+
 		let parents = [];
-		let {
-			parent, value
-		} = AngularPanel.findParrentWithAttribute({
-			element, attribute
-		});
-		while (value) {
-			parents.push({
-				parent, value
-			});
+
+
+		let { parent, value } = AngularPanel.findParrentWithAttribute({ element, attribute });
+
+
+		while (value && parent) {
+			parents.push({ parent, value });
+
+
 			let o = AngularPanel.findParrentWithAttribute({
 				element: parent,
 				attribute
@@ -421,9 +345,9 @@ angular.module('${applicationName}', []); // no dependecies
 		return parents;
 	}
 
-	bindChanges({
-		element, input, attribute
-	}) {
+
+	bindChanges({ element, input, attribute}) {
+
 		let _this = this;
 		input.addEventListener('change', () => {
 			console.log(this, arguments);
@@ -436,11 +360,11 @@ angular.module('${applicationName}', []); // no dependecies
 		});
 
 		// element attribute change
-		this.documentEditor.onElementAttributeChange(({
-			element: changedElement,
-			attribute,
-			value
-		}) => {
+		this.documentEditor.onElementAttributeChange(({ element: changedElement, attribute, value}) => {
+
+
+
+
 			if (element === changedElement && attribute.name === attribute) {
 				if (input) {
 					input.value = value;

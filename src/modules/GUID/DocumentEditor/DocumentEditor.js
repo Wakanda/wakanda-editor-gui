@@ -145,9 +145,12 @@ class DocumentEditor {
 		this.events.on('GUID.document.scroll', callBack);
 	}
 	get dimensions(){
-		let WINSize = this.document.body.getBoundingClientRect();
-		let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
-		let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+		// TODO: review this
+		// let WINSize = this.document.body.getBoundingClientRect();
+		// let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
+		// let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+
+		let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
 
 		return {height, width};
 	}
@@ -291,7 +294,7 @@ class DocumentEditor {
 			forceAddRem: false
 		});
 		this.broker.createCommand(command)
-			.executeNextCommand();
+				.executeNextCommand();
 	}
 	onElementClassRemove(callBack) {
 		this.events.on('GUID.dom.class.remove', callBack);
@@ -391,6 +394,12 @@ class DocumentEditor {
 	onElementTextChange(callBack){
 		this.events.on('GUID.dom.element.changeText', callBack);
 	}
+
+	getScripts(){
+		return this.scriptManager.scripts;
+	}
+
+
 
 }
 
