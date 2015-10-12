@@ -25,8 +25,7 @@ var Module = {
 			.onReady((documentEditor) => {
 
 				IDE.GUID.userInterface = new UserInterface({
-					documentEditor,
-					cloudEditorContainer: document.querySelector('.cloud-ide-editor')
+					documentEditor
 				});
 				IDE.GUID.documentEditorBroker = documentEditor.broker;
 

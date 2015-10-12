@@ -18,9 +18,9 @@ class DocumentEditor {
 
 		this.broker = broker;
 		this.iframe = document.createElement('iframe');
-		this.iframe.setAttribute('id', 'editor-playground');
 		this.iframe.classList.add('document-editor-iframe');
-		document.querySelector('.cloud-ide-editor').appendChild(this.iframe);
+		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
+		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
 		this.documentPromise = this.loadIframe({path})
@@ -112,21 +112,42 @@ class DocumentEditor {
 	}
 
 	initEvents() {
-		// GUID.window.resize
+		// GUID.document.resize
 		window.onresize = (event) => {
-			//TODO
-			let WINSize = this.document.body.getBoundingClientRect();
+			let {width, height} = this.dimensions
 
-			let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
-			let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
-
-			this.events.emit('GUID.window.resize', {
+			this.events.emit('GUID.document.resize', {
 				width, height, event
 			});
 		};
+		this.window.onscroll = () => {
+			this.events.emit('GUID.document.scroll', this.dimensions);
+		}
+	}
+	changeDocumentSize({height:h, width:w}){
+		if(w){
+			this.cloudEditorIDE.style.width = w;
+		}
+		if(h){
+			this.cloudEditorIDE.style.height = h;
+		}
+
+		let {height, width} = this.dimensions;
+
+		this.events.emit('GUID.document.resize', {width, height});
 	}
 	onDocumentSizeChange(callBack) {
-		this.events.on('GUID.window.resize', callBack);
+		this.events.on('GUID.document.resize', callBack);
+	}
+	onDocumentScroll(callBack) {
+		this.events.on('GUID.document.scroll', callBack);
+	}
+	get dimensions(){
+		let WINSize = this.document.body.getBoundingClientRect();
+		let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
+		let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+
+		return {height, width};
 	}
 
 	removeElement({element}) {
@@ -281,10 +302,20 @@ class DocumentEditor {
 		return this.document.elementFromPoint(x, y);
 	}
 	getSelectedElementComputedStyle() {
-		return this.window.getComputedStyle(this.selectedElement);
+		if(this.selectedElement){
+			return this.window.getComputedStyle(this.selectedElement);
+		}else{
+			console.warn('no selected element');
+			return null;
+		}
 	}
 	getselectedElementBoundingClientRect() {
-		return this.selectedElement.getBoundingClientRect();
+		if(this.selectedElement){
+			return this.selectedElement.getBoundingClientRect();
+		}else{
+			console.warn('no selected element');
+			return null;
+		}
 	}
 
 	selectElement({element}) {
