@@ -21,6 +21,14 @@ class Styling {
 
     let _this = this;
 
+    let responsiveSelector = new ResponsiveSelector({
+      documentEditor: this.documentEditor
+    });
+    responsiveSelector.appendToElement(this.container);
+    responsiveSelector.onValueChange(({width, minWidth}) => {
+      this.documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
+    });
+
     let idInput = new HtmlAttributeInput({
       documentEditor: this.documentEditor,
       attributeName: 'id',
@@ -30,6 +38,19 @@ class Styling {
     idInput.onValueChange((value) => {
       this.documentEditor.changeSelectedElementAttribute({
         attribute: 'id',
+        value: value
+      });
+    });
+
+    let classInput = new HtmlAttributeInput({
+      documentEditor: this.documentEditor,
+      attributeName: 'class',
+      placeholder: 'class'
+    });
+    classInput.appendToElement(this.container);
+    classInput.onValueChange((value) => {
+      this.documentEditor.changeSelectedElementAttribute({
+        attribute: 'class',
         value: value
       });
     });
@@ -60,14 +81,6 @@ class Styling {
 
     let flexboxgridManager = new FlexboxgridManager({
       documentEditor: this.documentEditor
-    });
-
-    let responsiveSelector = new ResponsiveSelector({
-      documentEditor: this.documentEditor
-    });
-    responsiveSelector.appendToElement(this.container);
-    responsiveSelector.onValueChange(({width, minWidth}) => {
-      this.documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
     });
 
     // let saveButton = document.createElement('button');

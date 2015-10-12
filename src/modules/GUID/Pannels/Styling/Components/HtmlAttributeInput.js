@@ -23,7 +23,7 @@ class HtmlAttributeInput {
   _subscribeToDocumentEditorEvents() {
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
       if (selectedElement) {
-        this.htmlElement.value = selectedElement.getAttribute(this.attributeName);;
+        this.htmlElement.value = selectedElement.getAttribute(this.attributeName);
       }
     });
 
