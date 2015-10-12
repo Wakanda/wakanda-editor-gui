@@ -17,12 +17,14 @@ class Script {
 		console.error('Not yet implemented');
 	}
 
+	// NOTE: do not use those methods directly
 	removeFromDocument(){
 		let parent = this.htmlTag.parentElement
 		parent.removeChild(this.htmlTag);
 		return this;
 	}
 
+	// NOTE: do not use those methods directly
 	addToDocument(){
 		this.parentElement.appendChild(this.htmlTag);
 		return this;
@@ -65,6 +67,10 @@ class SctriptFile extends Script {
 
 	toAbsoluteUrl({src}){
 		// TODO: !important rewrite this methode
+		if(src.indexOf('http') === 0){
+			console.log('not yet ' + src);
+			return null;
+		}
 		return `${this.document.location.origin}${src}`;
 	}
 
@@ -72,9 +78,12 @@ class SctriptFile extends Script {
 		this.src = this.toAbsoluteUrl({
 			src: this.htmlTag.getAttribute('src')
 		});
-		let promiseOfCode = this.http.get(this.src)
+		if (this.src){
+			return this.http.get(this.src)
 														.then( (res) => res.response );
-		return promiseOfCode;
+		}	else {
+			return Promise.resolve("");
+		}
 	}
 }
 
@@ -95,7 +104,7 @@ class ScriptManager{
 
 		scriptTag.setAttribute('type','text/javascript');
 		scriptTag.innerHTML = content;
-		this.document.body.appendChild(scriptTag);
+		this.document.head.appendChild(scriptTag);
 
 		return new ScriptEmbded({
 			document: this.document,

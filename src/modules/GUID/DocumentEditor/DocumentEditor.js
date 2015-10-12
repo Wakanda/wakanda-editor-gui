@@ -268,7 +268,7 @@ class DocumentEditor {
 			forceAddRem: false
 		});
 		this.broker.createCommand(command)
-			.executeNextCommand();
+				.executeNextCommand();
 	}
 	onElementClassRemove(callBack) {
 		this.events.on('GUID.dom.class.remove', callBack);
@@ -358,6 +358,12 @@ class DocumentEditor {
 	onElementTextChange(callBack){
 		this.events.on('GUID.dom.element.changeText', callBack);
 	}
+
+	getScripts(){
+		return this.scriptManager.scripts;
+	}
+
+
 
 }
 

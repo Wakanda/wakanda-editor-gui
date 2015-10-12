@@ -6,8 +6,6 @@ class UserInterface {
 		// this.events = new _EventEmitter();
 		this.events = new MultiEvent();
 
-		console.log('constructing user interface');
-
 		this.documentEditor = documentEditor;
 		this.canvas = document.createElement('canvas');
 		this.HIGHLIGHT = null;
