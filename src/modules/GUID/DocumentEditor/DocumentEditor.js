@@ -143,9 +143,12 @@ class DocumentEditor {
 		this.events.on('GUID.document.scroll', callBack);
 	}
 	get dimensions(){
-		let WINSize = this.document.body.getBoundingClientRect();
-		let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
-		let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+		// TODO: review this
+		// let WINSize = this.document.body.getBoundingClientRect();
+		// let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
+		// let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+
+		let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
 
 		return {height, width};
 	}
