@@ -126,6 +126,8 @@ class DocumentEditor {
 	}
 	changeDocumentSize({height:h, width:w}){
 		if(w){
+			//Fix for desktop width on responsiveSelector
+			w = w === "100%" ? null : w;
 			this.cloudEditorIDE.style.width = w;
 		}
 		if(h){

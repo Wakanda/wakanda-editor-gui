@@ -1,7 +1,7 @@
 import ColorPicker from './Components/ColorPicker';
 import HtmlAttributeInput from './Components/HtmlAttributeInput';
 import FontSizePicker from './Components/FontSizePicker';
-import FlexgridManager from './Components/FlexgridManager';
+import FlexboxgridManager from './Components/FlexboxgridManager';
 import ResponsiveSelector from './Components/ResponsiveSelector';
 
 class Styling {
@@ -58,7 +58,7 @@ class Styling {
       });
     });
 
-    let flexgridManager = new FlexgridManager({
+    let flexboxgridManager = new FlexboxgridManager({
       documentEditor: this.documentEditor
     });
 
