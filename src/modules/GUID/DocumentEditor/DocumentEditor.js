@@ -393,11 +393,13 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.changeText', callBack);
 	}
 
-	getScripts(){
+	get scripts(){
 		return this.scriptManager.scripts;
 	}
 
-
+	onScriptChange(callback){
+		this.events.on('GUID.script.*', callback);
+	}
 
 }
 

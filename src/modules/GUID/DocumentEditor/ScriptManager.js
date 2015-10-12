@@ -29,12 +29,21 @@ class Script {
 		this.parentElement.appendChild(this.htmlTag);
 		return this;
 	}
+
+	get text(){
+		if(this._text){
+			return this._text;
+		}else if(this.src){
+			return this.src.split('/').pop();
+		}
+	}
 }
 
 class ScriptEmbded extends Script {
 	constructor({htmlTag, document:d}){
 		super({ htmlTag, document:d });
 		this._codePromise = this.loadCode();
+		this._text = "Embded script";
 	}
 
 	loadCode(){
@@ -62,6 +71,11 @@ class SctriptFile extends Script {
 	constructor({htmlTag, document:d}){
 		super({ htmlTag, document:d });
 		this.http = new HttpClient();
+
+		this.src = this.toAbsoluteUrl({
+			src: this.htmlTag.getAttribute('src')
+		});
+
 		this._codePromise = this.loadCode();
 	}
 
@@ -75,12 +89,9 @@ class SctriptFile extends Script {
 	}
 
 	loadCode(){
-		this.src = this.toAbsoluteUrl({
-			src: this.htmlTag.getAttribute('src')
-		});
 		if (this.src){
 			return this.http.get(this.src)
-														.then( (res) => res.response );
+											.then( (res) => res.response );
 		}	else {
 			return Promise.resolve("");
 		}
@@ -128,7 +139,7 @@ class ScriptManager{
 					console.error('Something is going wrong around here');
 				}
 			})
-			.filter( (script) => script !== undefined );
+			.filter( (script) => script !== undefined && script.text );// TODO: review
 	}
 }
 

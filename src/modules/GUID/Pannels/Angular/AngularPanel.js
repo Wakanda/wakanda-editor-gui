@@ -1,7 +1,20 @@
 import AngularInfoExtractor from './AngularInfoExtractor';
-import AngularApplication from './AngularApplication';
 
 let helpers = {
+	createCheckBox({text}){
+		// http://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
+		let li = document.createElement('li');
+		var checkbox = document.createElement('input');
+		checkbox.type = "checkbox";
+		var label = document.createElement('label')
+		label.htmlFor = "id";
+		label.appendChild(document.createTextNode(text));
+
+		li.appendChild(checkbox);
+		li.appendChild(label);
+
+		return li;
+	},
 	editScript(script) {
 			let scriptEditorDiv = document.createElement('div');
 			let editor = ace.edit(scriptEditorDiv);
@@ -80,132 +93,34 @@ class AngularPanel {
 
 		this.panelContainer.appendChild(this.angularControllers);
 		this.panelContainer.appendChild(this.angularAttributes);
-		// extract informations from script
 
-		this.applicationToScriptMap = new Map();
-		this.applicationControllerToScriptMap = new Map();
+		this.SubscribeToDocumentEditorEvents();
 
-		this.finalSctiptsPromise = this.getInfosFromScripts().then((infos) => {
-			let allApplications = new Set(); // contain names of applications
-			let allControllers = [];
-			// {
-			// 	applicationName
-			// 	controllerName,
-			// 	controllerfunction
-			// }
-
-			infos.forEach((info) => {
-				let applications = info.applications;
-				applications.forEach((application) => {
-					let angularApplication = new AngularApplication({application});
-					console.log(angularApplication);
-
-					let applicationName = application.applicationName;
-					allApplications.add(applicationName);
-					let controllers = application.controllers || [];
-					controllers.forEach((controller) => {
-						let controllerToAdd = {};
-
-						controllerToAdd.applicationName = applicationName;
-						controllerToAdd.controllerName = controller.controllerName;
-						controllerToAdd.controllerFunction = controller.controllerContent;
-
-						allControllers.push(controllerToAdd);
-					});
-				});
-			});
-
-			//CreateApplications declaration
-			let applicationsScripts = Array.from(allApplications).map((applicationName) => {
-				let codeContent = `
-// ${applicationName} declaration
-angular.module('${applicationName}', []); // no dependecies
-				`;
-
-				let applicationScript = this.documentEditor.scriptManager.createEmbdedScript({
-					content: codeContent
-				});
-				this.applicationToScriptMap.set(applicationName, applicationScript);
-
-				return applicationScript;
-			});
-
-			let controllersScripts = allControllers.map((controller) => {
-				// {
-				// 	applicationName
-				// 	controllerName,
-				// 	controllerfunction
-				// }
-				let controllerContent;
-				if (typeof controller.controllerFunction === 'function') {
-					controllerContent = controller.controllerFunction.toString();
-				} else {
-					let theFunc = controller.controllerFunction.pop();
-					let dependecies = controller.controllerFunction;
-					let dependenciesStr = dependecies.map((dep) => "'" + dep + "'").join(', ');
-					controllerContent = `[${dependenciesStr}, ${theFunc.toString()}]`;
-				}
-				let codeContent = `
-(function(){
-	var app = angular.module('${controller.applicationName}');
-
-	app.controller('${controller.controllerName}', ${controllerContent});
-})();
-				`;
-
-				let controllerScript = this.documentEditor.scriptManager.createEmbdedScript({
-					content: codeContent
-				});
-				this.applicationControllerToScriptMap.set(`${controller.applicationName}.${controller.controllerName}`, controllerScript);
-				return controllerScript;
-			})
-
-			return {
-				applicationsScripts, controllersScripts
-			};
-		});
-
-		this.finalSctiptsPromise.then(( /*{applicationsScripts, controllersScripts}*/ ) => {
-			this.SubscribeToDocumentEditorEvents();
-		});
+		// show scripts
+		this.initAngularExtractor({scripts: this.documentEditor.scripts});
+		this.renderScripts();
 
 	}
 
+	renderScripts(){
+		let scripts = this.documentEditor.scripts;
+		let ul = document.createElement('ul');
+		this.panelContainer.appendChild(ul);
+		this.scripts.forEach((script)=>{
+			let liCheckBox = helpers.createCheckBox({text: script.text});
+			ul.appendChild(liCheckBox);
+		});
+		let buttonEstract = document.createElement('button');
+		buttonEstract.innerText = 'Reorganise Angular Scripts';
+		this.panelContainer.appendChild(buttonEstract);
+	}
 
-	getInfosFromScripts() {
-		let scriptManager = this.documentEditor.scriptManager;
-		let scripts = scriptManager.scripts;
-
-		let extractorsPromise = scripts
-			.map((script) => {
-				let magicExtractor = new AngularInfoExtractor({
-					script
-				});
-				return magicExtractor.extractInfos();
-			});
-
-		return Promise.all(extractorsPromise)
-			.then((extraIns) => {
-
-				return extraIns.map(({ extractorInstance, infos }) => {
-
-					let script = extractorInstance.script;
-
-					// NOTE: remove scripts
-					script.removeFromDocument();
-
-					// console.log(script.htmlTag);
-					(infos.applications || []).forEach((application) => {
-						// console.log('Application: ' + application.applicationName);
-						(application.controllers || []).forEach((controller) => {
-							// console.log('Controller: ' + controller.controllerName);
-						});
-					});
-
-					return infos;
-				});
-			});
-
+	initAngularExtractor({scripts}) {
+		this.scripts = scripts;
+		this.angularInfoExtractor = new AngularInfoExtractor({scripts: this.scripts});
+		this.angularInfoExtractor.applicationsPromise.then((applications)=>{
+			console.log(applications);
+		});
 	}
 
 	SubscribeToDocumentEditorEvents() {
@@ -214,15 +129,18 @@ angular.module('${applicationName}', []); // no dependecies
 			this.renderControllers({ element });
 			this.renderAttributes({	element	});
 		});
+		this.documentEditor.onScriptChange(({scripts})=>{
+			this.initAngularExtractor({scripts});
+			this.renderScripts();
+		});
 	}
 
 	renderAttributes({ element }) {
 
-
 		let isNg = function(att) {
-			let ngAtt = att.name.indexOf('ng-') === 0;
-			ngAtt = ngAtt && (att.name.toLowerCase() !== 'ng-app');
-			ngAtt = ngAtt && (att.name.toLowerCase() !== 'ng-controller');
+			let ngAtt = att.name.indexOf('ng-') === 0
+			 						&& (att.name.toLowerCase() !== 'ng-app')
+			 						&& (att.name.toLowerCase() !== 'ng-controller');
 			return ngAtt;
 		};
 		this.angularAttributes.innerHTML = '';
@@ -248,13 +166,10 @@ angular.module('${applicationName}', []); // no dependecies
 
 	renderApplicationName({ element }) {
 
-
 			let attribute = 'ng-app';
 			this.applicationNameInput.value = '';
 
-
 			let { parent, value	} = AngularPanel.findParrentWithAttribute({ element, attribute });
-
 
 			this.applicationNameInput.value = value;
 			this.bindChanges({
@@ -269,14 +184,11 @@ angular.module('${applicationName}', []); // no dependecies
 		// TODO:  generators
 	renderControllers({ element }) {
 
-
 		let attribute = 'ng-controller';
 		this.angularControllers.innerHTML = '';
 		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
 
-
 		controllers.reverse().forEach(({ parent, value }, index, array) => {
-
 
 			let {
 				input, label, li
@@ -361,10 +273,6 @@ angular.module('${applicationName}', []); // no dependecies
 
 		// element attribute change
 		this.documentEditor.onElementAttributeChange(({ element: changedElement, attribute, value}) => {
-
-
-
-
 			if (element === changedElement && attribute.name === attribute) {
 				if (input) {
 					input.value = value;

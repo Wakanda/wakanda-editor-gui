@@ -1,7 +1,10 @@
+import recipeTypes from './recipeTypes';
+
 class AngularRecipe{
-  constructor({recipeContent, recipeType, recipeName}){
+  constructor({recipeContent, recipeType, recipeName, script}){
     this._type = recipeType;
     this.name = recipeName;
+    this._script = script;
 
     let {dependencies, functionObject} = AngularRecipe.getDependenciesAndFunction({recipeContent});
 
@@ -9,10 +12,15 @@ class AngularRecipe{
     this.content = functionObject;
   }
 
+  get script(){
+    return this._script;
+  }
+
   getRecipesFromPvovider(){
     if(this.type == 'config'){
       // NOTE: temporary
       let magicProvide = {
+        // TODO: not only constant
         constant: function(constantName, constantValue){
           this.revipes = this.revipes || [];
           this.revipes.push({
@@ -27,7 +35,7 @@ class AngularRecipe{
       return magicProvide.revipes;
 
     }else{
-      console.warn('this is not aa config recipe');
+      console.warn('this is not an config recipe');
       return null;
     }
   }
@@ -64,30 +72,77 @@ class AngularRecipe{
   }
 
 }
-
+// TODO: dependencies and dependenciesNames
 class AngularApplication{
-  constructor({application}){
+  constructor({application, script}){
     this.applicationName = application.applicationName;
     this._dependenciesNames = application.dependencies;
 
-    this._recipes = AngularApplication.getAllRecipes({application});
+    this._dependecies = [];
+
+    if(application.declaration){
+      this._script = script;
+    }
+
+    this._recipes = AngularApplication.getAllRecipes({application, script});
   }
-  static getAllRecipes({application}){
-    return ['controller','factory','service','provider','directive','filter','constant','config']
+
+  addRecipe({recipe}){
+    this._recipes.push(recipe);
+  }
+
+  addRecipes({recipes}){
+    Array.prototype.push.apply(this._recipes, recipes);
+  }
+
+  addDependency({application}){
+    this._dependecies.push(application);
+  }
+
+  addDependencies({applications}){
+    Array.prototype.push.apply(this._dependecies, applications);
+  }
+
+  get dependenciesNames(){
+    return this._dependenciesNames;
+  }
+
+  get dependencies(){
+    return this._dependecies;
+  }
+
+  get recipes(){
+    return this._recipes;
+  }
+
+  get script(){
+    if(this._script){
+      return this._script;
+    }else{
+      return null;
+    }
+  }
+
+  get name(){
+    return this.applicationName;
+  }
+
+  static getAllRecipes({application, script}){
+    return recipeTypes.getAsArray()
     .map((recipeType)=>{
       let currentRecipes = application.recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
       // TODO: there is surely something to improve here
       return currentRecipes.map((currentRecipe)=>{
-        return AngularApplication.createRecipe({recipe: currentRecipe, recipeType});
+        return AngularApplication.createRecipe({recipe: currentRecipe, recipeType, script});
       });
     }).reduce((allRecips, currentRecips)=>{
       return allRecips.concat(currentRecips);
-    });
+    }, []);
   }
-  static createRecipe({recipe, recipeType}){
+  static createRecipe({recipe, recipeType, script}){
     let recipeContent = recipe[recipeType + 'Content'];
     let recipeName = recipe[recipeType + 'Name'];
-    return new AngularRecipe({recipeType, recipeContent, recipeName });
+    return new AngularRecipe({recipeType, recipeContent, recipeName , script});
   }
 
 };
