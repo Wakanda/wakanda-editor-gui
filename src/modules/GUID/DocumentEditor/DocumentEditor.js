@@ -146,11 +146,11 @@ class DocumentEditor {
 	}
 	get dimensions(){
 		// TODO: review this
-		// let WINSize = this.document.body.getBoundingClientRect();
-		// let width = (this.document.body.scrollHeight > this.document.body.clientHeight) ? WINSize.width : this.window.innerWidth;
-		// let height = (this.document.body.scrollWidth > this.document.body.clientWidth) ? WINSize.height : this.window.innerHeight;
+		let WINSize = this.document.documentElement.getBoundingClientRect();
+		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
+		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
 
-		let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
+		// let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
 
 		return {height, width};
 	}
