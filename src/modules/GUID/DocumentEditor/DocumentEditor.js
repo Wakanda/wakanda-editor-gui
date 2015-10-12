@@ -124,15 +124,19 @@ class DocumentEditor {
 			this.events.emit('GUID.document.scroll', this.dimensions);
 		}
 	}
-	changeDocumentSize({height:h, width:w}){
+	changeDocumentSize({height:h, width:w, minWidth:mw}){
 		if(w){
 			//Fix for desktop width on responsiveSelector
 			w = w === "100%" ? null : w;
+
 			this.cloudEditorIDE.style.width = w;
 		}
 		if(h){
 			this.cloudEditorIDE.style.height = h;
 		}
+
+		//Min width has to be removed if not passed to method as parameter
+		this.cloudEditorIDE.style['min-width'] = mw ? mw : null;
 
 		let {height, width} = this.dimensions;
 

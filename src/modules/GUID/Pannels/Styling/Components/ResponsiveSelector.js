@@ -1,12 +1,15 @@
+import responsiveDevices from './responsiveDevices';
+
 class ResponsiveSelector {
   constructor({documentEditor}) {
 
     this.BUTTON_ACTIVE_CLASSES = 'btn btn-primary';
     this.BUTTON_INACTIVE_CLASSES = 'btn btn-default'
     this.DEVICE_SIZE_MAP = {
-      phone: '600px',
-      tablet: '800px',
-      desktop: '100%'
+      xs: '600px',
+      sm: '800px',
+      md: '1024px',
+      lg: '100%'
     };
 
     this.documentEditor = documentEditor;
@@ -19,15 +22,18 @@ class ResponsiveSelector {
     let _this = this;
     this.htmlElement = document.createElement('div');
 
-    for (let device of ['phone', 'tablet', 'desktop']) {
+    for (let device of responsiveDevices.devices) {
       let b = document.createElement('a');
       b.setAttribute('role', 'button');
-      b.innerHTML = device;
+      b.innerHTML = device.name;
       b.className = this.BUTTON_INACTIVE_CLASSES;
       b.addEventListener('click', function () {
         _this._allButtonsInactive();
         b.className = _this.BUTTON_ACTIVE_CLASSES;
-        _this._valueChange(device);
+        _this._valueChange({
+          width: device.width,
+          minWidth: device.minWidth
+        });
       });
 
       this.htmlElement.appendChild(b);
@@ -41,8 +47,8 @@ class ResponsiveSelector {
     }
   }
 
-  _valueChange(value) {
-    this.valueChangeCallBack(this.DEVICE_SIZE_MAP[value]);
+  _valueChange({width, minWidth}) {
+    this.valueChangeCallBack({width, minWidth});
   }
 
   onValueChange(callback) {
