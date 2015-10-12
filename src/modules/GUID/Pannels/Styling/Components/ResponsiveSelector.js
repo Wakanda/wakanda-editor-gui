@@ -5,7 +5,7 @@ class ResponsiveSelector {
     this.BUTTON_INACTIVE_CLASSES = 'btn btn-default'
     this.DEVICE_SIZE_MAP = {
       phone: '600px',
-      tablet: '992px',
+      tablet: '800px',
       desktop: '100%'
     };
 
