@@ -8,11 +8,10 @@ class FlexgridManager {
 
     //FIXME: has to find a better way to do that
     this.FLEXGRID_URL = 'http://localhost:9090/flexgrid.css';
-    this.MODERNIZR_URL = 'http://localhost:9090/modernizr.js';
+    // this.MODERNIZR_URL = 'http://localhost:9090/modernizr.js';
 
     this._injectLib({
-      flexgridUrl: this.FLEXGRID_URL,
-      modernizrUrl: this.MODERNIZR_URL
+      flexgridUrl: this.FLEXGRID_URL
     });
 
     this.documentEditor.onReady(() => {
@@ -20,19 +19,19 @@ class FlexgridManager {
     });
   }
 
-  _injectLib({flexgridUrl, modernizrUrl}) {
+  _injectLib({flexgridUrl}) {
 
     let linkTag = document.createElement('link');
     linkTag.rel = 'stylesheet';
     linkTag.href = flexgridUrl;
 
-    let srcTag = document.createElement('script');
-    srcTag.type = 'text/javascript';
-    srcTag.src = modernizrUrl;
+    // let srcTag = document.createElement('script');
+    // srcTag.type = 'text/javascript';
+    // srcTag.src = modernizrUrl;
 
     let h = this.documentEditor.document.head;
     h.appendChild(linkTag);
-    h.appendChild(srcTag);
+    // h.appendChild(srcTag);
   }
 
   _checkContainerEncapsulation() {
