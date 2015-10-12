@@ -116,7 +116,7 @@ class Outline {
 				data: function(obj, cb) {
 					let data = [];
 
-					_this.documentEditor.onDomEncapsulated((iframeDoc) => {
+					_this.documentEditor.documentPromise.then((iframeDoc) => {
 						let itemsN = iframeDoc.body.getElementsByTagName("*");
 						let items = [];
 						for (let i = 0; i < itemsN.length; i++) {
