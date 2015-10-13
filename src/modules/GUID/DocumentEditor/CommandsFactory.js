@@ -393,4 +393,4 @@ class CommandFactory {
 
 }
 
-export default CommandFactory;
+export {CommandFactory, Command};
