@@ -1,6 +1,6 @@
 import LinkImport from './LinkImport';
 import Broker from './Broker';
-import commandsFactory from './commandsFactory.js';
+import {CommandsFactory, Command} from './CommandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
@@ -103,7 +103,7 @@ class DocumentEditor {
 	}
 
 	initCommands() {
-		this.commandsFactory = new commandsFactory({
+		this.CommandsFactory = new CommandsFactory({
 			events: this.events,
 			linkImport: this.linkImport,
 			scriptManager: this.scriptManager,
@@ -271,6 +271,26 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
+		let removeCommands = classesToAdd.map((classToadd)=>{
+			return this.commandsFactory.toggleClass({
+				element,
+				className: classToadd,
+				forceAddRem: true
+			});
+		});
+		let addCommands = classesToRemove.map((classToRemove)=>{
+			return this.commandsFactory.toggleClass({
+				element,
+				className: classToRemove,
+				forceAddRem: false
+			});
+		});
+
+		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
 	toggleClassOfSelectedElement({className}) {
 		let command = this.commandsFactory.toggleClass({
 			element: this.selectedElement,
@@ -402,8 +422,6 @@ class DocumentEditor {
 	getScripts(){
 		return this.scriptManager.scripts;
 	}
-
-
 
 }
 
