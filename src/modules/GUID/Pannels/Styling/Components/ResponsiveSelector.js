@@ -118,6 +118,12 @@ class ResponsiveSelector {
         this._determineResponsiveClass({element: this.selectedElement});
       }
     });
+
+    this.documentEditor.onElementAttributeChange(({element, attribute, oldValue, value}) => {
+      if (attribute === 'class' && element === this.selectedElement) {
+        this._determineResponsiveClass({element: this.selectedElement});
+      }
+    });
   }
 }
 

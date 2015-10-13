@@ -252,9 +252,14 @@ class CommandFactory {
 	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;
+		let styleManager = this.styleManager;
 
 		let execute = function() {
 			element.setAttribute(attribute, value);
+			if (attribute == 'class') {
+				let esm = styleManager.getElementStyleManager({element});
+				esm.initResponsiveClasses();
+			}
 			events.emit('GUID.dom.attribute.change', {
 				element, attribute, oldValue, value
 			});
@@ -262,11 +267,19 @@ class CommandFactory {
 		let undo = function() {
 			if (oldValue) {
 				element.setAttribute(attribute, oldValue);
+				if (attribute == 'class') {
+					let esm = styleManager.getElementStyleManager({element});
+					esm.initResponsiveClasses();
+				}
 				events.emit('GUID.dom.attribute.change', {
 					element, attribute, oldValue: value, value: oldValue
 				});
 			} else {
 				element.removeAttribute(attribute);
+				if (attribute == 'class') {
+					let esm = this.styleManager.getElementStyleManager({element});
+					esm.initResponsiveClasses();
+				}
 				events.emit('GUID.dom.attribute.remove', {
 					element, attribute
 				});

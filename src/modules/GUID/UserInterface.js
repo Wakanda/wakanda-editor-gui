@@ -243,6 +243,11 @@ class UserInterface {
 		this.documentEditor.onElementStyleAttributeChange(() => {
 			this.updateSelectedElementBorder();
 		});
+		this.documentEditor.onElementAttributeChange(({element, attribute, oldValue, value}) => {
+			if (attribute === 'class') {
+				this.updateSelectedElementBorder();
+			}
+		});
 	}
 }
 
