@@ -3,7 +3,7 @@ import Broker from './Broker';
 import commandsFactory from './commandsFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
-import StyleManager from './Styling/StyleManager';
+import StyleManager from './styling/StyleManager';
 
 //TODO !important loaded ///./../.
 

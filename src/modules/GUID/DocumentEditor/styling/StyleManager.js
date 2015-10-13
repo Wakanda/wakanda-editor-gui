@@ -18,6 +18,7 @@ class StyleManager{
 
   // NOTE: la liaison entre l'element et son manager se fait ici
   getElementStyleManager({element}){
+    
     if(! this.elementToElementStyleManager.has(element)){
       let elementStyleManager = new ElementStyleManager({element});
       this.elementToElementStyleManager.set(element, elementStyleManager);

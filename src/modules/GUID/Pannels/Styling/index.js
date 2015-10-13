@@ -25,8 +25,12 @@ class Styling {
       documentEditor: this.documentEditor
     });
     responsiveSelector.appendToElement(this.container);
-    responsiveSelector.onValueChange(({width, minWidth}) => {
+    responsiveSelector.onSelectorValueChange(({width, minWidth}) => {
       this.documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
+    });
+    responsiveSelector.onClassInputValueChange(({newValue, oldValue}) => {
+      //TODO
+      console.log('Have to replace ' + oldValue + ' by ' + newValue);
     });
 
     let idInput = new HtmlAttributeInput({

@@ -4,13 +4,7 @@ class ResponsiveSelector {
   constructor({documentEditor}) {
 
     this.BUTTON_ACTIVE_CLASSES = 'btn btn-primary';
-    this.BUTTON_INACTIVE_CLASSES = 'btn btn-default'
-    this.DEVICE_SIZE_MAP = {
-      xs: '600px',
-      sm: '800px',
-      md: '1024px',
-      lg: '100%'
-    };
+    this.BUTTON_INACTIVE_CLASSES = 'btn btn-default';
 
     this.documentEditor = documentEditor;
 
@@ -52,6 +46,7 @@ class ResponsiveSelector {
 
     this.classInput = document.createElement('input');
     this.classInput.placeholder = 'Responsive class';
+    this.classInput.disabled = true;
     this.htmlElement.appendChild(this.classInput);
   }
 
@@ -65,10 +60,24 @@ class ResponsiveSelector {
     this.valueChangeCallBack({width, minWidth});
     this.currentDeviceName = deviceName;
     this._determineResponsiveClass({element: this.selectedElement});
+    this.classInput.disabled = false;
   }
 
-  onValueChange(callback) {
+  onSelectorValueChange(callback) {
     this.valueChangeCallBack = callback;
+  }
+
+  onClassInputValueChange(callback) {
+    let _this = this;
+    this.classInput.addEventListener('change', function () {
+      if (_this.currentDeviceName && _this.selectedElement) {
+        let esm = _this.documentEditor.styleManager.getElementStyleManager({element: _this.selectedElement});
+        let newValue = _this.classInput.value;
+        let oldValue = esm.getResponsiveClassForDeviceName({deviceName: _this.currentDeviceName});
+
+        callback({newValue, oldValue});
+      }
+    });
   }
 
   appendToElement(element) {
@@ -76,18 +85,14 @@ class ResponsiveSelector {
   }
 
   _determineResponsiveClass({element}) {
-    this.classInput.value = null;
-
-    if (this.currentDeviceName && element) {
-      let classes = element.className.split(' ');
-      let prefix = 'col-' + this.currentDeviceName + '-';
-
-      for (let c of classes) {
-        if (c.indexOf(prefix) != -1) {
-          this.classInput.value = c;
-          break;
-        }
-      }
+    if (element) {
+      let manager = this.documentEditor.styleManager.getElementStyleManager({element});
+      this.classInput.value = manager.getResponsiveClassForDeviceName({
+        deviceName: this.currentDeviceName
+      });
+    }
+    else {
+      this.classInput.value = null;
     }
   }
 
