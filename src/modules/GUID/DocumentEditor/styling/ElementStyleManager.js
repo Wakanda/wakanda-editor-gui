@@ -4,8 +4,21 @@ class ElementStyleManager{
   constructor({element}) {
     this.element = element;
 
-    this.responsiveClasses = new Map();
-    this._initResponsiveClasses();
+    this.responsiveClasses = null;
+    this.initResponsiveClasses();
+  }
+
+  addClass({className}) {
+    console.log('Adding class ' + className);
+    this.element.classList.add(className);
+    this.initResponsiveClasses();
+    // debugger;
+  }
+
+  removeClass({className}) {
+    console.log('Removing class ' + className);
+    this.element.classList.remove(className);
+    this.initResponsiveClasses();
   }
 
   getAttributeValue(attributeName) {
@@ -27,6 +40,7 @@ class ElementStyleManager{
   }
 
   getResponsiveClassForDeviceName({deviceName}) {
+    // debugger;
     return this.responsiveClasses.has(deviceName) ? this.responsiveClasses.get(deviceName) : null;
   }
 
@@ -45,11 +59,10 @@ class ElementStyleManager{
     return null;
   }
 
-  _initResponsiveClasses() {
-    console.log('initializing responsive class map');
-    for (let device of responsiveDevices.devices) {
-      console.log('adding ' + device.name + ' to weakmap');
+  initResponsiveClasses() {
+    this.responsiveClasses = new Map();
 
+    for (let device of responsiveDevices.devices) {
       let c = this._getResponsiveClassForDeviceName({
         deviceName: device.name
       });

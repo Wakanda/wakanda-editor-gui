@@ -31,6 +31,10 @@ class Styling {
     responsiveSelector.onClassInputValueChange(({newValue, oldValue}) => {
       //TODO
       console.log('Have to replace ' + oldValue + ' by ' + newValue);
+      this.documentEditor.addRemoveClasses({
+        classesToAdd: [newValue],
+        classesToRemove: [oldValue]
+      });
     });
 
     let idInput = new HtmlAttributeInput({

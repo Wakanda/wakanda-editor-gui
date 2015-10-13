@@ -106,6 +106,18 @@ class ResponsiveSelector {
       this.selectedElement = null;
       this.classInput.value = null;
     });
+
+    this.documentEditor.onElementClassadd(() => {
+      if (this.selectedElement) {
+        this._determineResponsiveClass({element: this.selectedElement});
+      }
+    });
+
+    this.documentEditor.onElementClassRemove(() => {
+      if (this.selectedElement) {
+        this._determineResponsiveClass({element: this.selectedElement});
+      }
+    });
   }
 }
 

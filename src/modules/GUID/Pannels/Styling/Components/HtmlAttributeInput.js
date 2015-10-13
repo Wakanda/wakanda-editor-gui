@@ -27,8 +27,10 @@ class HtmlAttributeInput {
       }
     });
 
-    this.documentEditor.onElementDeselected(() => {
-      this.htmlElement.value = null;
+    this.documentEditor.onElementAttributeChange(({element, attribute, oldValue, value}) => {
+      if (attribute === this.attributeName) {
+        this.htmlElement.value = value;
+      }
     });
   }
 }

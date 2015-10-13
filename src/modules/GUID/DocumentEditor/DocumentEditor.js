@@ -271,7 +271,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
-	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
 		let removeCommands = classesToAdd.map((classToadd)=>{
 			return this.commandFactory.toggleClass({
 				element,

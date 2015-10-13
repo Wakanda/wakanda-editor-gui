@@ -283,18 +283,33 @@ class CommandFactory {
 
 		let classList = element.classList;
 		let exists = classList.contains(className);
+		let esm = this.styleManager.getElementStyleManager({element});
 
 		let addClass = function() {
-			classList.add(className);
+			esm.addClass({className})
 			events.emit('GUID.dom.class.add', {
 				element, className
 			});
+			events.emit('GUID.dom.attribute.change', {
+				element,
+				attribute: 'class',
+				oldValue: null,
+				value: element.className
+			});
+			events.emit('GUID.dom.style.change', {element});
 		};
 		let removeClass = function() {
-			classList.remove(className);
+			esm.removeClass({className});
 			events.emit('GUID.dom.class.remove', {
 				element, className
 			});
+			events.emit('GUID.dom.attribute.change', {
+				element,
+				attribute: 'class',
+				oldValue: null,
+				value: element.className
+			});
+			events.emit('GUID.dom.style.change', {element});
 		};
 
 		let execute, undo;
