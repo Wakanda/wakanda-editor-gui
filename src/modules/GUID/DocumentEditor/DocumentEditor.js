@@ -1,6 +1,6 @@
 import LinkImport from './LinkImport';
 import Broker from './Broker';
-import commandsFactory from './commandsFactory.js';
+import {CommandFactory, Command} from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './styling/StyleManager';
@@ -103,7 +103,7 @@ class DocumentEditor {
 	}
 
 	initCommands() {
-		this.commandsFactory = new commandsFactory({
+		this.commandFactory = new CommandFactory({
 			events: this.events,
 			linkImport: this.linkImport,
 			scriptManager: this.scriptManager,
@@ -161,7 +161,7 @@ class DocumentEditor {
 
 	removeElement({element}) {
 
-		let command = this.commandsFactory.removeElement({element});
+		let command = this.commandFactory.removeElement({element});
 
 		let parent = this.selectedElement.parentElement;
 
@@ -183,7 +183,7 @@ class DocumentEditor {
 		});
 	}
 	prependElement({element, elementRef = this.selectedElement}) { // append element before selected element if elementRef is undefined
-		let command = this.commandsFactory.prependElement({
+		let command = this.commandFactory.prependElement({
 			element, elementRef
 		});
 		command.afterExecute = () => {
@@ -205,7 +205,7 @@ class DocumentEditor {
 		let selElem = this.selectedElement;
 		let events = this.events;
 
-		let command = this.commandsFactory.appendElement({
+		let command = this.commandFactory.appendElement({
 			parent: selElem,
 			child: element
 		});
@@ -233,7 +233,7 @@ class DocumentEditor {
 
 	changeSelectedElementStyleAttribute({attribute, value}) {
 		if (this.selectedElement) {
-			let command = this.commandsFactory.changeStyleAttribute({
+			let command = this.commandFactory.changeStyleAttribute({
 				element: this.selectedElement,
 				attribute,
 				value
@@ -247,7 +247,7 @@ class DocumentEditor {
 	}
 
 	changeElementAttribute({element, attribute, value}) {
-		let command = this.commandsFactory.changeAttribute({
+		let command = this.commandFactory.changeAttribute({
 			element,
 			attribute,
 			value
@@ -256,7 +256,7 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	changeSelectedElementAttribute({attribute, value}) {
-		let command = this.commandsFactory.changeAttribute({
+		let command = this.commandFactory.changeAttribute({
 			element: this.selectedElement,
 			attribute,
 			value
@@ -271,8 +271,28 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
+		let removeCommands = classesToAdd.map((classToadd)=>{
+			return this.commandFactory.toggleClass({
+				element,
+				className: classToadd,
+				forceAddRem: true
+			});
+		});
+		let addCommands = classesToRemove.map((classToRemove)=>{
+			return this.commandFactory.toggleClass({
+				element,
+				className: classToRemove,
+				forceAddRem: false
+			});
+		});
+
+		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
 	toggleClassOfSelectedElement({className}) {
-		let command = this.commandsFactory.toggleClass({
+		let command = this.commandFactory.toggleClass({
 			element: this.selectedElement,
 			className
 		});
@@ -280,7 +300,7 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	addClassToSelectedElement({className}) {
-		let command = this.commandsFactory.toggleClass({
+		let command = this.commandFactory.toggleClass({
 			element: this.selectedElement,
 			className,
 			forceAddRem: true
@@ -292,7 +312,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.class.add', callBack);
 	}
 	removeClassFromSelectedElement(className) {
-		let command = this.commandsFactory.toggleClass({
+		let command = this.commandFactory.toggleClass({
 			element: this.selectedElement,
 			className,
 			forceAddRem: false
@@ -357,14 +377,14 @@ class DocumentEditor {
 	}
 
 	toggleImportHtml({href}){
-		let command = this.commandsFactory.toggleImport({
+		let command = this.commandFactory.toggleImport({
 			href
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
 	addImportHtml({href}) {
-		let command = this.commandsFactory.toggleImport({
+		let command = this.commandFactory.toggleImport({
 			href,
 			forceAddRem: true
 		});
@@ -376,7 +396,7 @@ class DocumentEditor {
 	}
 
 	removeImportHtml({href}) {
-		let command = this.commandsFactory.toggleImport({
+		let command = this.commandFactory.toggleImport({
 			href,
 			forceAddRem: false
 		});
@@ -388,7 +408,7 @@ class DocumentEditor {
 	}
 
 	changeSelectedElementText({text}){
-		let command = this.commandsFactory.changeElementText({
+		let command = this.commandFactory.changeElementText({
 			element: this.selectedElement,
 			text
 		});
@@ -402,8 +422,6 @@ class DocumentEditor {
 	getScripts(){
 		return this.scriptManager.scripts;
 	}
-
-
 
 }
 
