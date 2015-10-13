@@ -46,6 +46,10 @@ class ScriptEmbded extends Script {
 		this._text = "Embded script";
 	}
 
+	get type(){
+		return 'embded';
+	}
+
 	loadCode(){
 		let promise;
 		if(this.htmlTag.innerText){
@@ -86,6 +90,10 @@ class SctriptFile extends Script {
 			return null;
 		}
 		return `${this.document.location.origin}${src}`;
+	}
+
+	get type(){
+		return 'file';
 	}
 
 	loadCode(){

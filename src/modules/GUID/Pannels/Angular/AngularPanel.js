@@ -1,20 +1,6 @@
 import AngularInfoExtractor from './AngularInfoExtractor';
 
 let helpers = {
-	createCheckBox({text}){
-		// http://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
-		let li = document.createElement('li');
-		var checkbox = document.createElement('input');
-		checkbox.type = "checkbox";
-		var label = document.createElement('label')
-		label.htmlFor = "id";
-		label.appendChild(document.createTextNode(text));
-
-		li.appendChild(checkbox);
-		li.appendChild(label);
-
-		return li;
-	},
 	editScript(script) {
 			let scriptEditorDiv = document.createElement('div');
 			let editor = ace.edit(scriptEditorDiv);
@@ -73,6 +59,85 @@ let helpers = {
 		}
 };
 
+class ScriptsRenderer{
+	constructor({container, onExtractClick}){
+		this.container = container;
+
+		this.scriptTotag = new WeakMap();
+		this.tagToScript = new WeakMap();
+
+		this.ul = document.createElement('ul');
+		this.container.appendChild(this.ul);
+
+		let buttonEstract = document.createElement('button');
+		buttonEstract.innerText = 'Reorganise Angular Scripts';
+		this.onExtractClick = onExtractClick;
+		let _this = this;
+		buttonEstract.onclick = ()=>{
+			if(_this.onExtractClick){
+				_this.onExtractClick({scripts: _this.getSelectedScripts()});
+			}
+		};
+		this.container.appendChild(buttonEstract);
+
+	}
+
+	getSelectedScripts(){
+		[... this.ul.querySelectorAll('input')].filter((input)=>{
+			return input.checked;
+		}).map((input)=>{
+			return this.tagToScript.get(input);
+		});
+	}
+
+	render({scripts}){
+		this.ul.innerHTML = "";
+
+		scripts.forEach((script)=>{
+			let liCheckBox = ScriptsRenderer.createCheckBox({text: script.text});
+			let input = liCheckBox.querySelector('input');
+			if(script.type === 'embded'){
+				let editButton = document.createElement('button');
+				editButton.innerText = 'edit';
+				editButton.onclick = ()=>{
+					helpers.editScript(script);
+				};
+				liCheckBox.appendChild(editButton);
+			}
+			this.scriptTotag.set(script, input);
+			this.tagToScript.set(input, script);
+			this.ul.appendChild(liCheckBox);
+		});
+	}
+
+	clearHlighting(){
+		[... this.ul.childNodes].forEach((li)=>{
+			li.classList.remove('highligh');
+		});
+	}
+
+	highlightScript({script}){
+		this.clearHlighting();
+		this.scriptTotag.get(script).parentElement.classList.add('highligh');
+	}
+
+	static createCheckBox({text}){
+		// http://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
+		let li = document.createElement('li');
+		var checkbox = document.createElement('input');
+		checkbox.type = "checkbox";
+		var label = document.createElement('label')
+		label.htmlFor = "id";
+		label.appendChild(document.createTextNode(text));
+
+		li.appendChild(checkbox);
+		li.appendChild(label);
+
+		return li;
+	}
+
+}
+
 class AngularPanel {
 	constructor({ documentEditor, containerId }) {
 		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
@@ -94,44 +159,44 @@ class AngularPanel {
 		this.panelContainer.appendChild(this.angularControllers);
 		this.panelContainer.appendChild(this.angularAttributes);
 
-		this.SubscribeToDocumentEditorEvents();
+		this.subscribeToDocumentEditorEvents();
 
-		// show scripts
-		this.initAngularExtractor({scripts: this.documentEditor.scripts});
-		this.renderScripts();
+		this.scriptsRenderer = new ScriptsRenderer({
+			container: this.panelContainer,
+			onExtractClick: ({scripts})=>{
+				this.extractFromScript({scripts});
+		 	}
+		});
 
+		this.whenScriptChanges();// first load
 	}
 
-	renderScripts(){
-		let scripts = this.documentEditor.scripts;
-		let ul = document.createElement('ul');
-		this.panelContainer.appendChild(ul);
-		this.scripts.forEach((script)=>{
-			let liCheckBox = helpers.createCheckBox({text: script.text});
-			ul.appendChild(liCheckBox);
-		});
-		let buttonEstract = document.createElement('button');
-		buttonEstract.innerText = 'Reorganise Angular Scripts';
-		this.panelContainer.appendChild(buttonEstract);
+	extractFromScript({scripts}){
+		console.log(script);
+		// TODO: daba
+	}
+
+	whenScriptChanges(){
+		this.initAngularExtractor({scripts: this.documentEditor.scripts});
+		this.scriptsRenderer.render({scripts: this.documentEditor.scripts});
 	}
 
 	initAngularExtractor({scripts}) {
 		this.scripts = scripts;
 		this.angularInfoExtractor = new AngularInfoExtractor({scripts: this.scripts});
-		this.angularInfoExtractor.applicationsPromise.then((applications)=>{
-			console.log(applications);
+		this.mainApplicationsPromise = this.angularInfoExtractor.applicationsPromise.then((applications)=>{
+			return applications;
 		});
 	}
 
-	SubscribeToDocumentEditorEvents() {
+	subscribeToDocumentEditorEvents() {
 		this.documentEditor.onElementSelected(({ element }) => {
 			this.renderApplicationName({ element });
 			this.renderControllers({ element });
 			this.renderAttributes({	element	});
 		});
-		this.documentEditor.onScriptChange(({scripts})=>{
-			this.initAngularExtractor({scripts});
-			this.renderScripts();
+		this.documentEditor.onScriptChange(({scripts})=>{	// !important subCommands
+			this.whenScriptChanges();
 		});
 	}
 
@@ -165,31 +230,37 @@ class AngularPanel {
 	}
 
 	renderApplicationName({ element }) {
+		let attribute = 'ng-app';
+		this.applicationNameInput.value = '';
 
-			let attribute = 'ng-app';
-			this.applicationNameInput.value = '';
+		let { parent, value	} = AngularPanel.findParrentWithAttribute({ element, attribute });
 
-			let { parent, value	} = AngularPanel.findParrentWithAttribute({ element, attribute });
+		this.applicationNameInput.value = value;
+		this.bindChanges({
+			element, input: this.applicationNameInput, attribute
+		});
 
-			this.applicationNameInput.value = value;
-			this.bindChanges({
-				element, input: this.applicationNameInput, attribute
-			});
-
-			let _this = this;
-			this.applicationNameLabel.ondblclick = () => {
-				helpers.editScript(_this.applicationToScriptMap.get(_this.applicationNameInput.value));
-			};
-		}
-		// TODO:  generators
+	}
+	// TODO:  generators
 	renderControllers({ element }) {
+		// TODO: remove this also
+		this.scriptsRenderer.clearHlighting();
 
 		let attribute = 'ng-controller';
 		this.angularControllers.innerHTML = '';
 		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
 
 		controllers.reverse().forEach(({ parent, value }, index, array) => {
+			// TODO: remove this from here
+			this.mainApplicationsPromise.then((mainApplicationsArray) => {
+				console.log(mainApplicationsArray);
+				let application = mainApplicationsArray[0];
+				let controller = application.findRecipeByName({name: value});
+				let script = controller.script;
 
+				this.scriptsRenderer.highlightScript({script});
+			});
+			// end todo
 			let {
 				input, label, li
 			} = helpers.createInputWithLabel({
@@ -204,17 +275,12 @@ class AngularPanel {
 				attribute
 			});
 
-			let _this = this;
-			label.ondblclick = () => {
-				helpers.editScript(_this.applicationControllerToScriptMap.get(`${_this.applicationNameInput.value}.${input.value}`));
-			};
 		});
 
 	}
 
 	// TODO: usegen
 	static findParrentWithAttribute({ element, attribute }) {
-
 
 		let value,
 				tagName,
@@ -227,7 +293,6 @@ class AngularPanel {
 			elementIterate = elementIterate.parentElement;
 		};
 
-
 		return {
 			parent: value ? elementIterate : null,
 			value
@@ -236,16 +301,12 @@ class AngularPanel {
 
 	static getParentsWithAttribute({ element, attribute }) {
 
-
 		let parents = [];
-
 
 		let { parent, value } = AngularPanel.findParrentWithAttribute({ element, attribute });
 
-
 		while (value && parent) {
 			parents.push({ parent, value });
-
 
 			let o = AngularPanel.findParrentWithAttribute({
 				element: parent,

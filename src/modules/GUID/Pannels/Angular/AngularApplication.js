@@ -3,7 +3,7 @@ import recipeTypes from './recipeTypes';
 class AngularRecipe{
   constructor({recipeContent, recipeType, recipeName, script}){
     this._type = recipeType;
-    this.name = recipeName;
+    this._name = recipeName;
     this._script = script;
 
     let {dependencies, functionObject} = AngularRecipe.getDependenciesAndFunction({recipeContent});
@@ -42,6 +42,10 @@ class AngularRecipe{
 
   get type(){
     return this._type;
+  }
+
+  get name(){
+    return this._name;
   }
 
   static getDependenciesAndFunction({recipeContent}){
@@ -85,6 +89,21 @@ class AngularApplication{
     }
 
     this._recipes = AngularApplication.getAllRecipes({application, script});
+  }
+
+  findRecipeByName({name}){
+    // TODO: optimisation cache (reset when change)
+    for(let recipe of this._recipes){
+      if(recipe.name === name){
+        return recipe;
+      }
+    }
+    for(let app of this.dependecies){
+      let recipe = app.findRecipeByName({name});
+      if(recipe){
+        return recipe;
+      }
+    }
   }
 
   addRecipe({recipe}){
