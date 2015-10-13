@@ -316,6 +316,44 @@ class CommandFactory {
 		});
 	}
 
+	toggleScript({script, forceAddRem}){
+		let events = this.events;
+		let scriptManager = styleManager;
+
+		let addScript = function(){
+			let ok = scriptManager.addScript({script});
+			if(ok){
+				events.emit('GUID.script.add', {
+					script
+				});
+			}
+		};
+		let removeScript = function(){
+			let ok = scriptManager.removeScript({script});
+			if(ok){
+				events.emit('GUID.script.remove');
+			}
+		};
+
+		let execute, undo;
+
+		if (forceAddRem === true) { // add
+			[execute, undo] = [addScript, removeScript];
+		} else if (forceAddRem === false) { // remove
+			[execute, undo] = [removeScript, addScript];
+		} else if (forceAddRem === undefined) { //toggle
+			if (exists) {
+				[execute, undo] = [removeScript, addScript];
+			} else {
+				[execute, undo] = [addScript, removeScript];
+			}
+		}
+
+		return new AtomicCommand({
+			execute, undo
+		});
+	}
+
 	toggleImport({href, forceAddRem}) {
 		let events = this.events;
 		let linkImport = this.linkImport;
