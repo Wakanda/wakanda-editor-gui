@@ -97,6 +97,9 @@ class SctriptFile extends Script {
 	}
 
 	loadCode(){
+		this.src = this.toAbsoluteUrl({
+			src: this.htmlTag.getAttribute('src')
+		});
 		if (this.src){
 			return this.http.get(this.src)
 											.then( (res) => res.response );
@@ -111,6 +114,36 @@ class ScriptManager{
 		this.document = d;
 
 		this._scripts = this.initScripts();
+	}
+	// TODO: order
+	addScript({script}){
+		if(! this.exists(script)){
+			this._scripts.push(script);
+			script.addToDocument();
+			return true;
+		}else{
+			return false;
+		}
+	}
+// TODO: optimise script search and add ...
+	removeSctipt({script}){
+		if(this.exists({script})){
+			let idx = this.getScriptIndex({script});
+			script.removeFromDocument();
+			this._scripts.splice(idx, 1);
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	getScriptIndex({script}){
+		return this._scripts.indexOf(script);
+	}
+
+	exists({script}){
+		let idx = this.getScriptIndex({script});
+		return idx !== -1;
 	}
 
 	get scripts(){
