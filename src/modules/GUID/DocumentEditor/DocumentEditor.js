@@ -76,8 +76,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementDeselected(callback) {
-		this.events.on('GUID.dom.deselect', callback);
+	onElementDeselected(callBack) {
+		this.events.on('GUID.dom.deselect', callBack);
 	}
 
 	onReady(callBack) {
@@ -236,8 +236,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementStyleAttributeChange(callback) {
-		this.events.on('GUID.dom.style.change', callback);
+	onElementStyleAttributeChange(callBack) {
+		this.events.on('GUID.dom.style.change', callBack);
 	}
 
 	changeElementAttribute({element, attribute, value}) {
@@ -266,14 +266,14 @@ class DocumentEditor {
 	}
 
 	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
-		let removeCommands = classesToAdd.map((classToadd)=>{
+		let addCommands = classesToAdd.map((classToadd)=>{
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToadd,
 				forceAddRem: true
 			});
 		});
-		let addCommands = classesToRemove.map((classToRemove)=>{
+		let removeCommands = classesToRemove.map((classToRemove)=>{
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToRemove,
@@ -413,6 +413,24 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.changeText', callBack);
 	}
 
+	addRemoveScripts({scriptsToAdd, scriptsToRemove}){
+		let removeCommands = scriptsToRemove.map((script)=>{
+			return this.commandFactory.toggleScript({
+				script,
+				forceAddRem: false
+			});
+		});
+		let addCommands = scriptsToAdd.map((script)=>{
+			return this.commandFactory.toggleScript({
+				script,
+				forceAddRem: true
+			});
+		});
+
+		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
 	addScript({script}) {
 		let command = this.commandFactory.toggleScript({
 			script,
@@ -422,7 +440,7 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onAddScript(callBack) {
-		this.events.on('GUID.dom.script.add', callBack);
+		this.events.on('GUID.script.add', callBack);
 	}
 
 	removeScript({script}) {
@@ -433,11 +451,15 @@ class DocumentEditor {
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	onAddScript(callBack) {
-		this.events.on('GUID.dom.script.remove', callBack);
+	onRemoveScript(callBack) {
+		this.events.on('GUID.script.remove', callBack);
 	}
 
-	getScripts(){
+	onChangeScript(callBack){
+		this.events.on('GUID.script.*', callBack);
+	}
+
+	get scripts(){
 		return this.scriptManager.scripts;
 	}
 
