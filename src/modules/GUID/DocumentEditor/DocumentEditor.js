@@ -321,6 +321,13 @@ class DocumentEditor {
 	onElementClassRemove(callBack) {
 		this.events.on('GUID.dom.class.remove', callBack);
 	}
+	onElementClassChange(callBack){
+		this.events.on('GUID.dom.class.*', function({element, className}){
+			let eventName = this.eventName; // GUID.dom.class.remove or GUID.dom.class.add
+			let changeType = eventName.split('.').pop(); //		add/remove
+			callBack({changeType, element, className});
+		});
+	}
 
 	getElementFromPoint(coords) {
 		let {
