@@ -117,9 +117,11 @@ class ScriptsRenderer{
 		});
 	}
 
-	highlightScript({script}){
+	highlightScript({scripts}){
 		this.clearHlighting();
-		this.scriptTotag.get(script).parentElement.classList.add('highligh');
+		scripts.forEach((script)=>{
+			this.scriptTotag.get(script).parentElement.classList.add('highligh');
+		});
 	}
 
 	static createCheckBox({text}){
@@ -273,17 +275,11 @@ class AngularPanel {
 		this.angularControllers.innerHTML = '';
 		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
 
-		controllers.reverse().forEach(({ element, value }, index, array) => {
-			// TODO: remove this from here
-			this.mainApplicationsPromise.then((mainApplicationsArray) => {
-				console.log(mainApplicationsArray);
-				let application = mainApplicationsArray[0];
-				let controller = application.findRecipeByName({name: value});
-				let script = controller.script;
+		let controllersNames = [];
 
-				this.scriptsRenderer.highlightScript({script});
-			});
-			// end todo
+		controllers.reverse().forEach(({ element, value }, index, array) => {
+			controllersNames.push(value);
+
 			let { input, label, li } = helpers.createInputWithLabel({
 				labelContent: 'controller' + (array.length > 1 ? (' ' + (index + 1)) : ''),
 				content: value,
@@ -297,6 +293,19 @@ class AngularPanel {
 			});
 
 		});
+
+		// TODO: remove this from here
+		this.mainApplicationsPromise.then((mainApplicationsArray) => {
+			console.log(mainApplicationsArray);
+			let application = mainApplicationsArray[0];
+			let controllersScripts = controllersNames.map((name)=>{
+				let controller = application.findRecipeByName({name});
+				return controller.script;
+			});
+
+			this.scriptsRenderer.highlightScript({scripts: controllersScripts});
+		});
+		// end todo
 
 	}
 
