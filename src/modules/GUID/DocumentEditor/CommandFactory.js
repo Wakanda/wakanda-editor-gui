@@ -252,14 +252,9 @@ class CommandFactory {
 	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;
-		let styleManager = this.styleManager;
 
 		let execute = function() {
 			element.setAttribute(attribute, value);
-			if (attribute == 'class') {
-				let esm = styleManager.getElementStyleManager({element});
-				esm.initResponsiveClasses();
-			}
 			events.emit('GUID.dom.attribute.change', {
 				element, attribute, oldValue, value
 			});
@@ -267,19 +262,11 @@ class CommandFactory {
 		let undo = function() {
 			if (oldValue) {
 				element.setAttribute(attribute, oldValue);
-				if (attribute == 'class') {
-					let esm = styleManager.getElementStyleManager({element});
-					esm.initResponsiveClasses();
-				}
 				events.emit('GUID.dom.attribute.change', {
 					element, attribute, oldValue: value, value: oldValue
 				});
 			} else {
 				element.removeAttribute(attribute);
-				if (attribute == 'class') {
-					let esm = this.styleManager.getElementStyleManager({element});
-					esm.initResponsiveClasses();
-				}
 				events.emit('GUID.dom.attribute.remove', {
 					element, attribute
 				});
@@ -296,33 +283,18 @@ class CommandFactory {
 
 		let classList = element.classList;
 		let exists = classList.contains(className);
-		let esm = this.styleManager.getElementStyleManager({element});
 
 		let addClass = function() {
-			esm.addClass({className})
+			classList.add(className);
 			events.emit('GUID.dom.class.add', {
 				element, className
 			});
-			events.emit('GUID.dom.attribute.change', {
-				element,
-				attribute: 'class',
-				oldValue: null,
-				value: element.className
-			});
-			events.emit('GUID.dom.style.change', {element});
 		};
 		let removeClass = function() {
-			esm.removeClass({className});
+			classList.remove(className);
 			events.emit('GUID.dom.class.remove', {
 				element, className
 			});
-			events.emit('GUID.dom.attribute.change', {
-				element,
-				attribute: 'class',
-				oldValue: null,
-				value: element.className
-			});
-			events.emit('GUID.dom.style.change', {element});
 		};
 
 		let execute, undo;
@@ -336,6 +308,42 @@ class CommandFactory {
 				[execute, undo] = [removeClass, addClass];
 			} else {
 				[execute, undo] = [addClass, removeClass];
+			}
+		}
+
+		return new AtomicCommand({
+			execute, undo
+		});
+	}
+
+	toggleScript({script, forceAddRem}){
+		let events = this.events;
+		let scriptManager = this.scriptManager;
+
+		let addScript = function(){
+			let ok = scriptManager.addScript({script});
+			if(ok){
+				events.emit('GUID.script.add', { script });
+			}
+		};
+		let removeScript = function(){
+			let ok = scriptManager.removeScript({script});
+			if(ok){
+				events.emit('GUID.script.remove', { script });
+			}
+		};
+
+		let execute, undo;
+
+		if (forceAddRem === true) { // add
+			[execute, undo] = [addScript, removeScript];
+		} else if (forceAddRem === false) { // remove
+			[execute, undo] = [removeScript, addScript];
+		} else if (forceAddRem === undefined) { //toggle
+			if (exists) {
+				[execute, undo] = [removeScript, addScript];
+			} else {
+				[execute, undo] = [addScript, removeScript];
 			}
 		}
 
