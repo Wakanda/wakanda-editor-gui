@@ -6,7 +6,8 @@ class Script {
 		this.htmlTag = htmlTag;
 
 		// TODO: positions
-		this._parentTag = this.htmlTag.parentElement;
+		this._parentTag = this.htmlTag.parentElement
+											|| this.document.head;
 	}
 
 	get codePromise(){
@@ -26,15 +27,28 @@ class Script {
 
 	// NOTE: do not use those methods directly
 	addToDocument(){
-		this.parentElement.appendChild(this.htmlTag);
+		this._parentTag.appendChild(this.htmlTag);
 		return this;
+	}
+
+	get text(){
+		if(this._text){
+			return this._text;
+		}else if(this.src){
+			return this.src.split('/').pop();
+		}
 	}
 }
 
 class ScriptEmbded extends Script {
-	constructor({htmlTag, document:d}){
+	constructor({htmlTag, document:d, text}){
 		super({ htmlTag, document:d });
 		this._codePromise = this.loadCode();
+		this._text = text || "Embded script";
+	}
+
+	get type(){
+		return 'embded';
 	}
 
 	loadCode(){
@@ -62,6 +76,11 @@ class SctriptFile extends Script {
 	constructor({htmlTag, document:d}){
 		super({ htmlTag, document:d });
 		this.http = new HttpClient();
+
+		this.src = this.toAbsoluteUrl({
+			src: this.htmlTag.getAttribute('src')
+		});
+
 		this._codePromise = this.loadCode();
 	}
 
@@ -74,13 +93,17 @@ class SctriptFile extends Script {
 		return `${this.document.location.origin}${src}`;
 	}
 
+	get type(){
+		return 'file';
+	}
+
 	loadCode(){
 		this.src = this.toAbsoluteUrl({
 			src: this.htmlTag.getAttribute('src')
 		});
 		if (this.src){
 			return this.http.get(this.src)
-														.then( (res) => res.response );
+											.then( (res) => res.response );
 		}	else {
 			return Promise.resolve("");
 		}
@@ -93,22 +116,52 @@ class ScriptManager{
 
 		this._scripts = this.initScripts();
 	}
+	// TODO: order
+	addScript({script}){
+		if(! this.exists(script)){
+			this._scripts.push(script);
+			script.addToDocument();
+			return true;
+		}else{
+			return false;
+		}
+	}
+// TODO: optimise script search and add ...
+	removeScript({script}){
+		if(this.exists({script})){
+			let idx = this.getScriptIndex({script});
+			script.removeFromDocument();
+			this._scripts.splice(idx, 1);
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	getScriptIndex({script}){
+		return this._scripts.indexOf(script);
+	}
+
+	exists({script}){
+		let idx = this.getScriptIndex({script});
+		return idx !== -1;
+	}
 
 	get scripts(){
 		return this._scripts;
 	}
 
-	// TODO: temporary code for poc only
-	createEmbdedScript({content}){
+	// TODO: static
+	createEmbdedScript({content, text}){
 		let scriptTag = this.document.createElement('script');
 
 		scriptTag.setAttribute('type','text/javascript');
 		scriptTag.innerHTML = content;
-		this.document.head.appendChild(scriptTag);
 
 		return new ScriptEmbded({
 			document: this.document,
-			htmlTag: scriptTag
+			htmlTag: scriptTag,
+			text
 		});
 	}
 
@@ -128,7 +181,7 @@ class ScriptManager{
 					console.error('Something is going wrong around here');
 				}
 			})
-			.filter( (script) => script !== undefined );
+			.filter( (script) => script !== undefined && script.text );// TODO: review
 	}
 }
 

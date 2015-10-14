@@ -49,10 +49,6 @@ var Module = {
 					userInterface: IDE.GUID.userInterface
 				});
 
-				angularPanel.finalSctiptsPromise.then((scripts)=>{
-					console.log(scripts);
-				})
-
 				IDE.GUID.panels.styling = new Styling({
 					containerId: 'styling',
 					documentEditor

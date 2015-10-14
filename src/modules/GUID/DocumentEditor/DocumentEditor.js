@@ -76,8 +76,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementDeselected(callback) {
-		this.events.on('GUID.dom.deselect', callback);
+	onElementDeselected(callBack) {
+		this.events.on('GUID.dom.deselect', callBack);
 	}
 
 	onReady(callBack) {
@@ -149,12 +149,19 @@ class DocumentEditor {
 		this.events.on('GUID.document.scroll', callBack);
 	}
 	get dimensions(){
+<<<<<<< HEAD
 		// TODO: review this
 		let WINSize = this.document.documentElement.getBoundingClientRect();
 		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
 		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
 
 		// let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
+=======
+
+		let WINSize = this.document.documentElement.getBoundingClientRect();
+		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
+		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
+>>>>>>> GUID
 
 		return {height, width};
 	}
@@ -242,8 +249,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementStyleAttributeChange(callback) {
-		this.events.on('GUID.dom.style.change', callback);
+	onElementStyleAttributeChange(callBack) {
+		this.events.on('GUID.dom.style.change', callBack);
 	}
 
 	changeElementAttribute({element, attribute, value}) {
@@ -271,15 +278,24 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
+<<<<<<< HEAD
 	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
 		let removeCommands = classesToAdd.map((classToadd)=>{
+=======
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
+		let addCommands = classesToAdd.map((classToadd)=>{
+>>>>>>> GUID
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToadd,
 				forceAddRem: true
 			});
 		});
+<<<<<<< HEAD
 		let addCommands = classesToRemove.map((classToRemove)=>{
+=======
+		let removeCommands = classesToRemove.map((classToRemove)=>{
+>>>>>>> GUID
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToRemove,
@@ -419,11 +435,60 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.changeText', callBack);
 	}
 
-	getScripts(){
+	addRemoveScripts({scriptsToAdd, scriptsToRemove}){
+		let removeCommands = scriptsToRemove.map((script)=>{
+			return this.commandFactory.toggleScript({
+				script,
+				forceAddRem: false
+			});
+		});
+		let addCommands = scriptsToAdd.map((script)=>{
+			return this.commandFactory.toggleScript({
+				script,
+				forceAddRem: true
+			});
+		});
+
+		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
+<<<<<<< HEAD
+}
+=======
+	addScript({script}) {
+		let command = this.commandFactory.toggleScript({
+			script,
+			forceAddRem: true
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+	onAddScript(callBack) {
+		this.events.on('GUID.script.add', callBack);
+	}
+
+	removeScript({script}) {
+		let command = this.commandFactory.toggleScript({
+			script,
+			forceAddRem: false
+		});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+	onRemoveScript(callBack) {
+		this.events.on('GUID.script.remove', callBack);
+	}
+
+	onChangeScript(callBack){
+		this.events.on('GUID.script.*', callBack);
+	}
+>>>>>>> GUID
+
+	get scripts(){
 		return this.scriptManager.scripts;
 	}
 
 }
-
 
 export default DocumentEditor;
