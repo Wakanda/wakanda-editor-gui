@@ -243,18 +243,9 @@ class DocumentEditor {
 		this.events.on('GUID.dom.style.change', callBack);
 	}
 
-	changeElementAttribute({element, attribute, value}) {
+	changeElementAttribute({element = this.selectedElement, attribute, value}) {
 		let command = this.commandFactory.changeAttribute({
 			element,
-			attribute,
-			value
-		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
-	}
-	changeSelectedElementAttribute({attribute, value}) {
-		let command = this.commandFactory.changeAttribute({
-			element: this.selectedElement,
 			attribute,
 			value
 		});
@@ -472,7 +463,7 @@ class DocumentEditor {
 	onChangeScript(callBack){
 		this.events.on('GUID.script.*', callBack);
 	}
-	
+
 }
 
 export default DocumentEditor;
