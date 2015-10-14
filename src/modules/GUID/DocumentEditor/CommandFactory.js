@@ -318,20 +318,18 @@ class CommandFactory {
 
 	toggleScript({script, forceAddRem}){
 		let events = this.events;
-		let scriptManager = styleManager;
+		let scriptManager = this.scriptManager;
 
 		let addScript = function(){
 			let ok = scriptManager.addScript({script});
 			if(ok){
-				events.emit('GUID.script.add', {
-					script
-				});
+				events.emit('GUID.script.add', { script });
 			}
 		};
 		let removeScript = function(){
 			let ok = scriptManager.removeScript({script});
 			if(ok){
-				events.emit('GUID.script.remove');
+				events.emit('GUID.script.remove', { script });
 			}
 		};
 
