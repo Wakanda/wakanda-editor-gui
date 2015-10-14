@@ -253,24 +253,27 @@ class CommandFactory {
 		let oldValue = element.getAttribute(attribute);
 		let events = this.events;
 
-		let execute = function() {
-			element.setAttribute(attribute, value);
-			events.emit('GUID.dom.attribute.change', {
-				element, attribute, oldValue, value
-			});
-		};
-		let undo = function() {
-			if (oldValue) {
-				element.setAttribute(attribute, oldValue);
-				events.emit('GUID.dom.attribute.change', {
-					element, attribute, oldValue: value, value: oldValue
-				});
-			} else {
+		let changeValue = function({element, attribute, value}){
+			let oldValue = element.getAttribute(attribute);
+			let changeIt = !! value;
+			let removeIt = ! value && oldValue;
+			if(changeIt){
+				element.setAttribute(attribute, value);
+			}else if(removeIt){
 				element.removeAttribute(attribute);
-				events.emit('GUID.dom.attribute.remove', {
-					element, attribute
+			}
+			if(changeIt || removeIt){
+				events.emit('GUID.dom.attribute.change', {
+					element, attribute, oldValue, value
 				});
 			}
+		};
+
+		let execute = function() {
+			changeValue({element, attribute, value});
+		};
+		let undo = function() {
+			changeValue({element, attribute, value: oldValue});
 		};
 
 		return new AtomicCommand({

@@ -242,8 +242,16 @@ class DocumentEditor {
 	onElementStyleAttributeChange(callBack) {
 		this.events.on('GUID.dom.style.change', callBack);
 	}
-
+	//to remove attribute set value to null
 	changeElementAttribute({element = this.selectedElement, attribute, value}) {
+		if(attribute === 'class'){
+			console.error('to chnage class attribute use class methods');
+			return false;
+		}
+		if(attribute === 'style'){
+			console.error('to change styles use style methods');
+			return false;
+		}
 		let command = this.commandFactory.changeAttribute({
 			element,
 			attribute,
@@ -252,11 +260,29 @@ class DocumentEditor {
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
+	changeElementAttributes({element = this.selectedElement, attributes, values}){
+		let len = attributes.length;
+		if(len === 0 || len !== values.length){
+			console.error("somth' goew wrong here");
+			return false;
+		}
+		let commands = [];
+		for(let ii = 0; ii < len; ii++){
+			let attribute = attributes[ii],
+					value = values[ii];
+			let command = this.commandFactory.changeAttribute({
+				element,
+				attribute,
+				value
+			});
+			commands.push(command);
+		}
+		let finalCommand = new Command({commands});
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
 	onElementAttributeChange(callBack) {
 		this.events.on('GUID.dom.attribute.change', callBack);
-	}
-	onElementAttributeRemove(callBack) {
-		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
 	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
