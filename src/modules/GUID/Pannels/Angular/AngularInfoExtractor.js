@@ -90,8 +90,8 @@ class AngularInfoExtractor {
 					return infos;
 				};
 				let thisArg = {};
-				myFunction.call(thisArg, magicAngular);
-			`;
+				myFunction.call(thisArg, magicAngular);\n`
+				;
 
 				let infos = eval(allCode);
 
@@ -243,8 +243,7 @@ class AngularInfoExtractor {
 			return application;
 		};
 
-
-		`;
+\n`;
 	}
 
 }

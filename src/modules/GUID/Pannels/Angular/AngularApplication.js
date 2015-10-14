@@ -1,19 +1,43 @@
 import recipeTypes from './recipeTypes';
 
 class AngularRecipe{
-  constructor({recipeContent, recipeType, recipeName, script}){
+  constructor({recipeContent, recipeType, recipeName, fromScript, application}){
     this._type = recipeType;
     this._name = recipeName;
-    this._script = script;
+    this._fromScript = fromScript;
+    this._application = application;
 
     let {dependencies, functionObject} = AngularRecipe.getDependenciesAndFunction({recipeContent});
 
-    this.dependencies = dependencies;
-    this.content = functionObject;
+    this.dependenciesNames = dependencies;
+    this._content = functionObject;
+  }
+
+  get application(){
+    return this._application;
   }
 
   get script(){
-    return this._script;
+    return this._fromScript;
+  }
+
+  get functionCode(){
+    return this._content.toString();
+  }
+
+  get code(){
+    if(this.type === recipeTypes.recipes.controller){
+      let dependenciesCode = this.dependenciesNames
+                                 .map((dep)=>`'${dep}'`)
+                                 .join(', ');
+      return `
+(function(app){
+  app.controller('${this.name}', [${dependenciesCode}, ${this.functionCode}]);
+})(angular.module('${this.application.name}'));
+      `;
+    }else{
+      console.error(this.type + ' not yet implemented');
+    }
   }
 
   getRecipesFromPvovider(){
@@ -30,7 +54,7 @@ class AngularRecipe{
         }
       };
       let thisArg = {};//for the moment
-      this.content.call(thisArg, magicProvide);
+      this._content.call(thisArg, magicProvide);
 
       return magicProvide.revipes;
 
@@ -88,7 +112,7 @@ class AngularApplication{
       this._script = script;
     }
 
-    this._recipes = AngularApplication.getAllRecipes({application, script});
+    this._recipes = this.getAllRecipes({application, fromScript: script});
   }
 
   findRecipeByName({name}){
@@ -122,6 +146,29 @@ class AngularApplication{
     Array.prototype.push.apply(this._dependecies, applications);
   }
 
+  get code(){
+    if(this.script){
+      let dependenciesNamesCode = this.dependenciesNames.map((s)=>`'s'`).join(', ');
+      return `
+(function(angular){
+  angular.module('${this.name}', [${dependenciesNamesCode}]);
+})(angular);
+      `;
+    }
+    else{
+      return null;// no need for code here
+    }
+  }
+
+  get allControllers(){
+    let thisAppcontrollers = this._recipes.filter((recipe) => recipe.type === recipeTypes.recipes.controller);
+    let allControllers = this.dependencies.reduce((allctrl, currentApplication)=>{
+      return allctrl.concat(currentApplication.allControllers);
+    }, thisAppcontrollers);
+
+    return allControllers;
+  }
+
   get dependenciesNames(){
     return this._dependenciesNames;
   }
@@ -146,22 +193,22 @@ class AngularApplication{
     return this.applicationName;
   }
 
-  static getAllRecipes({application, script}){
+  getAllRecipes({application, fromScript}){
     return recipeTypes.getAsArray()
     .map((recipeType)=>{
       let currentRecipes = application.recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
       // TODO: there is surely something to improve here
       return currentRecipes.map((currentRecipe)=>{
-        return AngularApplication.createRecipe({recipe: currentRecipe, recipeType, script});
+        return this.createRecipe({recipe: currentRecipe, recipeType, script: fromScript});
       });
     }).reduce((allRecips, currentRecips)=>{
       return allRecips.concat(currentRecips);
     }, []);
   }
-  static createRecipe({recipe, recipeType, script}){
+  createRecipe({recipe, recipeType, script}){
     let recipeContent = recipe[recipeType + 'Content'];
     let recipeName = recipe[recipeType + 'Name'];
-    return new AngularRecipe({recipeType, recipeContent, recipeName , script});
+    return new AngularRecipe({application: this, recipeType, recipeContent, recipeName , fromScript: script});
   }
 
 };

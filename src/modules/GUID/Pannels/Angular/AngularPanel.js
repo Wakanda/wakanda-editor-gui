@@ -83,11 +83,12 @@ class ScriptsRenderer{
 	}
 
 	getSelectedScripts(){
-		[... this.ul.querySelectorAll('input')].filter((input)=>{
-			return input.checked;
-		}).map((input)=>{
-			return this.tagToScript.get(input);
-		});
+		return Array.from(this.ul.querySelectorAll('input'))
+			.filter((input)=>{
+				return input.checked;
+			}).map((input)=>{
+				return this.tagToScript.get(input);
+			});
 	}
 
 	render({scripts}){
@@ -164,16 +165,40 @@ class AngularPanel {
 		this.scriptsRenderer = new ScriptsRenderer({
 			container: this.panelContainer,
 			onExtractClick: ({scripts})=>{
-				this.extractFromScript({scripts});
+				this.extractFromScripts({scripts});
 		 	}
 		});
 
 		this.whenScriptChanges();// first load
 	}
 
-	extractFromScript({scripts}){
-		console.log(script);
-		// TODO: daba
+	extractFromScripts({scripts}){
+		let extractor = new AngularInfoExtractor({scripts});
+		extractor.applicationsPromise.then((mainApplications) => {
+			// TODO: just the first main application (experimental)
+			let mainApp = mainApplications[0];
+
+			let scriptForApplications = [];
+			if(mainApp.code){
+				scriptForApplications.push(this.documentEditor.scriptManager.createEmbdedScript({
+					content: mainApp.code,
+					text: 'Application ' + mainApp.name
+				}));
+			}
+
+			let scriptsForControllers = mainApp.allControllers
+				.map((controller)=>{
+					return this.documentEditor.scriptManager.createEmbdedScript({
+						content: controller.code,
+						text : 'Contoller ' + controller.name
+					});
+				});
+
+			this.documentEditor.addRemoveScripts({
+				scriptsToAdd: [... scriptForApplications, ...scriptsForControllers],
+				scriptsToRemove: scripts
+			});
+		});
 	}
 
 	whenScriptChanges(){
@@ -195,7 +220,7 @@ class AngularPanel {
 			this.renderControllers({ element });
 			this.renderAttributes({	element	});
 		});
-		this.documentEditor.onScriptChange(({scripts})=>{	// !important subCommands
+		this.documentEditor.onChangeScript(({script})=>{	//
 			this.whenScriptChanges();
 		});
 	}
@@ -213,9 +238,7 @@ class AngularPanel {
 		Array.from(element.attributes)
 			.filter(isNg)
 			.forEach((ngAttribute) => {
-				let {
-					label, input, li
-				} = helpers.createInputWithLabel({
+				let {	label, input, li } = helpers.createInputWithLabel({
 					labelContent: ngAttribute.name,
 					content: ngAttribute.value,
 					withLi: true
@@ -239,8 +262,8 @@ class AngularPanel {
 		this.bindChanges({
 			element, input: this.applicationNameInput, attribute
 		});
-
 	}
+
 	// TODO:  generators
 	renderControllers({ element }) {
 		// TODO: remove this also
