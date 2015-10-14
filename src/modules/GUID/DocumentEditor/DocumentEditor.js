@@ -149,19 +149,9 @@ class DocumentEditor {
 		this.events.on('GUID.document.scroll', callBack);
 	}
 	get dimensions(){
-<<<<<<< HEAD
-		// TODO: review this
 		let WINSize = this.document.documentElement.getBoundingClientRect();
 		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
 		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
-
-		// let {height, width} = this.cloudEditorIDE.getBoundingClientRect();
-=======
-
-		let WINSize = this.document.documentElement.getBoundingClientRect();
-		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
-		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
->>>>>>> GUID
 
 		return {height, width};
 	}
@@ -278,24 +268,16 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
-<<<<<<< HEAD
 	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
-		let removeCommands = classesToAdd.map((classToadd)=>{
-=======
-	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
 		let addCommands = classesToAdd.map((classToadd)=>{
->>>>>>> GUID
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToadd,
 				forceAddRem: true
 			});
 		});
-<<<<<<< HEAD
-		let addCommands = classesToRemove.map((classToRemove)=>{
-=======
+
 		let removeCommands = classesToRemove.map((classToRemove)=>{
->>>>>>> GUID
 			return this.commandFactory.toggleClass({
 				element,
 				className: classToRemove,
@@ -453,9 +435,6 @@ class DocumentEditor {
 		this.broker.createCommand(command).executeNextCommand();
 	}
 
-<<<<<<< HEAD
-}
-=======
 	addScript({script}) {
 		let command = this.commandFactory.toggleScript({
 			script,
@@ -483,7 +462,6 @@ class DocumentEditor {
 	onChangeScript(callBack){
 		this.events.on('GUID.script.*', callBack);
 	}
->>>>>>> GUID
 
 	get scripts(){
 		return this.scriptManager.scripts;
