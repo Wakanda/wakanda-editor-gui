@@ -6,7 +6,8 @@ class Script {
 		this.htmlTag = htmlTag;
 
 		// TODO: positions
-		this._parentTag = this.htmlTag.parentElement;
+		this._parentTag = this.htmlTag.parentElement
+											|| this.document.head;
 	}
 
 	get codePromise(){
@@ -26,7 +27,7 @@ class Script {
 
 	// NOTE: do not use those methods directly
 	addToDocument(){
-		this.parentElement.appendChild(this.htmlTag);
+		this._parentTag.appendChild(this.htmlTag);
 		return this;
 	}
 
@@ -40,10 +41,10 @@ class Script {
 }
 
 class ScriptEmbded extends Script {
-	constructor({htmlTag, document:d}){
+	constructor({htmlTag, document:d, text}){
 		super({ htmlTag, document:d });
 		this._codePromise = this.loadCode();
-		this._text = "Embded script";
+		this._text = text || "Embded script";
 	}
 
 	get type(){
@@ -126,7 +127,7 @@ class ScriptManager{
 		}
 	}
 // TODO: optimise script search and add ...
-	removeSctipt({script}){
+	removeScript({script}){
 		if(this.exists({script})){
 			let idx = this.getScriptIndex({script});
 			script.removeFromDocument();
@@ -150,17 +151,17 @@ class ScriptManager{
 		return this._scripts;
 	}
 
-	// TODO: temporary code for poc only
-	createEmbdedScript({content}){
+	// TODO: static
+	createEmbdedScript({content, text}){
 		let scriptTag = this.document.createElement('script');
 
 		scriptTag.setAttribute('type','text/javascript');
 		scriptTag.innerHTML = content;
-		this.document.head.appendChild(scriptTag);
 
 		return new ScriptEmbded({
 			document: this.document,
-			htmlTag: scriptTag
+			htmlTag: scriptTag,
+			text
 		});
 	}
 
