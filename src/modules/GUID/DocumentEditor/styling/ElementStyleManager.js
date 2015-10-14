@@ -12,7 +12,6 @@ class ElementStyleManager{
     console.log('Adding class ' + className);
     this.element.classList.add(className);
     this.initResponsiveClasses();
-    // debugger;
   }
 
   removeClass({className}) {
@@ -33,14 +32,7 @@ class ElementStyleManager{
     }
   }
 
-  setResponsiveClassForDeviceName({deviceName, className: newValue}) {
-    if (deviceName) {
-
-    }
-  }
-
   getResponsiveClassForDeviceName({deviceName}) {
-    // debugger;
     return this.responsiveClasses.has(deviceName) ? this.responsiveClasses.get(deviceName) : null;
   }
 

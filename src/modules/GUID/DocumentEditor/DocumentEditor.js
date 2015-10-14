@@ -149,7 +149,6 @@ class DocumentEditor {
 		this.events.on('GUID.document.scroll', callBack);
 	}
 	get dimensions(){
-
 		let WINSize = this.document.documentElement.getBoundingClientRect();
 		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
 		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
@@ -269,7 +268,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.attribute.remove', callBack);
 	}
 
-	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectElement}){
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
 		let addCommands = classesToAdd.map((classToadd)=>{
 			return this.commandFactory.toggleClass({
 				element,
@@ -277,6 +276,7 @@ class DocumentEditor {
 				forceAddRem: true
 			});
 		});
+
 		let removeCommands = classesToRemove.map((classToRemove)=>{
 			return this.commandFactory.toggleClass({
 				element,
@@ -465,7 +465,7 @@ class DocumentEditor {
 	onChangeScript(callBack){
 		this.events.on('GUID.script.*', callBack);
 	}
-
+	
 }
 
 export default DocumentEditor;
