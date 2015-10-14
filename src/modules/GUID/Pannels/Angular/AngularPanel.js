@@ -273,7 +273,7 @@ class AngularPanel {
 		this.angularControllers.innerHTML = '';
 		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
 
-		controllers.reverse().forEach(({ parent, value }, index, array) => {
+		controllers.reverse().forEach(({ element, value }, index, array) => {
 			// TODO: remove this from here
 			this.mainApplicationsPromise.then((mainApplicationsArray) => {
 				console.log(mainApplicationsArray);
@@ -284,16 +284,14 @@ class AngularPanel {
 				this.scriptsRenderer.highlightScript({script});
 			});
 			// end todo
-			let {
-				input, label, li
-			} = helpers.createInputWithLabel({
+			let { input, label, li } = helpers.createInputWithLabel({
 				labelContent: 'controller' + (array.length > 1 ? (' ' + (index + 1)) : ''),
 				content: value,
 				withLi: true
 			});
 			this.angularControllers.appendChild(li);
 			this.bindChanges({
-				element: parent,
+				element,
 				input,
 				attribute
 			});
@@ -307,38 +305,41 @@ class AngularPanel {
 
 		let value,
 				tagName,
-				elementIterate = element;
+				elementIterate = element,
+				lastElement = element;
 
 		while (elementIterate && !value) {
 
 			value = elementIterate.getAttribute(attribute);
-
+			lastElement = elementIterate;
 			elementIterate = elementIterate.parentElement;
 		};
 
 		return {
+			element: value ? lastElement : null,
 			parent: value ? elementIterate : null,
 			value
 		}; //{element, value}
 	}
 
-	static getParentsWithAttribute({ element, attribute }) {
+	static getParentsWithAttribute({ element: elementArg, attribute }) {
 
-		let parents = [];
+		let elements = [];
 
-		let { parent, value } = AngularPanel.findParrentWithAttribute({ element, attribute });
+		let {element,  parent, value } = AngularPanel.findParrentWithAttribute({ element: elementArg, attribute });
 
 		while (value && parent) {
-			parents.push({ parent, value });
+			elements.push({ element, value });
 
 			let o = AngularPanel.findParrentWithAttribute({
 				element: parent,
 				attribute
 			});
-			parent = o.parent
+			parent = o.parent;
+			element = o.element;
 			value = o.value;
 		}
-		return parents;
+		return elements;
 	}
 
 
