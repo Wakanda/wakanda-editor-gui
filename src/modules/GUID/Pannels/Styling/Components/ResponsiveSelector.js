@@ -119,8 +119,8 @@ class ResponsiveSelector {
       }
     });
 
-    this.documentEditor.onElementAttributeChange(({element, attribute, oldValue, value}) => {
-      if (attribute === 'class' && element === this.selectedElement) {
+    this.documentEditor.onElementClassChange(({changeType, element, className})=>{
+      if (element === this.selectedElement) {
         this._determineResponsiveClass({element: this.selectedElement});
       }
     });
