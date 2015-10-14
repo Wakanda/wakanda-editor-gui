@@ -3,7 +3,7 @@ import Broker from './Broker';
 import {CommandFactory, Command} from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
-import StyleManager from './styling/StyleManager';
+import StyleManager from './Styling/StyleManager';
 
 //TODO !important loaded ///./../.
 
@@ -76,8 +76,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementDeselected(callback) {
-		this.events.on('GUID.dom.deselect', callback);
+	onElementDeselected(callBack) {
+		this.events.on('GUID.dom.deselect', callBack);
 	}
 
 	onReady(callBack) {
@@ -240,8 +240,8 @@ class DocumentEditor {
 		}
 	}
 
-	onElementStyleAttributeChange(callback) {
-		this.events.on('GUID.dom.style.change', callback);
+	onElementStyleAttributeChange(callBack) {
+		this.events.on('GUID.dom.style.change', callBack);
 	}
 
 	changeElementAttribute({element, attribute, value}) {
@@ -290,6 +290,7 @@ class DocumentEditor {
 	}
 
 	toggleClassOfSelectedElement({className}) {
+		let command = this.commandFactory.toggleClass({
 			element: this.selectedElement,
 			className
 		});
@@ -419,7 +420,6 @@ class DocumentEditor {
 	get scripts(){
 		return this.scriptManager.scripts;
 	}
-
 	addRemoveScripts({scriptsToAdd, scriptsToRemove}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({
