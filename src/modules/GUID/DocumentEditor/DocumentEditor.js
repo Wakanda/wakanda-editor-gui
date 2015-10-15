@@ -3,7 +3,7 @@ import Broker from './Broker';
 import {CommandFactory, Command} from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
-import StyleManager from './Styling/StyleManager';
+import StyleManager from './styling/StyleManager';
 
 //TODO !important loaded ///./../.
 
@@ -242,16 +242,14 @@ class DocumentEditor {
 	onElementStyleAttributeChange(callBack) {
 		this.events.on('GUID.dom.style.change', callBack);
 	}
+
+	changeElementClass({element = this.selectedElement, fullClassName}) {
+		let command = this.commandFactory.changeClass({element, fullClassName});
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
 	//to remove attribute set value to null
 	changeElementAttribute({element = this.selectedElement, attribute, value}) {
-		if(attribute === 'class'){
-			console.error('to chnage class attribute use class methods');
-			return false;
-		}
-		if(attribute === 'style'){
-			console.error('to change styles use style methods');
-			return false;
-		}
 		let command = this.commandFactory.changeAttribute({
 			element,
 			attribute,

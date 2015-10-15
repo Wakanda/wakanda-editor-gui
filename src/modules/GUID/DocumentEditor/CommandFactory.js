@@ -281,20 +281,38 @@ class CommandFactory {
 		});
 	}
 
+	changeClass({element, fullClassName}) {
+		let oldValue = element.className;
+		let events = this.events;
+		let esm = this.styleManager.getElementStyleManager({element});
+
+		let execute = () => {
+			esm.changeClassName({fullClassName});
+			events.emit('GUID.dom.class.change', {element, className: fullClassName});
+		};
+		let undo = () => {
+			esm.changeClassName({fullClassName: oldValue});
+			events.emit('GUID.dom.class.change', {element, className: oldValue});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
 	toggleClass({ element, className, forceAddRem }) {
 		let events = this.events;
 
 		let classList = element.classList;
 		let exists = classList.contains(className);
+		let esm = this.styleManager.getElementStyleManager({element});
 
 		let addClass = function() {
-			classList.add(className);
+			esm.addClass({className});
 			events.emit('GUID.dom.class.add', {
 				element, className
 			});
 		};
 		let removeClass = function() {
-			classList.remove(className);
+			esm.removeClass({className});
 			events.emit('GUID.dom.class.remove', {
 				element, className
 			});
