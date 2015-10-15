@@ -306,17 +306,17 @@ class DocumentEditor {
 		this.broker.createCommand(command).executeNextCommand();
 	}
 
-	toggleClassOfSelectedElement({className}) {
+	toggleClass({className, element = this.selectedElement}) {
 		let command = this.commandFactory.toggleClass({
-			element: this.selectedElement,
+			element,
 			className
 		});
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	addClassToSelectedElement({className}) {
+	addClass({className, element = this.selectedElement}) {
 		let command = this.commandFactory.toggleClass({
-			element: this.selectedElement,
+			element,
 			className,
 			forceAddRem: true
 		});
@@ -326,9 +326,9 @@ class DocumentEditor {
 	onElementClassadd(callBack) {
 		this.events.on('GUID.dom.class.add', callBack);
 	}
-	removeClassFromSelectedElement(className) {
+	removeClass({className, element = this.selectedElement}) {
 		let command = this.commandFactory.toggleClass({
-			element: this.selectedElement,
+			element,
 			className,
 			forceAddRem: false
 		});
