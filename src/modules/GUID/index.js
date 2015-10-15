@@ -45,7 +45,7 @@ var Module = {
 				// angular panel
 				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
 					documentEditor,
-					containerId: 'panel',
+					containerId: 'angular',
 					userInterface: IDE.GUID.userInterface
 				});
 
