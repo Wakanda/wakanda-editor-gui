@@ -22,18 +22,6 @@
   left: 0;
   right: 0;
 }
-#outline{
-  height: 30%;
-}
-#panel{
-  height: 30%;
-  top: 35%;
-}
-
-#styling {
-  height: 30%;
-  top: 70%;
-}
 
 .highligh{
   background-color: rgba(218, 193, 122, 0.61)
