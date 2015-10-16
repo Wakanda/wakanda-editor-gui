@@ -24,7 +24,7 @@
 	right: 0px;
 	top: 45px;
 	height: 32px;
-	border-bottom: 1px solid #F9F9F9;
+	border-bottom: 1px solid #C6C6C6;
  }
 
 .page-toolbar-items {
@@ -52,8 +52,8 @@
  #side-panel {
 	 width: 350px;
 	 height: 100%;
-	 padding-top: 78px;
-	 border-right: 1px solid #acacac;
+	 padding-top: 77px;
+	 border-right: 1px solid #c6c6c6;
  }
 
  #tabs-container, #tabs-list {
@@ -61,15 +61,34 @@
 	 padding: 0;
  }
 
+#tabs-container {
+		border-right: 1px solid #dcdcdc;
+}
+
+ #tabs-list {
+	 border-right: none;
+ }
+
  #tabs-list li a {
 	 font-size: 12px;
 	 padding: 10px;
+	 border-left: none;
+	 border-radius: initial;
+ }
+
+ #tabs-list li:first-child a {
+	 border-top: none;
+ }
+
+ #tabs-list li.active a {
+	 background: #fafafa;
  }
 
  #responsiveButtonsList {
 	 position: absolute;
 	 bottom: 0;
 	 width: 100%;
+	 border: none;
  }
 
  #responsiveButtonsList li a {
@@ -82,10 +101,14 @@
    border-radius: 20px;
  }
 
+ #responsiveButtonsList li a:hover {
+	 border-color: #FBB500;
+ }
+
 .tab-content {
-	padding: 0;
-	padding-top: 15px;
-	padding-right: 15px;
+	height: 100%;
+	padding: 15px;
+	background: #fafafa;
 }
 
 .cloud-ide-tree{
