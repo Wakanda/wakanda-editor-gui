@@ -14,9 +14,8 @@ class HtmlAttributeInput {
   }
 
   onValueChange(callBack) {
-    let _this =  this;
-    this.htmlElement.addEventListener('change', function () {
-      callBack(_this.htmlElement.value);
+    this.htmlElement.addEventListener('change', () => {
+      callBack(this.htmlElement.value);
     });
   }
 
@@ -30,6 +29,12 @@ class HtmlAttributeInput {
     this.documentEditor.onElementAttributeChange(({element, attribute, oldValue, value}) => {
       if (attribute === this.attributeName) {
         this.htmlElement.value = value;
+      }
+    });
+
+    this.documentEditor.onElementClassChange(({changeType, element, className}) => {
+      if (this.attributeName === 'class') {
+        this.htmlElement.value = element.className;
       }
     });
   }

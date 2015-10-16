@@ -8,6 +8,11 @@ class ElementStyleManager{
     this.initResponsiveClasses();
   }
 
+  changeClassName({fullClassName}) {
+    this.element.className = fullClassName;
+    this.initResponsiveClasses();
+  }
+
   addClass({className}) {
     console.log('Adding class ' + className);
     this.element.classList.add(className);

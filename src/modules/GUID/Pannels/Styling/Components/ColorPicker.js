@@ -20,9 +20,8 @@ class ColorPicker {
   }
 
   onColorChange(callback) {
-    let _this = this;
-    this.htmlElement.addEventListener('change', function () {
-      callback(_this.colorValueHexFormat);
+    this.htmlElement.addEventListener('change', () => {
+      callback(this.colorValueHexFormat);
     });
   }
 

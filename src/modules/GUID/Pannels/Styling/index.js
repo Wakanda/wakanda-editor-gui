@@ -45,7 +45,6 @@ class Styling {
     idInput.appendToElement(this.container);
     idInput.onValueChange((value) => {
       this.documentEditor.changeElementAttribute({
-        // by defeault element is selectedElement
         attribute: 'id',
         value: value
       });
@@ -58,10 +57,8 @@ class Styling {
     });
     classInput.appendToElement(this.container);
     classInput.onValueChange((value) => {
-      this.documentEditor.changeElementAttribute({
-        // by defeault element is selectedElement
-        attribute: 'class',
-        value: value
+      this.documentEditor.changeElementClass({
+        fullClassName: value
       });
     });
 
