@@ -72,10 +72,9 @@ class ScriptsRenderer{
 		let buttonEstract = document.createElement('button');
 		buttonEstract.innerText = 'Reorganise Angular Scripts';
 		this.onExtractClick = onExtractClick;
-		let _this = this;
 		buttonEstract.onclick = ()=>{
-			if(_this.onExtractClick){
-				_this.onExtractClick({scripts: _this.getSelectedScripts()});
+			if(this.onExtractClick){
+				this.onExtractClick({scripts: _this.getSelectedScripts()});
 			}
 		};
 		this.container.appendChild(buttonEstract);
