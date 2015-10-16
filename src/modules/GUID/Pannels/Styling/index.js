@@ -2,7 +2,7 @@ import ColorPicker from './Components/ColorPicker';
 import HtmlAttributeInput from './Components/HtmlAttributeInput';
 import FontSizePicker from './Components/FontSizePicker';
 import FlexboxgridManager from './Components/FlexboxgridManager';
-// import ResponsiveSelector from './Components/ResponsiveSelector';
+import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
 
 class Styling {
 
@@ -21,21 +21,16 @@ class Styling {
 
     let _this = this;
 
-    // let responsiveSelector = new ResponsiveSelector({
-    //   documentEditor: this.documentEditor
-    // });
-    // responsiveSelector.appendToElement(this.container);
-    // responsiveSelector.onSelectorValueChange(({width, minWidth}) => {
-    //   this.documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
-    // });
-    // responsiveSelector.onClassInputValueChange(({newValue, oldValue}) => {
-    //   //TODO
-    //   console.log('Have to replace ' + oldValue + ' by ' + newValue);
-    //   this.documentEditor.addRemoveClasses({
-    //     classesToAdd: [newValue],
-    //     classesToRemove: [oldValue]
-    //   });
-    // });
+    let responsiveClassPicker = new ResponsiveClassPicker({
+      documentEditor: this.documentEditor
+    });
+    responsiveClassPicker.appendToElement(this.container);
+    responsiveClassPicker.onValueChange(({newValue, oldValue}) => {
+      this.documentEditor.addRemoveClasses({
+        classesToAdd: [newValue],
+        classesToRemove: [oldValue]
+      });
+    });
 
     let idInput = new HtmlAttributeInput({
       documentEditor: this.documentEditor,
