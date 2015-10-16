@@ -93,16 +93,16 @@ class CommandFactory {
 
 	prependElement({element, elementRef}) {
 		let parent = elementRef.parentElement;
-		let events = this.events;
-		let execute = function() {
+
+		let execute = () => {
 			parent.insertBefore(element, elementRef);
-			events.emit('GUID.dom.element.append', {
+			this.events.emit('GUID.dom.element.append', {
 				parent, child: element, elementRef
 			});
 		};
-		let undo = function() {
+		let undo = () => {
 			parent.removeChild(element);
-			events.emit('GUID.dom.element.remove', {
+			this.events.emit('GUID.dom.element.remove', {
 				parent, child: element
 			});
 		};
@@ -113,8 +113,7 @@ class CommandFactory {
 	}
 
 	changeElementText({text, element}){
-		let events = this.events;
-
+		
 		let childNodes = element.childNodes;
 		let command;
 		if(childNodes.length > 1){
@@ -127,13 +126,13 @@ class CommandFactory {
 			 let oldVal = element.innerText;
 			 execute = function(){
 				 element.innerText = text;
-				 events.emit('GUID.dom.element.changeText', {
+				 this.events.emit('GUID.dom.element.changeText', {
 					 element, text
 				 });
 			 };
 			 undo = function(){
 				 element.innerText = oldVal;
-				 events.emit('GUID.dom.element.changeText', {
+				 this.events.emit('GUID.dom.element.changeText', {
 					 element, text: oldVal
 				 });
 			 }
@@ -141,13 +140,13 @@ class CommandFactory {
 			 let oldVal = childNodes[0].nodeValue;
 			 execute = function(){
 				 element.innerText = text;
-				 events.emit('GUID.dom.element.changeText', {
+				 this.events.emit('GUID.dom.element.changeText', {
 					 element, text
 				 });
 			 };
 			 undo = function(){
 				 childNodes[0].nodeValue = oldVal;
-				 events.emit('GUID.dom.element.changeText', {
+				 this.events.emit('GUID.dom.element.changeText', {
 					 element, text: oldVal
 				 });
 			 }
@@ -160,11 +159,10 @@ class CommandFactory {
 	}
 
 	appendElement({parent, child}) {
-		let events = this.events;
-
-		let execute = function() {
+		
+		let execute = () => {
 			parent.appendChild(child);
-			events.emit('GUID.dom.element.append', {
+			this.events.emit('GUID.dom.element.append', {
 				parent, child
 			});
 
@@ -172,9 +170,9 @@ class CommandFactory {
 				parent, child
 			};
 		};
-		let undo = function() {
+		let undo = () => {
 			parent.removeChild(child);
-			events.emit('GUID.dom.element.remove', {
+			this.events.emit('GUID.dom.element.remove', {
 				parent, child
 			});
 
@@ -189,14 +187,13 @@ class CommandFactory {
 	}
 
 	removeElement({element}) {
-		let events = this.events;
-
+		
 		let nextNode = element.nextSibling;
 		let parent = element.parentElement;
 
-		let execute = function() {
+		let execute = () => {
 			parent.removeChild(element);
-			events.emit('GUID.dom.element.remove', {
+			this.events.emit('GUID.dom.element.remove', {
 				parent, child: element
 			});
 
@@ -204,9 +201,9 @@ class CommandFactory {
 				parent, child: element
 			};
 		};
-		let undo = function() {
+		let undo = () => {
 			parent.insertBefore(element, nextNode);
-			events.emit('GUID.dom.element.append', {
+			this.events.emit('GUID.dom.element.append', {
 				parent, child: element
 			});
 
@@ -222,15 +219,14 @@ class CommandFactory {
 
 	changeStyleAttribute({element, attribute, value}) {
 		let oldValue = this.styleManager.getInlineStyleAttribute({element, attribute});
-		let events = this.events;
-
+		
 		let execute = () => {
 			this.styleManager.changeInlineStyleAttribute({
 				element,
 				attributeName: attribute,
 				value
 			})
-			events.emit('GUID.dom.style.change', {
+			this.events.emit('GUID.dom.style.change', {
 				element, attribute, oldValue, value
 			});
 		};
@@ -241,7 +237,7 @@ class CommandFactory {
 				attributeName: attribute,
 				value: oldValue
 			});
-			events.emit('GUID.dom.style.change', {
+			this.events.emit('GUID.dom.style.change', {
 				element, attribute, oldValue: value, value: oldValue
 			});
 		};
@@ -251,8 +247,7 @@ class CommandFactory {
 
 	changeAttribute({element, attribute, value}) {
 		let oldValue = element.getAttribute(attribute);
-		let events = this.events;
-
+		
 		let changeValue = function({element, attribute, value}){
 			let oldValue = element.getAttribute(attribute);
 			let changeIt = !! value;
@@ -263,16 +258,16 @@ class CommandFactory {
 				element.removeAttribute(attribute);
 			}
 			if(changeIt || removeIt){
-				events.emit('GUID.dom.attribute.change', {
+				this.events.emit('GUID.dom.attribute.change', {
 					element, attribute, oldValue, value
 				});
 			}
 		};
 
-		let execute = function() {
+		let execute = () => {
 			changeValue({element, attribute, value});
 		};
-		let undo = function() {
+		let undo = () => {
 			changeValue({element, attribute, value: oldValue});
 		};
 
@@ -282,20 +277,19 @@ class CommandFactory {
 	}
 
 	toggleClass({ element, className, forceAddRem }) {
-		let events = this.events;
-
+		
 		let classList = element.classList;
 		let exists = classList.contains(className);
 
 		let addClass = function() {
 			classList.add(className);
-			events.emit('GUID.dom.class.add', {
+			this.events.emit('GUID.dom.class.add', {
 				element, className
 			});
 		};
 		let removeClass = function() {
 			classList.remove(className);
-			events.emit('GUID.dom.class.remove', {
+			this.events.emit('GUID.dom.class.remove', {
 				element, className
 			});
 		};
@@ -320,19 +314,18 @@ class CommandFactory {
 	}
 
 	toggleScript({script, forceAddRem}){
-		let events = this.events;
-		let scriptManager = this.scriptManager;
+				let scriptManager = this.scriptManager;
 
 		let addScript = function(){
 			let ok = scriptManager.addScript({script});
 			if(ok){
-				events.emit('GUID.script.add', { script });
+				this.events.emit('GUID.script.add', { script });
 			}
 		};
 		let removeScript = function(){
 			let ok = scriptManager.removeScript({script});
 			if(ok){
-				events.emit('GUID.script.remove', { script });
+				this.events.emit('GUID.script.remove', { script });
 			}
 		};
 
@@ -356,18 +349,17 @@ class CommandFactory {
 	}
 
 	toggleImport({href, forceAddRem}) {
-		let events = this.events;
-		let linkImport = this.linkImport;
+				let linkImport = this.linkImport;
 
 		let addImport = function() {
 			linkImport.addImport(href);
-			events.emit('GUID.dom.import.add', {
+			this.events.emit('GUID.dom.import.add', {
 				href
 			});
 		};
 		let removeImport = function() {
 			linkImport.removeImport(href);
-			events.emit('GUID.dom.import.remove', {
+			this.events.emit('GUID.dom.import.remove', {
 				href
 			});
 		};
