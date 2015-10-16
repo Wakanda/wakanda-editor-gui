@@ -10,6 +10,7 @@ var Module = {
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
+			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
 			let path = IDE.qParams.path;
 			// console.log(IDE.qParams.path);
@@ -52,6 +53,11 @@ var Module = {
 				IDE.GUID.panels.styling = new Styling({
 					containerId: 'styling',
 					documentEditor
+				});
+
+				IDE.GUID.panels.responsive = new ResponsiveSelector({
+					documentEditor,
+					containerId: 'responsiveButtonsList'
 				});
 
 				//undoRedoManagement

@@ -1,4 +1,4 @@
-import responsiveDevices from '../../Pannels/Styling/Components/responsiveDevices';
+import ResponsiveDevices from '../../Pannels/ResponsiveDevices';
 
 class ElementStyleManager{
   constructor({element}) {
@@ -54,7 +54,7 @@ class ElementStyleManager{
   initResponsiveClasses() {
     this.responsiveClasses = new Map();
 
-    for (let device of responsiveDevices.devices) {
+    for (let device of ResponsiveDevices.devices) {
       let c = this._getResponsiveClassForDeviceName({
         deviceName: device.name
       });
