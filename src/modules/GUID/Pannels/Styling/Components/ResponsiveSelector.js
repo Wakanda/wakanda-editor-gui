@@ -17,7 +17,6 @@ class ResponsiveSelector {
   }
 
   _initHtmlElement() {
-    let _this = this;
     this.htmlElement = document.createElement('div');
     this.htmlElement.style['margin-bottom'] = '10px';
 
@@ -30,10 +29,10 @@ class ResponsiveSelector {
       b.setAttribute('role', 'button');
       b.innerHTML = device.name;
       b.className = this.BUTTON_INACTIVE_CLASSES;
-      b.addEventListener('click', function () {
-        _this._allButtonsInactive();
-        b.className = _this.BUTTON_ACTIVE_CLASSES;
-        _this._valueChange({
+      b.addEventListener('click', () => {
+        this._allButtonsInactive();
+        b.className = this.BUTTON_ACTIVE_CLASSES;
+        this._valueChange({
           width: device.width,
           minWidth: device.minWidth,
           deviceName: device.name
@@ -68,12 +67,11 @@ class ResponsiveSelector {
   }
 
   onClassInputValueChange(callback) {
-    let _this = this;
-    this.classInput.addEventListener('change', function () {
-      if (_this.currentDeviceName && _this.selectedElement) {
-        let esm = _this.documentEditor.styleManager.getElementStyleManager({element: _this.selectedElement});
-        let newValue = _this.classInput.value;
-        let oldValue = esm.getResponsiveClassForDeviceName({deviceName: _this.currentDeviceName});
+    this.classInput.addEventListener('change', () => {
+      if (this.currentDeviceName && this.selectedElement) {
+        let esm = this.documentEditor.styleManager.getElementStyleManager({element: this.selectedElement});
+        let newValue = this.classInput.value;
+        let oldValue = esm.getResponsiveClassForDeviceName({deviceName: this.currentDeviceName});
 
         callback({newValue, oldValue});
       }

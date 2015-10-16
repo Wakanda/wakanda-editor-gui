@@ -36,9 +36,8 @@ export default class FontSizePicker {
   }
 
   onValueChange(callback) {
-    let _this = this;
-    this.htmlElement.addEventListener('change', function () {
-      callback(_this.htmlElement.value)
+    this.htmlElement.addEventListener('change', () => {
+      callback(this.htmlElement.value)
     });
   }
 
