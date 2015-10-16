@@ -243,7 +243,7 @@ class DocumentEditor {
 		this.events.on('GUID.dom.style.change', callBack);
 	}
 
- // FIXME: remove me 
+ // FIXME: remove me
 	changeElementClass({element = this.selectedElement, fullClassName}) {
 		let command = this.commandFactory.changeClass({element, fullClassName});
 		this.broker.createCommand(command).executeNextCommand();
@@ -494,7 +494,11 @@ class DocumentEditor {
 	}
 
 	onChangeScript(callBack){
-		this.events.on('GUID.script.*', callBack);
+		this.events.on('GUID.script.*', function({script}){
+			let eventName = this.eventName;
+			let changeType = eventName.split('.').pop();
+			callBack({changeType, script});
+		});
 	}
 
 }
