@@ -1,4 +1,4 @@
-import AngularPanel from './AngularPanel';
+import AngularPanel from './_AngularPanel';
 
 
 export default AngularPanel;

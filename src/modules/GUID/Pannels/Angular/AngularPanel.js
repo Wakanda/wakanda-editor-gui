@@ -63,6 +63,10 @@ class ScriptsRenderer{
 	constructor({container, onExtractClick}){
 		this.container = container;
 
+		let title = document.createElement('h3');
+		title.innerText = "Scripts";
+		this.container.appendChild(title);
+
 		this.scriptTotag = new WeakMap();
 		this.tagToScript = new WeakMap();
 
