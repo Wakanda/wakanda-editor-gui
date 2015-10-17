@@ -120,7 +120,7 @@ class ScriptsRenderer{
 		});
 	}
 
-	highlightScript({scripts}){
+	highlightScripts({scripts}){
 		this.clearHlighting();
 		scripts.forEach((script)=>{
 			this.scriptTotag.get(script).parentElement.classList.add('highligh');
@@ -306,7 +306,7 @@ class AngularPanel {
 				return controller.script;
 			});
 
-			this.scriptsRenderer.highlightScript({scripts: controllersScripts});
+			this.scriptsRenderer.highlightScripts({scripts: controllersScripts});
 		});
 		// end todo
 

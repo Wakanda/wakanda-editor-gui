@@ -2,6 +2,41 @@ import AngularPage from './_AngularPage';
 import recipeTypes from './_recipeTypes';
 
 let helpers = {
+	findParrentWithAttribute({ element, attribute }) {
+		let value,
+				tagName,
+				elementIterate = element,
+				lastElement = element;
+
+		while (elementIterate && !value) {
+			value = elementIterate.getAttribute(attribute);
+			lastElement = elementIterate;
+			elementIterate = elementIterate.parentElement;
+		};
+
+		return {
+			element: value ? lastElement : null,
+			parent: value ? elementIterate : null,
+			value
+		}; //{element, value}
+	},
+	getParentsWithAttribute({ element: elementArg, attribute }) {
+		let elements = [];
+		let {element,  parent, value } = this.findParrentWithAttribute({ element: elementArg, attribute });
+		while (value && parent) {
+			elements.push({ element, value });
+			let o = this.findParrentWithAttribute({
+				element: parent,
+				attribute
+			});
+			parent = o.parent;
+			element = o.element;
+			value = o.value;
+		}
+		return elements.map(({element, value})=>{
+			return {element, controllerName:value};
+		});
+	},
 	createTitle({text, h = 'h3'}){
 		let title = document.createElement(h);
 		title.innerText = text;
@@ -120,16 +155,26 @@ class ScriptsRenderer{
 		});
 	}
 
-	clearHlighting(){
+	clearHlighting({level}){
 		[... this.ul.childNodes].forEach((li)=>{
-			li.classList.remove('highligh');
+			if(level){
+				li.classList.remove('highligh'+level);
+			}else{
+				li.classList.remove('highligh');
+				li.classList.remove('highligh1');
+				li.classList.remove('highligh2');
+			}
 		});
 	}
 
-	highlightScript({scripts}){
-		this.clearHlighting();
+	highlightScripts({scripts, level = ''}){
+		this.clearHlighting({level});
 		scripts.forEach((script)=>{
-			this.scriptTotag.get(script).parentElement.classList.add('highligh');
+			let tag = this.scriptTotag.get(script).parentElement;
+			let highlited = tag.classList.contains('highligh');
+			if(!level || !highlited){
+				tag.classList.add('highligh'+level);
+			}
 		});
 	}
 
@@ -157,19 +202,25 @@ class RecipeRenderer{
     this.container.appendChild(helpers.createTitle({text: 'Angular Components : '}));
 
   }
-  highlightRecipes({recipes}){
-    this.clearHlighting();
+  highlightRecipes({recipes, level = ''}){
+    this.clearHlighting({level});
     recipes.forEach((recipe)=>{
       if(this.recipeToLi.has(recipe)){
-        this.recipeToLi.get(recipe).classList.add('highligh');
+        this.recipeToLi.get(recipe).classList.add('highligh'+level);
       }else{
         console.warn('try to highlight unexisting component');
       }
     });
   }
-  clearHlighting(){
+  clearHlighting({level}){
 		[... this.container.querySelectorAll('li')].forEach((li)=>{
-			li.classList.remove('highligh');
+			if(level){
+				li.classList.remove('highligh'+level);
+			}else{
+				li.classList.remove('highligh');
+				li.classList.remove('highligh1');
+				li.classList.remove('highligh2');
+			}
 		});
 	}
   getRecipeLi({recipe}){
@@ -219,7 +270,47 @@ class AngularPanel{
     this.initAngularPage();
 
     this.initScripts();
+
+		this.listenToDocumentEditorEvents();
   }
+	listenToDocumentEditorEvents(){
+		// NOTE: temporary
+		let isOk = (o)=>{return !!o;};
+		this.documentEditor.onElementSelected(({element})=>{
+			let elementNControllerName = helpers.getParentsWithAttribute({element, attribute: 'ng-controller'});
+
+			let controllers = elementNControllerName
+				.map(({controllerName})=>{
+					return this.angularPage.getRecipeByName({name:controllerName});
+				}).filter(isOk);
+			this.recipeRenderer.highlightRecipes({recipes:controllers});
+
+			let scripts = controllers
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(isOk);
+			this.scriptsRenderer.highlightScripts({scripts});
+
+			let dependencies = this.angularPage.getDependenciesOfRecipes({recipes: controllers});
+			this.recipeRenderer.highlightRecipes({recipes: dependencies, level: '1'});
+
+			let dependenciesScripts = dependencies
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(isOk);
+			this.scriptsRenderer.highlightScripts({scripts: dependenciesScripts, level:'1'});
+
+			let dependenciesDependencies = this.angularPage.getDependenciesOfRecipes({recipes: dependencies});
+			this.recipeRenderer.highlightRecipes({recipes: dependenciesDependencies, level: '2'});
+
+			let dependenciesDependenciesScripts = dependenciesDependencies
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(isOk);
+			this.scriptsRenderer.highlightScripts({scripts: dependenciesScripts, level: '2'});
+		});
+	}
+
   initScripts(){
     let scripts = this.documentEditor.scripts;
     this.scriptsRenderer.render({scripts});

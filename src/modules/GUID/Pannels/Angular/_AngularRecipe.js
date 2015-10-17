@@ -8,7 +8,7 @@ class AngularRecipe{
 
     let {dependencies, functionObject} = AngularRecipe.getDependenciesAndFunction({recipeContent});
 
-    this.dependenciesNames = dependencies;
+    this._dependenciesNames = dependencies;
     this._content = functionObject;
   }
 
@@ -24,9 +24,13 @@ class AngularRecipe{
     return this._content.toString();
   }
 
+  get dependenciesNames(){
+    return this._dependenciesNames;
+  }
+
   get code(){
     if(this.type === recipeTypes.recipes.controller){
-      let dependenciesCode = this.dependenciesNames
+      let dependenciesCode = this._dependenciesNames
                                  .map((dep)=>`'${dep}'`)
                                  .join(', ');
       return `
