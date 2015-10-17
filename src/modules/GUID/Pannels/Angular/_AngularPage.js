@@ -77,6 +77,16 @@ class AngularPage {
     this.events.on('recipe.remove', callBack);
     return this;
   }
+  getDependenciesOfRecipes({recipes}){
+		// NOTE: temporary
+		let isOk = (o)=>{return !!o;};
+    return recipes.reduce((arrNames, recipe)=>{
+       return arrNames.concat(recipe.dependenciesNames);
+    },[]).filter(isOk)
+    .map((name)=>{
+      return this.getRecipeByName({name});
+    }).filter(isOk);
+  }
   getRecipesByScript({script}){
     let ret = [];
     [...this.recipeToScript.keys()].forEach((recipe)=>{
@@ -85,6 +95,20 @@ class AngularPage {
       }
     });
     return ret;
+  }
+  getScriptOfRecipe({recipe}){
+    if(this.recipeToScript.has(recipe)){
+      return this.recipeToScript.get(recipe);
+    }else{
+      return null;
+    }
+  }
+  getRecipeByName({name}){
+    if(this.recipesMap.has(name)){
+      return this.recipesMap.get(name);
+    }else{
+      return null;
+    }
   }
   removeScript({script}){
     this.scriptsPromise = this.scriptsPromise.then((scriptArray)=>{
