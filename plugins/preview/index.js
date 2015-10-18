@@ -15,10 +15,10 @@ var helpers = {
 export default {
 
 	activate() {
-		let script
-				= this.angularScriptTag
-				= document.createElement('script');
-		script.src = "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js";
+		this.angularScriptTag	= document.createElement('script');
+		this.angularRouteScriptTag = document.createElement('script');
+		this.angularScriptTag.src = "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js";
+		this.angularRouteScriptTag.src = "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.js";
 
 		this.prevIframe = document.createElement('iframe');
 		this.prevIframe.setAttribute('style', 'width: 100%; height: 600;');
@@ -32,6 +32,7 @@ export default {
 		let head = cloneHtml.querySelector('head');
 		let firstScript = head.querySelector('script');
 		head.insertBefore(this.angularScriptTag, firstScript);
+		head.insertBefore(this.angularRouteScriptTag, firstScript);
 
 
 		let fileContent = helpers.domElementToString({element:cloneHtml});

@@ -1,6 +1,63 @@
-import AngularInfoExtractor from './AngularInfoExtractor';
+import AngularPage from './AngularPage';
+import recipeTypes from './recipeTypes';
 
 let helpers = {
+	isOk(o){
+		return !!o;
+	},
+	// NOTE: temporary
+	getDeclarationCodeOfApplication({applicationInfos: application}){
+		let applicationName = application.applicationName;
+		let dependenciesAsString = application.dependencies
+			.map((s)=>`'${s}'`)
+			.join(', ');
+		let code = `
+			(function(angular){
+				angular.module('${applicationName}', [${dependenciesAsString}]);
+			})(angular);
+		`;
+		return code;
+	},
+	findParrentWithAttribute({ element, attribute }) {
+		let value,
+				tagName,
+				elementIterate = element,
+				lastElement = element;
+
+		while (elementIterate && !value) {
+			value = elementIterate.getAttribute(attribute);
+			lastElement = elementIterate;
+			elementIterate = elementIterate.parentElement;
+		};
+
+		return {
+			element: value ? lastElement : null,
+			parent: value ? elementIterate : null,
+			value
+		}; //{element, value}
+	},
+	getParentsWithAttribute({ element: elementArg, attribute }) {
+		let elements = [];
+		let {element,  parent, value } = this.findParrentWithAttribute({ element: elementArg, attribute });
+		while (value && parent) {
+			elements.push({ element, value });
+			let o = this.findParrentWithAttribute({
+				element: parent,
+				attribute
+			});
+			parent = o.parent;
+			element = o.element;
+			value = o.value;
+		}
+		return elements.map(({element, value})=>{
+			return {element, controllerName:value};
+		});
+	},
+	createTitle({text, h = 'h3'}){
+		let title = document.createElement(h);
+		title.innerText = text;
+		return title;
+	},
 	editScript(script) {
 			let scriptEditorDiv = document.createElement('div');
 			let editor = ace.edit(scriptEditorDiv);
@@ -60,28 +117,16 @@ let helpers = {
 };
 
 class ScriptsRenderer{
-	constructor({container, onExtractClick}){
+	constructor({container}){
 		this.container = container;
 
-		let title = document.createElement('h3');
-		title.innerText = "Scripts";
-		this.container.appendChild(title);
+    this.container.appendChild(helpers.createTitle({text: 'Scripts :'}));
 
 		this.scriptTotag = new WeakMap();
 		this.tagToScript = new WeakMap();
 
 		this.ul = document.createElement('ul');
 		this.container.appendChild(this.ul);
-
-		let buttonEstract = document.createElement('button');
-		buttonEstract.innerText = 'Reorganise Angular Scripts';
-		this.onExtractClick = onExtractClick;
-		buttonEstract.onclick = ()=>{
-			if(this.onExtractClick){
-				this.onExtractClick({scripts: _this.getSelectedScripts()});
-			}
-		};
-		this.container.appendChild(buttonEstract);
 
 	}
 
@@ -94,36 +139,58 @@ class ScriptsRenderer{
 			});
 	}
 
+  addScript({script}){
+    let liCheckBox = ScriptsRenderer.createCheckBox({text: script.text});
+    let input = liCheckBox.querySelector('input');
+    if(script.type === 'embded'){
+      let editButton = document.createElement('button');
+      editButton.innerText = 'edit';
+      editButton.onclick = ()=>{
+        helpers.editScript(script);
+      };
+      liCheckBox.appendChild(editButton);
+    }
+    this.scriptTotag.set(script, input);
+    this.tagToScript.set(input, script);
+    this.ul.appendChild(liCheckBox);
+  }
+
+  removeScript({script}){
+    let tag = this.scriptTotag.get(script);
+    this.tagToScript.delete(tag);
+    this.scriptTotag.delete(script);
+    let li = tag.parentElement
+    li.parentElement.removeChild(li);
+  }
+
 	render({scripts}){
 		this.ul.innerHTML = "";
 
 		scripts.forEach((script)=>{
-			let liCheckBox = ScriptsRenderer.createCheckBox({text: script.text});
-			let input = liCheckBox.querySelector('input');
-			if(script.type === 'embded'){
-				let editButton = document.createElement('button');
-				editButton.innerText = 'edit';
-				editButton.onclick = ()=>{
-					helpers.editScript(script);
-				};
-				liCheckBox.appendChild(editButton);
-			}
-			this.scriptTotag.set(script, input);
-			this.tagToScript.set(input, script);
-			this.ul.appendChild(liCheckBox);
+      this.addScript({script});
 		});
 	}
 
-	clearHlighting(){
+	clearHlighting({level}){
 		[... this.ul.childNodes].forEach((li)=>{
-			li.classList.remove('highligh');
+			if(level){
+				li.classList.remove('highligh'+level);
+			}else{
+				li.classList.remove('highligh');
+				li.classList.remove('highligh1');
+				li.classList.remove('highligh2');
+			}
 		});
 	}
 
-	highlightScripts({scripts}){
-		this.clearHlighting();
+	highlightScripts({scripts, level = ''}){
+		this.clearHlighting({level});
 		scripts.forEach((script)=>{
-			this.scriptTotag.get(script).parentElement.classList.add('highligh');
+			let tag = this.scriptTotag.get(script).parentElement;
+			let highlited = tag.classList.contains('highligh');
+			if(!level || !highlited){
+				tag.classList.add('highligh'+level);
+			}
 		});
 	}
 
@@ -141,243 +208,211 @@ class ScriptsRenderer{
 
 		return li;
 	}
-
 }
 
-class AngularPanel {
-	constructor({ documentEditor, containerId }) {
-		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
-		this.panelContainer = document.getElementById(containerId);
+class RecipeRenderer{
+  constructor({container}){
+    this.container = container;
 
-		let { label, input } = helpers.createInputWithLabel({
-			id: 'application-name',
-			labelContent: 'Angular Application Name'
+    this.recipeToLi = new WeakMap();
+    this.container.appendChild(helpers.createTitle({text: 'Angular Components : '}));
+
+  }
+  highlightRecipes({recipes, level = ''}){
+    this.clearHlighting({level});
+    recipes.forEach((recipe)=>{
+      if(this.recipeToLi.has(recipe)){
+        this.recipeToLi.get(recipe).classList.add('highligh'+level);
+      }else{
+        console.warn('try to highlight unexisting component');
+      }
+    });
+  }
+  clearHlighting({level}){
+		[... this.container.querySelectorAll('li')].forEach((li)=>{
+			if(level){
+				li.classList.remove('highligh'+level);
+			}else{
+				li.classList.remove('highligh');
+				li.classList.remove('highligh1');
+				li.classList.remove('highligh2');
+			}
 		});
+	}
+  getRecipeLi({recipe}){
+    if(! this.recipeToLi.has(recipe)){
+      let li = document.createElement('li');
+      this.recipeToLi.set(recipe, li);
+      let ul = this.getRecipeUl({recipe});
+      ul.appendChild(li);
+    }
+    return this.recipeToLi.get(recipe);
+  }
+  removeRecipe({recipe}){
+    let li = this.getRecipeLi({recipe});
+    let ul = this.getRecipeUl({recipe});
+    if(ul.childNodes.lenght == 1){
+      ul.parentElement.removeChild(ul);
+    }else{
+      ul.removeChild(li);
+    }
+  }
+  addRecipe({recipe}){
+    let li = this.getRecipeLi({recipe});
+    li.innerText = recipe.name;
+  }
+  getRecipeUl({recipe}){
+    let recipeType = recipe.type;
+    this.recipeTypeToUl = this.recipeTypeToUl || new Map();
+    if(! this.recipeTypeToUl.has(recipeType)){
+      let ul = document.createElement('ul');
+      this.recipeTypeToUl.set(recipeType, ul);
+      let ulDiv = document.createElement('div');
+      ulDiv.appendChild(helpers.createTitle({text: recipe.type + ' :', h:'h4'}))
+      ulDiv.appendChild(ul);
+      this.container.appendChild(ulDiv);
+    }
+    return this.recipeTypeToUl.get(recipeType);
+  }
+}
 
-		this.panelContainer.appendChild(label);
+class RouteRenderer{
+	constructor({container}){
+		this.container = container;
+		this.container.appendChild(helpers.createTitle({text: 'Angular Routes : '}))
+	}
+}
 
-		this.applicationNameInput = input;
-		this.applicationNameLabel = label;
+class AngularPanel{
+  constructor({documentEditor, containerId}){
+    this.documentEditor = documentEditor;
+    this.panelContainer = document.getElementById(containerId);
 
-		this.angularAttributes = document.createElement('ul');
-		this.angularControllers = document.createElement('ul');
+    this.initScriptRenderer();
+    this.initRecipeRenderer();
+    this.initAngularPage();
 
-		this.panelContainer.appendChild(this.angularControllers);
-		this.panelContainer.appendChild(this.angularAttributes);
+    this.initScripts();
 
-		this.subscribeToDocumentEditorEvents();
+		this.listenToDocumentEditorEvents();
+  }
 
-		this.scriptsRenderer = new ScriptsRenderer({
-			container: this.panelContainer,
-			onExtractClick: ({scripts})=>{
-				this.extractFromScripts({scripts});
-		 	}
+	listenToDocumentEditorEvents(){
+		this.documentEditor.onElementSelected(({element})=>{
+			let elementNControllerName = helpers.getParentsWithAttribute({element, attribute: 'ng-controller'});
+
+			let controllers = elementNControllerName
+				.map(({controllerName})=>{
+					return this.angularPage.getRecipeByName({name:controllerName});
+				}).filter(helpers.isOk);
+			this.recipeRenderer.highlightRecipes({recipes:controllers});
+
+			let scripts = controllers
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(helpers.isOk);
+			this.scriptsRenderer.highlightScripts({scripts});
+
+			let dependencies = this.angularPage.getDependenciesOfRecipes({recipes: controllers});
+			this.recipeRenderer.highlightRecipes({recipes: dependencies, level: '1'});
+
+			let dependenciesScripts = dependencies
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(helpers.isOk);
+			this.scriptsRenderer.highlightScripts({scripts: dependenciesScripts, level:'1'});
+
+			let dependenciesDependencies = this.angularPage.getDependenciesOfRecipes({recipes: dependencies});
+			this.recipeRenderer.highlightRecipes({recipes: dependenciesDependencies, level: '2'});
+
+			let dependenciesDependenciesScripts = dependenciesDependencies
+				.map((recipe)=>{
+					return this.angularPage.getScriptOfRecipe({recipe});
+				}).filter(helpers.isOk);
+			this.scriptsRenderer.highlightScripts({scripts: dependenciesDependenciesScripts, level: '2'});
 		});
-
-		this.whenScriptChanges();// first load
 	}
 
-	extractFromScripts({scripts}){
-		let extractor = new AngularInfoExtractor({scripts});
-		extractor.applicationsPromise.then((mainApplications) => {
-			// TODO: just the first main application (experimental)
-			let mainApp = mainApplications[0];
+  initScripts(){
+    let scripts = this.documentEditor.scripts;
+    this.scriptsRenderer.render({scripts});
+    this.documentEditor.onAddScript(({script})=>{
+      this.scriptsRenderer.addScript({script});
+      this.angularPage.addScript({script});
+    });
+    this.documentEditor.onRemoveScript(({script})=>{
+      this.scriptsRenderer.removeScript({script});
+      this.angularPage.removeScript({script});
+    });
+  }
 
-			let scriptForApplications = [];
-			if(mainApp.code){
-				scriptForApplications.push(this.documentEditor.scriptManager.createEmbdedScript({
-					content: mainApp.code,
-					text: 'Application ' + mainApp.name
-				}));
-			}
+  initAngularPage(){
+    this.angularPage = new AngularPage();
+    this.angularPage.
+      onAddRecipe(({recipe})=>{
+        this.recipeRenderer.addRecipe({recipe});
+      })
+      .onRemoveRecipe(({recipe})=>{
+        this.recipeRenderer.removeRecipe({recipe});
+      });
+    this.documentEditor.scripts.forEach((script)=>{
+      this.angularPage.addScript({script});
+    });
+  }
+  initRecipeRenderer(){
+    this.recipeRendererContainer = document.createElement('div');
+    this.panelContainer.appendChild(this.recipeRendererContainer);
+    this.recipeRenderer = new RecipeRenderer({container:this.recipeRendererContainer});
+  }
+  initScriptRenderer(){
+    this.scriptsRendererContainer = document.createElement('div');
+    this.panelContainer.appendChild(this.scriptsRendererContainer);
+    this.scriptsRenderer = new ScriptsRenderer({
+			container: this.scriptsRendererContainer
+		});
 
-			let scriptsForControllers = mainApp.allControllers
-				.map((controller)=>{
-					return this.documentEditor.scriptManager.createEmbdedScript({
-						content: controller.code,
-						text : 'Contoller ' + controller.name
-					});
-				});
+		let button  = document.createElement('button');
+		button.innerText = 'Reorganise';
+		button.onclick = ()=>{
+			let selectedScripts = this.scriptsRenderer.getSelectedScripts();
+			let newScripts = selectedScripts
+				.reduce((arrNewScripts, script)=>{
+					// newApplicationScripts
+					let applicationsNames = this.angularPage.getApplicationsNamesOfScript({script});
+					let applicationsScripts = applicationsNames
+						.map((applicationName)=>{
+							let applicationInfos = this.angularPage.getApplicationInfos({applicationName});
+							if(!applicationInfos){
+								return null;
+							}
+							let declarationCode = helpers.getDeclarationCodeOfApplication({applicationInfos});
+							return this.documentEditor.scriptManager.createEmbdedScript({
+								content: declarationCode,
+								text: 'Application '+applicationInfos.applicationName
+							});
+						}).filter(helpers.isOk);
+					arrNewScripts = arrNewScripts.concat(applicationsScripts);
+					// recipes scripts
+					let recipesScripts = this.angularPage.getRecipesByScript({script})
+						.map((recipe)=>{
+							let code = recipe.code;
+							return this.documentEditor.scriptManager.createEmbdedScript({
+								content: code,
+								text: recipe.type+' '+recipe.name
+							});
+						});
+					return arrNewScripts.concat(recipesScripts);
+					// embeded create a new script/scripts that containe the script informations
+				}, []);
 
 			this.documentEditor.addRemoveScripts({
-				scriptsToAdd: [... scriptForApplications, ...scriptsForControllers],
-				scriptsToRemove: scripts
+				scriptsToAdd: newScripts,
+				scriptsToRemove: selectedScripts
 			});
-		});
-	}
-
-	whenScriptChanges(){
-		this.initAngularExtractor({scripts: this.documentEditor.scripts});
-		this.scriptsRenderer.render({scripts: this.documentEditor.scripts});
-	}
-
-	initAngularExtractor({scripts}) {
-		this.scripts = scripts;
-		this.angularInfoExtractor = new AngularInfoExtractor({scripts: this.scripts});
-		this.mainApplicationsPromise = this.angularInfoExtractor.applicationsPromise.then((applications)=>{
-			return applications;
-		});
-	}
-
-	subscribeToDocumentEditorEvents() {
-		this.documentEditor.onElementSelected(({ element }) => {
-			this.renderApplicationName({ element });
-			this.renderControllers({ element });
-			this.renderAttributes({	element	});
-		});
-		this.documentEditor.onChangeScript(({script})=>{	//
-			this.whenScriptChanges();
-		});
-	}
-
-	renderAttributes({ element }) {
-
-		let isNg = function(att) {
-			let ngAtt = att.name.indexOf('ng-') === 0
-			 						&& (att.name.toLowerCase() !== 'ng-app')
-			 						&& (att.name.toLowerCase() !== 'ng-controller');
-			return ngAtt;
 		};
-		this.angularAttributes.innerHTML = '';
-
-		Array.from(element.attributes)
-			.filter(isNg)
-			.forEach((ngAttribute) => {
-				let {	label, input, li } = helpers.createInputWithLabel({
-					labelContent: ngAttribute.name,
-					content: ngAttribute.value,
-					withLi: true
-				});
-				this.angularAttributes.appendChild(li);
-				this.bindChanges({
-					element: element,
-					input,
-					attribute: ngAttribute.name
-				});
-			});
+		this.scriptsRendererContainer.appendChild(button);
 	}
-
-	renderApplicationName({ element }) {
-		let attribute = 'ng-app';
-		this.applicationNameInput.value = '';
-
-		let { parent, value	} = AngularPanel.findParrentWithAttribute({ element, attribute });
-
-		this.applicationNameInput.value = value;
-		this.bindChanges({
-			element, input: this.applicationNameInput, attribute
-		});
-	}
-
-	// TODO:  generators
-	renderControllers({ element }) {
-		// TODO: remove this also
-		this.scriptsRenderer.clearHlighting();
-
-		let attribute = 'ng-controller';
-		this.angularControllers.innerHTML = '';
-		let controllers = AngularPanel.getParentsWithAttribute({ element, attribute });
-
-		let controllersNames = [];
-
-		controllers.reverse().forEach(({ element, value }, index, array) => {
-			controllersNames.push(value);
-
-			let { input, label, li } = helpers.createInputWithLabel({
-				labelContent: 'controller' + (array.length > 1 ? (' ' + (index + 1)) : ''),
-				content: value,
-				withLi: true
-			});
-			this.angularControllers.appendChild(li);
-			this.bindChanges({
-				element,
-				input,
-				attribute
-			});
-
-		});
-
-		// TODO: remove this from here
-		this.mainApplicationsPromise.then((mainApplicationsArray) => {
-			console.log(mainApplicationsArray);
-			let application = mainApplicationsArray[0];
-			let controllersScripts = controllersNames.map((name)=>{
-				let controller = application.findRecipeByName({name});
-				return controller.script;
-			});
-
-			this.scriptsRenderer.highlightScripts({scripts: controllersScripts});
-		});
-		// end todo
-
-	}
-
-	// TODO: usegen
-	static findParrentWithAttribute({ element, attribute }) {
-
-		let value,
-				tagName,
-				elementIterate = element,
-				lastElement = element;
-
-		while (elementIterate && !value) {
-
-			value = elementIterate.getAttribute(attribute);
-			lastElement = elementIterate;
-			elementIterate = elementIterate.parentElement;
-		};
-
-		return {
-			element: value ? lastElement : null,
-			parent: value ? elementIterate : null,
-			value
-		}; //{element, value}
-	}
-
-	static getParentsWithAttribute({ element: elementArg, attribute }) {
-
-		let elements = [];
-
-		let {element,  parent, value } = AngularPanel.findParrentWithAttribute({ element: elementArg, attribute });
-
-		while (value && parent) {
-			elements.push({ element, value });
-
-			let o = AngularPanel.findParrentWithAttribute({
-				element: parent,
-				attribute
-			});
-			parent = o.parent;
-			element = o.element;
-			value = o.value;
-		}
-		return elements;
-	}
-
-
-	bindChanges({ element, input, attribute}) {
-
-		let _this = this;
-		input.addEventListener('change', () => {
-			console.log(this, arguments);
-			let newVal = input.value;
-			_this.documentEditor.changeElementAttribute({
-				element,
-				attribute,
-				value: newVal
-			});
-		});
-
-		// element attribute change
-		this.documentEditor.onElementAttributeChange(({ element: changedElement, attribute, value}) => {
-			if (element === changedElement && attribute.name === attribute) {
-				if (input) {
-					input.value = value;
-				}
-			}
-		});
-	}
-
 }
+
 
 export default AngularPanel;

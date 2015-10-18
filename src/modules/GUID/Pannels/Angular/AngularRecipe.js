@@ -1,10 +1,11 @@
+import recipeTypes from './recipeTypes';
 
 class AngularRecipe{
-  constructor({recipeContent, recipeType, recipeName, /*fromScript,*/ application}){
+  constructor({recipeContent, recipeType, recipeName, /*fromScript,*/ applicationName}){
     this._type = recipeType;
-    this._name = recipeName;
+    this._name = recipeName || recipeType;
     // this._fromScript = fromScript;
-    this._applicationName = application;
+    this._applicationName = applicationName;
 
     let {dependencies, functionObject} = AngularRecipe.getDependenciesAndFunction({recipeContent});
 
@@ -29,17 +30,24 @@ class AngularRecipe{
   }
 
   get code(){
-    if(this.type === recipeTypes.recipes.controller){
+    if(this.type === recipeTypes.recipes.config){
       let dependenciesCode = this._dependenciesNames
                                  .map((dep)=>`'${dep}'`)
                                  .join(', ');
       return `
         (function(app){
-          app.controller('${this.name}', [${dependenciesCode}, ${this.functionCode}]);
-        })(angular.module('${this.application.name}'));
+          app.config([${dependenciesCode}, ${this.functionCode}]);
+        })(angular.module('${this.applicationName}'));
       `;
     }else{
-      console.error(this.type + ' not yet implemented');
+      let dependenciesCode = this._dependenciesNames
+                                 .map((dep)=>`'${dep}'`)
+                                 .join(', ');
+      return `
+        (function(app){
+          app.${this.type}('${this.name}', [${dependenciesCode}, ${this.functionCode}]);
+        })(angular.module('${this.applicationName}'));
+      `;
     }
   }
 

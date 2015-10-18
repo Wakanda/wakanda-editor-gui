@@ -37,12 +37,12 @@ var Module = {
 					containerId: 'outline',
 					documentEditor
 				});
-				// Components
-				// IDE.GUID.panels.htmlComponents = new Components({
-				// 	documentEditor,
-				// 	containerId: 'panel',
-				// 	userInterface: IDE.GUID.userInterface
-				// });
+				Components
+				IDE.GUID.panels.htmlComponents = new Components({
+					documentEditor,
+					containerId: 'components',
+					userInterface: IDE.GUID.userInterface
+				});
 				// angular panel
 				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
 					documentEditor,

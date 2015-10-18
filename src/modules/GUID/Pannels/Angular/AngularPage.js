@@ -1,25 +1,32 @@
-import magicAngular from './_magicAngular';
-import recipeTypes from './_recipeTypes';
-import AngularRecipe from './_AngularRecipe';
+import magicAngular from './magicAngular';
+import recipeTypes from './recipeTypes';
+import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../lib/multi-event-master/src/multi-event-es6.js';
 
 let helpers = {
-  createRecipes({recipes}){
+  createRecipes({applicationInfos}){
+    let recipes = applicationInfos.recipes;
+    let applicationName = applicationInfos.applicationName;
     return recipeTypes.getAsArray()
     .map((recipeType)=>{
       let currentRecipes = recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
       // TODO: there is surely something to improve here
       return currentRecipes.map((currentRecipe)=>{
-        return this.createRecipe({recipe: currentRecipe, recipeType});
+        return this.createRecipe({recipe: currentRecipe, recipeType, applicationName});
       });
     }).reduce((allRecips, currentRecips)=>{
       return allRecips.concat(currentRecips);
     }, []);
   },
-  createRecipe({recipe, recipeType}){
+  createRecipe({recipe, recipeType, applicationName}){
     let recipeContent = recipe[recipeType + 'Content'];
     let recipeName = recipe[recipeType + 'Name'];
-    return new AngularRecipe({application: this, recipeType, recipeContent, recipeName});
+    return new AngularRecipe({
+      applicationName,
+      recipeType,
+      recipeContent,
+      recipeName
+    });
   },
   extractInfos({script}) {
   		return script
@@ -45,6 +52,7 @@ class AngularPage {
   constructor(){
     this.applicationsNames = new Set();
     this.applicationNameToScript = new Map();
+    this.applicationNameToInfos = new Map();
     this.recipesMap = new Map();
     this.recipeToScript = new Map();
 
@@ -96,6 +104,16 @@ class AngularPage {
     });
     return ret;
   }
+  getApplicationsNamesOfScript({script}){
+    let applicationsNames = [];
+    [... this.applicationNameToScript.keys()]
+      .forEach((applicationName)=>{
+        if(this.applicationNameToScript.get(applicationName) === script){
+          applicationsNames.push(applicationName);
+        }
+      });
+    return applicationsNames;
+  }
   getScriptOfRecipe({recipe}){
     if(this.recipeToScript.has(recipe)){
       return this.recipeToScript.get(recipe);
@@ -118,10 +136,20 @@ class AngularPage {
         let recipes = this.getRecipesByScript({script});
         recipes.forEach((recipe)=>{
           this.removeRecipe({recipe});
+        });
+        let applicationsNames = this.getApplicationsNamesOfScript({script});
+        applicationsNames.forEach((applicationName)=>{
+          if(this.applicationNameToScript.has(applicationName)){
+            this.applicationNameToScript.delete(applicationName);
+            this.applicationNameToInfos.delete(applicationName);
+          }
         })
       }
       return scriptArray;
     });
+  }
+  getApplicationInfos({applicationName}){
+    return this.applicationNameToInfos.get(applicationName);
   }
   addScript({script}){
     this.scriptsPromise = this.scriptsPromise.then((scriptArray) => {
@@ -131,8 +159,10 @@ class AngularPage {
             let applicationName = application.applicationName;
             if(application.declaration){
               this.applicationNameToScript.set(applicationName, script);
+              // NOTE:  temporary
+              this.applicationNameToInfos.set(applicationName, application);
             }
-            let allRecipes = helpers.createRecipes({recipes: application.recipes});
+            let allRecipes = helpers.createRecipes({applicationInfos: application});
             allRecipes.forEach((recipe)=>{
               this.addRecipe({recipe});
               this.recipeToScript.set(recipe, script);
