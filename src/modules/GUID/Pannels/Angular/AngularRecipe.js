@@ -1,5 +1,5 @@
 import recipeTypes from './recipeTypes';
-
+// TODO: neeed refactoring
 class AngularRecipe{
   constructor({recipeContent, recipeType, recipeName, /*fromScript,*/ applicationName}){
     this._type = recipeType;
@@ -11,6 +11,11 @@ class AngularRecipe{
 
     this._dependenciesNames = dependencies;
     this._content = functionObject;
+
+  }
+
+  get recipeArguments(){
+    return this._dependenciesNames;
   }
 
   get applicationName(){
@@ -23,6 +28,9 @@ class AngularRecipe{
 
   get functionCode(){
     return this._content.toString();
+  }
+  get functionContent(){
+    return this._content;
   }
 
   get dependenciesNames(){
