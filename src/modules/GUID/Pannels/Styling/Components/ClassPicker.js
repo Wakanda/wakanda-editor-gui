@@ -1,3 +1,5 @@
+import Awesomplete from '../../../../../../lib/awesomplete/awesomplete.js';
+
 class ClassPicker {
   constructor({documentEditor}) {
     this.documentEditor = documentEditor;
@@ -6,7 +8,9 @@ class ClassPicker {
     this.addInput = null;
     this.classList = null;
     this.selectedElement = null;
+    this.availableClasses = [];
 
+    this._loadCssClasses();
     this._initHtmlElement();
     this._subscribeToDocumentEditorEvents();
   }
@@ -21,6 +25,13 @@ class ClassPicker {
 
     this.addInput = document.createElement('input');
     div.appendChild(this.addInput);
+
+    let awesomplete = new Awesomplete(this.addInput, {
+      minChars: 1,
+      maxItmes: 5,
+      autoFirst: true
+    });
+    awesomplete.list = this.availableClasses;
 
     this.classList = document.createElement('ul');
     this.classList.className = 'panelClassList';
@@ -52,7 +63,7 @@ class ClassPicker {
     this.addInput.addEventListener('change', () => {
       callback({value: this.addInput.value});
       this.addInput.value = null;
-    })
+    });
   }
 
   _removeClassNameOnSelectedElement({className}) {
@@ -76,6 +87,29 @@ class ClassPicker {
     for (let c of element.classList) {
       this.classList.appendChild(this._classToElementList({className: c}));
     }
+  }
+
+  _loadCssClasses() {
+    var classes = [];
+    let styleManager = this.documentEditor.styleManager;
+    let stylesheets = styleManager.getAllStyleSheets();
+    let regexp = new RegExp(/\.(-?[\w]+[\w-]*)/g);
+    let ruleSet = new Set();
+
+    for (let sheet of stylesheets) {
+      for (let rule of sheet.getRules()) {
+        var result;
+        do {
+          result = regexp.exec(rule.selectorText);
+          if (result){
+            ruleSet.add(result[1]);
+          }
+        } while (result);
+      }
+    }
+
+    this.availableClasses = Array.from(ruleSet);
+    console.log('availables classes ', this.availableClasses);
   }
 
   _subscribeToDocumentEditorEvents() {

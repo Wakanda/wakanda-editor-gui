@@ -12,6 +12,14 @@ class StyleSheetManager {
     this.stylesheet.removeRule(this.stylesheet.rules.length - 1);
   }
 
+  getRules() {
+    var ret = [];
+    for (var i = 0; i < this.stylesheet.rules.length; i++) {
+      ret.push(this.stylesheet.rules[i]);
+    }
+    return ret;
+  }
+
   toString() {
     var string = '';
     var rules = {};
