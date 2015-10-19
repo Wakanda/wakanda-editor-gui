@@ -32,3 +32,13 @@
 .highligh2{
   background-color: rgba(218, 193, 122, 0.20)
 }
+
+.panelClassList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.panelClassList .elementClassDelete {
+  font-weight: bold;
+  padding-right: 5px;
+}

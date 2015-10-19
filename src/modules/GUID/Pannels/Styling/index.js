@@ -90,6 +90,9 @@ class Styling {
       documentEditor: this.documentEditor
     });
     classPicker.appendToElement(this.container);
+    classPicker.onClassInputValueChange(({value}) => {
+      this.documentEditor.addClass({className: value});
+    });
 
     // let saveButton = document.createElement('button');
     // saveButton.textContent = 'Save style';

@@ -5,6 +5,7 @@ class ClassPicker {
     this.htmlElement = null;
     this.addInput = null;
     this.classList = null;
+    this.selectedElement = null;
 
     this._initHtmlElement();
     this._subscribeToDocumentEditorEvents();
@@ -22,16 +23,40 @@ class ClassPicker {
     div.appendChild(this.addInput);
 
     this.classList = document.createElement('ul');
+    this.classList.className = 'panelClassList';
     div.appendChild(this.classList);
   }
 
   _classToElementList({className})  {
     let li = document.createElement('li');
     let classDiv = document.createElement('div');
-    classDiv.innerHTML = className;
+    let textSpan = document.createElement('span');
+    textSpan.innerHTML = className;
     li.appendChild(classDiv);
 
+    let deleteSpan = document.createElement('span');
+    deleteSpan.innerHTML = '&times;';
+    deleteSpan.className = 'elementClassDelete';
+    deleteSpan.addEventListener('click', () => {
+      console.log('had to delete class ' + className + ' on element');
+      this._removeClassNameOnSelectedElement({className});
+      this.classList.removeChild(li);
+    });
+    classDiv.appendChild(deleteSpan);
+    classDiv.appendChild(textSpan);
+
     return li;
+  }
+
+  onClassInputValueChange(callback) {
+    this.addInput.addEventListener('change', () => {
+      callback({value: this.addInput.value});
+      this.addInput.value = null;
+    })
+  }
+
+  _removeClassNameOnSelectedElement({className}) {
+    this.documentEditor.removeClass({className});
   }
 
   _emptyClassList() {
@@ -46,11 +71,22 @@ class ClassPicker {
     }
   }
 
+  _reinitClassList({element}) {
+    this._emptyClassList();
+    for (let c of element.classList) {
+      this.classList.appendChild(this._classToElementList({className: c}));
+    }
+  }
+
   _subscribeToDocumentEditorEvents() {
     this.documentEditor.onElementSelected(({element}) => {
-      this._emptyClassList();
-      for (let c of element.classList) {
-        this.classList.appendChild(this._classToElementList({className: c}));
+      this.selectedElement = element;
+      this._reinitClassList({element});
+    });
+
+    this.documentEditor.onElementClassadd(({element}) => {
+      if (element === this.selectedElement) {
+        this._reinitClassList({element});
       }
     });
   }
