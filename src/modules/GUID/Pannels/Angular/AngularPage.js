@@ -49,7 +49,9 @@ let helpers = {
 };
 
 class AngularPage {
-  constructor(){
+  constructor({documentEditor}){
+    this.documentEditor = documentEditor;
+
     this.applicationsNames = new Set();
     this.applicationNameToScript = new Map();
     this.applicationNameToInfos = new Map();
@@ -59,6 +61,20 @@ class AngularPage {
     this.events = new MultiEvent();
 
     this.scriptsPromise = Promise.resolve([]);
+    this.syncWithDocument();
+  get configRecipe(){
+    return this.getRecipeByName({name: 'config'});
+  }
+  syncWithDocument(){
+    this.documentEditor.scripts.forEach((script)=>{
+      this.addScript({script});
+    });
+    this.documentEditor.onAddScript(({script})=>{
+      this.addScript({script});
+    });
+    this.documentEditor.onRemoveScript(({script})=>{
+      this.removeScript({script});
+    });
   }
   // private
   removeRecipe({recipe}){
@@ -84,6 +100,15 @@ class AngularPage {
   onRemoveRecipe(callBack){
     this.events.on('recipe.remove', callBack);
     return this;
+  }
+  onConfigRecipeChange(callBack){
+    this.events.on('recipe.*', function({recipe}){
+      let eventName = this.eventName
+      let eventType = eventName.split('.').pop();
+      if(recipe.type === 'config'){
+        callBack({configRecipe: recipe});
+      }
+    });
   }
   getDependenciesOfRecipes({recipes}){
 		// NOTE: temporary
