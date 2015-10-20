@@ -4,41 +4,57 @@ class BoxManager {
 
     this.htmlElement = null;
     this.marginInputs = new Map();
+    this.paddingInputs = new Map();
 
     this._initHtmlElement();
     this._subscribeToDocumentEditorEvents();
   }
 
   _initHtmlElement() {
+    this.htmlElement = document.createElement('div');
 
+    this._initBoxForAttribute({
+      attributeName: 'margin',
+      attributeMap: this.marginInputs,
+      container: this.htmlElement
+    });
+    this._initBoxForAttribute({
+      attributeName: 'padding',
+      attributeMap: this.paddingInputs,
+      container: this.htmlElement
+    });
+  }
+
+  _initBoxForAttribute({attributeName, attributeMap, container}) {
     let capitalize = (string) => {
       return string.charAt(0).toUpperCase() + string.slice(1);
     };
 
     let div = document.createElement('div');
-    div.id = 'boxManager';
-    this.htmlElement = div;
+    div.className = 'boxManager';
 
     let title = document.createElement('h6');
-    title.innerHTML = 'Margin';
+    title.innerHTML = capitalize(attributeName);
     div.appendChild(title);
 
     for (let pos of ['top', 'bottom', 'left', 'right']) {
       let input = document.createElement('input');
-      input.id = 'boxManager' + capitalize(pos);
+      input.className = 'boxManager' + capitalize(pos);
       input.type = 'text';
 
       input.addEventListener('change', () => {
         this.documentEditor.changeSelectedElementStyleAttribute({
-          attribute: 'margin-' + pos,
+          attribute: attributeName + '-' + pos,
           value: input.value
         });
       });
 
-      this.marginInputs.set(pos, input);
+      attributeMap.set(pos, input);
       div.appendChild(input);
     }
     div.appendChild(document.createElement('div'));
+
+    container.appendChild(div);
   }
 
   appendToElement(element) {
@@ -47,12 +63,56 @@ class BoxManager {
     }
   }
 
+  _resetAttributes({element, attributeName, attributeMap}) {
+    for (let pos of ['top', 'bottom', 'left', 'right']) {
+      let input = attributeMap.get(pos);
+      input.value = element.style[attributeName + '-' + pos];
+    }
+  }
+
+  _resetSingleAttribute({element, position, attributeName, attributeMap}) {
+    let input = attributeMap.get(position);
+    input.value = element.style[attributeName + '-' + position];
+  }
+
   _subscribeToDocumentEditorEvents() {
     this.documentEditor.onElementSelected(({element}) => {
+      this.selectedElement = element;
       if (element) {
-        for (let pos of ['top', 'bottom', 'left', 'right']) {
-          let input = this.marginInputs.get(pos);
-          input.value = element.style['margin-' + pos];
+        this._resetAttributes({
+          element,
+          attributeName: 'margin',
+          attributeMap: this.marginInputs
+        });
+        this._resetAttributes({
+          element,
+          attributeName: 'padding',
+          attributeMap: this.paddingInputs
+        });
+      }
+    });
+
+    this.documentEditor.onElementStyleAttributeChange(({element, attribute, oldValue, value}) => {
+      if (this.selectedElement === element) {
+
+        if (attribute === 'margin' || attribute === 'padding') {
+          this._resetAttributes({
+            element,
+            attributeName: attribute,
+            attributeMap: attribute === 'margin' ? this.marginInputs : this.paddingInputs
+          });
+        }
+        else {
+          let regexp = new RegExp(/^(margin|padding)\-(top|bottom|left|right)$/);
+          let result = regexp.exec(attribute);
+          if (result && result.length > 1) {
+            this._resetSingleAttribute({
+              element,
+              position: result[2],
+              attributeName: result[1],
+              attributeMap: result[1] === 'margin' ? this.marginInputs : this.paddingInputs
+            });
+          }
         }
       }
     });

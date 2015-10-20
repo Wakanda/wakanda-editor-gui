@@ -33,20 +33,20 @@
   background-color: rgba(218, 193, 122, 0.20)
 }
 
-#boxManager {
+.boxManager {
   width: 200px;
   height: 95px;
   position: relative;
 }
 
-#boxManager input {
+.boxManager input {
   height: 20px;
   width: 50px;
   text-align: center;
   font-size: 12px;
 }
 
-#boxManager > div {
+.boxManager > div {
   height: 40px;
   width: 80px;
   background-color: #6F7478;
@@ -55,25 +55,25 @@
   left: 60px;
 }
 
-#boxManager #boxManagerTop {
+.boxManager .boxManagerTop {
   position: absolute;
   top: 0;
   left: 74px;
 }
 
-#boxManager #boxManagerBottom {
+.boxManager .boxManagerBottom {
   position: absolute;
   bottom: 3px;
   left: 74px;
 }
 
-#boxManager #boxManagerLeft {
+.boxManager .boxManagerLeft {
   position: absolute;
   top: 37px;
   left: 0;
 }
 
-#boxManager #boxManagerRight {
+.boxManager .boxManagerRight {
   position: absolute;
   right: 0;
   top: 37px;
