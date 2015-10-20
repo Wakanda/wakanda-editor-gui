@@ -60,8 +60,15 @@ class ClassPicker {
   }
 
   onClassInputValueChange(callback) {
+    //"Normal" adding
     this.addInput.addEventListener('change', () => {
       callback({value: this.addInput.value});
+      this.addInput.value = null;
+    });
+
+    //Adding with autocomplete lib
+    this.addInput.addEventListener('awesomplete-selectcomplete', () => {
+      callback({value:this.addInput.value});
       this.addInput.value = null;
     });
   }
