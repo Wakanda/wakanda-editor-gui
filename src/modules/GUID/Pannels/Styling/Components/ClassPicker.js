@@ -28,7 +28,7 @@ class ClassPicker {
 
     let awesomplete = new Awesomplete(this.addInput, {
       minChars: 1,
-      maxItmes: 5,
+      maxItems: 5,
       autoFirst: true
     });
     awesomplete.list = this.availableClasses;
