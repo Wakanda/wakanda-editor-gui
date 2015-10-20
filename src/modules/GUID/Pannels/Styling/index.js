@@ -46,18 +46,6 @@ class Styling {
       });
     });
 
-    let classInput = new HtmlAttributeInput({
-      documentEditor: this.documentEditor,
-      attributeName: 'class',
-      placeholder: 'class'
-    });
-    classInput.appendToElement(this.container);
-    classInput.onValueChange((value) => {
-      this.documentEditor.changeElementClass({
-        fullClassName: value
-      });
-    });
-
     this.colorPicker = new ColorPicker({
       documentEditor: this.documentEditor,
       id:'colorPicker',

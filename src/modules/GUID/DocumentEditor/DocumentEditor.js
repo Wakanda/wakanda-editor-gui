@@ -243,12 +243,6 @@ class DocumentEditor {
 		this.events.on('GUID.dom.style.change', callBack);
 	}
 
- // FIXME: remove me
-	changeElementClass({element = this.selectedElement, fullClassName}) {
-		let command = this.commandFactory.changeClass({element, fullClassName});
-		this.broker.createCommand(command).executeNextCommand();
-	}
-
 	//to remove attribute set value to null
 	changeElementAttribute({element = this.selectedElement, attribute, value}) {
 		if(attribute === 'class'){
