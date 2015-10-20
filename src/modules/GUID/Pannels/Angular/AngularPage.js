@@ -62,6 +62,7 @@ class AngularPage {
 
     this.scriptsPromise = Promise.resolve([]);
     this.syncWithDocument();
+  }
   get configRecipe(){
     return this.getRecipeByName({name: 'config'});
   }
