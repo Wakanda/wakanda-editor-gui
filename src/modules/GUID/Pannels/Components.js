@@ -21,7 +21,7 @@ class Components {
 		let createInsert = (compoName) => {
 			return () => {
 				let element = this.htmlComponents.renderComponent(compoName /*, compoName*/ );
-				this.documentEditor.appendToSelectedElement({element});
+				this.documentEditor.appendElement({element});
 			}
 		};
 

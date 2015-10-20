@@ -1,5 +1,5 @@
 import LinkImport from './LinkImport';
-import Broker from './Broker';
+import {Broker, TemporaryBroker} from './Broker';
 import {CommandFactory, Command} from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
@@ -17,6 +17,7 @@ class DocumentEditor {
 		this.events = new MultiEvent();
 
 		this.broker = broker;
+		this.temporaryBroker = new TemporaryBroker();
 		this.iframe = document.createElement('iframe');
 		this.iframe.classList.add('document-editor-iframe');
 		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
@@ -198,12 +199,17 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 
-	appendToSelectedElement({element}) {
-		let selElem = this.selectedElement;
-		let events = this.events;
-
+	temporaryAppendElement({element, parent = this.selectedElement}){
 		let command = this.commandFactory.appendElement({
-			parent: selElem,
+			parent,
+			child: element
+		});
+		this.temporaryBroker.exec({command});
+	}
+
+	appendElement({element, parent = this.selectedElement}) {
+		let command = this.commandFactory.appendElement({
+			parent,
 			child: element
 		});
 
@@ -292,11 +298,15 @@ class DocumentEditor {
 		this.events.on('GUID.dom.element.changeAttribute', callBack);
 	}
 	onElementChange(callBack){
-		this.events.on('GUID.dom.element.*', function({element}){
+		this.events.on('GUID.dom.element.*', function({element, child, parent}){
 			let eventName = this.eventName;
 			let changeType = eventName.split('.').pop(); //		append, remove, changeText
-
-			callBack({changeType, element});
+			if(changeType === 'append' || changeType === 'remove'){
+				element = child;
+			}else{
+				parent = element.parentElement;
+			}
+			callBack({changeType, element, parent});
 		});
 	}
 
@@ -507,6 +517,16 @@ class DocumentEditor {
 			let changeType = eventName.split('.').pop();
 			callBack({changeType, script});
 		});
+	}
+
+	// TODO: improve me
+	get htmlClone(){
+		this.temporaryBroker.setToinitialState();
+		let html = this.document.children[0];
+		let cloneHtml = html.cloneNode(true);
+		this.temporaryBroker.setToFinalState();
+
+		return cloneHtml;
 	}
 
 }

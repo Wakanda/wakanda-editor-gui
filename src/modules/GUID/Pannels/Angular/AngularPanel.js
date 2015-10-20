@@ -2,21 +2,35 @@ import AngularPage from './AngularPage';
 import recipeTypes from './recipeTypes';
 
 let helpers = {
+	createRadioButton({groupName, value, text, onChange, onClickSave}) {
+		// http://stackoverflow.com/questions/23430455/in-html-with-javascript-create-new-radio-button-and-its-text
+		let label = document.createElement("label");
+		let radioInput = document.createElement("input");
+		radioInput.type = "radio";
+		radioInput.name = groupName;
+		radioInput.value = value;
+		let saveButton = document.createElement('button');
+
+		saveButton.onclick = function(){
+			let li = this.parentElement;
+			let radioInput = li.querySelector("input[type='radio']");
+			onClickSave({value: radioInput.value})
+		};
+		saveButton.innerText = 'Save Template';
+		radioInput.onclick = function(){
+			onChange({value: this.value});
+		};
+
+		label.appendChild(radioInput);
+
+		label.appendChild(document.createTextNode(text));
+		let li = document.createElement('li');
+		li.appendChild(label);
+		li.appendChild(saveButton);
+		return li;
+	},
 	isOk(o){
 		return !!o;
-	},
-	// NOTE: temporary
-	getDeclarationCodeOfApplication({applicationInfos: application}){
-		let applicationName = application.applicationName;
-		let dependenciesAsString = application.dependencies
-			.map((s)=>`'${s}'`)
-			.join(', ');
-		let code = `
-			(function(angular){
-				angular.module('${applicationName}', [${dependenciesAsString}]);
-			})(angular);
-		`;
-		return code;
 	},
 	findParrentWithAttribute({ element, attribute }) {
 		let value,
@@ -127,7 +141,6 @@ class ScriptsRenderer{
 
 		this.ul = document.createElement('ul');
 		this.container.appendChild(this.ul);
-
 	}
 
 	getSelectedScripts(){
@@ -216,7 +229,6 @@ class RecipeRenderer{
 
     this.recipeToLi = new WeakMap();
     this.container.appendChild(helpers.createTitle({text: 'Angular Components : '}));
-
   }
   highlightRecipes({recipes, level = ''}){
     this.clearHlighting({level});
@@ -276,10 +288,57 @@ class RecipeRenderer{
   }
 }
 
-class RouteRenderer{
-	constructor({container}){
+class RoutesRenderer{
+	constructor({container, documentEditor}){
+		this.documentEditor = documentEditor;
 		this.container = container;
-		this.container.appendChild(helpers.createTitle({text: 'Angular Routes : '}))
+
+		this.container.appendChild(helpers.createTitle({text: 'Angular Routes : '}));
+		this.buttonSelectElement = document.createElement('button');
+		this.buttonSelectElement.innerText = 'Select view element';
+		this.container.appendChild(this.buttonSelectElement);
+		this.routesContainer =  document.createElement('div');
+		this.container.appendChild(this.routesContainer);
+
+	}
+	render({routesInstance}){
+		let viewElement = routesInstance.viewElement;
+
+		if(viewElement){
+			this.renderViewElementButtons({viewElement});
+		}
+		if(routesInstance.routes){
+			this.renderRoutes({routesInstance});
+		}
+	}
+	renderViewElementButtons({viewElement}){
+		this.buttonSelectElement.onclick = ()=>{
+			this.documentEditor.selectElement({element : viewElement});
+		};
+	}
+	renderRoutes({routesInstance}){
+		this.routesContainer.innerHTML = "";
+		this.routesContainer.appendChild(helpers.createTitle({text: 'Routes : '}));
+		let routes = routesInstance.routes,
+				otherwise = routesInstance.routes;
+		let onSelectView = ({value: path})=>{
+			routesInstance.selectView({path});
+			let controllerName = routesInstance.routes.get(path).controller;
+		},onSave = ({value: path})=>{
+			routesInstance.saveTemplate({path})
+		};
+		let ul = document.createElement('ul');
+		routes.forEach((route, path)=>{
+			let redioView = helpers.createRadioButton({
+				groupName: 'selectViews',
+				value: path,
+				text: path,
+				onChange: onSelectView,
+				onClickSave: onSave
+			});
+			ul.appendChild(redioView);
+		})
+		this.routesContainer.appendChild(ul);
 	}
 }
 
@@ -290,48 +349,66 @@ class AngularPanel{
 
     this.initScriptRenderer();
     this.initRecipeRenderer();
+		this.initRoutesRenderer();
 
 		this.angularPage = new AngularPage({documentEditor});
 		this.initAngularPageEvents();
 
-    this.initScripts();
-
 		this.listenToDocumentEditorEvents();
+
+    this.initScripts();
   }
+
+	initRoutesRenderer(){
+		this.routesRendererContainer = document.createElement('div');
+		this.panelContainer.appendChild(this.routesRendererContainer);
+		// FIXME: for debug
+		window.r = this.routesRenderer = new RoutesRenderer({
+			container: this.routesRendererContainer,
+			documentEditor: this.documentEditor
+		});
+	}
+
+	highlightControllerAndDependencies({controllersNames}){
+		let controllers = controllersNames
+			.map((controllerName)=>{
+				return this.angularPage.getRecipeByName({name:controllerName});
+			}).filter(helpers.isOk);
+		this.recipeRenderer.highlightRecipes({recipes:controllers});
+
+		let scripts = controllers
+			.map((recipe)=>{
+				return this.angularPage.getScriptOfRecipe({recipe});
+			}).filter(helpers.isOk);
+		this.scriptsRenderer.highlightScripts({scripts});
+
+		let dependencies = this.angularPage.getDependenciesOfRecipes({recipes: controllers});
+		this.recipeRenderer.highlightRecipes({recipes: dependencies, level: '1'});
+
+		let dependenciesScripts = dependencies
+			.map((recipe)=>{
+				return this.angularPage.getScriptOfRecipe({recipe});
+			}).filter(helpers.isOk);
+		this.scriptsRenderer.highlightScripts({scripts: dependenciesScripts, level:'1'});
+
+		let dependenciesDependencies = this.angularPage.getDependenciesOfRecipes({recipes: dependencies});
+		this.recipeRenderer.highlightRecipes({recipes: dependenciesDependencies, level: '2'});
+
+		let dependenciesDependenciesScripts = dependenciesDependencies
+			.map((recipe)=>{
+				return this.angularPage.getScriptOfRecipe({recipe});
+			}).filter(helpers.isOk);
+		this.scriptsRenderer.highlightScripts({scripts: dependenciesDependenciesScripts, level: '2'});
+	}
 
 	listenToDocumentEditorEvents(){
 		this.documentEditor.onElementSelected(({element})=>{
 			let elementNControllerName = helpers.getParentsWithAttribute({element, attribute: 'ng-controller'});
 
-			let controllers = elementNControllerName
-				.map(({controllerName})=>{
-					return this.angularPage.getRecipeByName({name:controllerName});
-				}).filter(helpers.isOk);
-			this.recipeRenderer.highlightRecipes({recipes:controllers});
+			let controllersNames = elementNControllerName.map(({controllerName})=>controllerName);
 
-			let scripts = controllers
-				.map((recipe)=>{
-					return this.angularPage.getScriptOfRecipe({recipe});
-				}).filter(helpers.isOk);
-			this.scriptsRenderer.highlightScripts({scripts});
+			this.highlightControllerAndDependencies({controllersNames});
 
-			let dependencies = this.angularPage.getDependenciesOfRecipes({recipes: controllers});
-			this.recipeRenderer.highlightRecipes({recipes: dependencies, level: '1'});
-
-			let dependenciesScripts = dependencies
-				.map((recipe)=>{
-					return this.angularPage.getScriptOfRecipe({recipe});
-				}).filter(helpers.isOk);
-			this.scriptsRenderer.highlightScripts({scripts: dependenciesScripts, level:'1'});
-
-			let dependenciesDependencies = this.angularPage.getDependenciesOfRecipes({recipes: dependencies});
-			this.recipeRenderer.highlightRecipes({recipes: dependenciesDependencies, level: '2'});
-
-			let dependenciesDependenciesScripts = dependenciesDependencies
-				.map((recipe)=>{
-					return this.angularPage.getScriptOfRecipe({recipe});
-				}).filter(helpers.isOk);
-			this.scriptsRenderer.highlightScripts({scripts: dependenciesDependenciesScripts, level: '2'});
 		});
 	}
 
@@ -353,7 +430,11 @@ class AngularPanel{
       })
       .onRemoveRecipe(({recipe})=>{
         this.recipeRenderer.removeRecipe({recipe});
-      });
+      })
+			.onRoutesChage(({routesInstance})=>{
+				// TODO: verify 1st call (archi)
+				this.routesRenderer.render({routesInstance});
+			});
   }
   initRecipeRenderer(){
     this.recipeRendererContainer = document.createElement('div');
@@ -371,40 +452,7 @@ class AngularPanel{
 		button.innerText = 'Reorganise';
 		button.onclick = ()=>{
 			let selectedScripts = this.scriptsRenderer.getSelectedScripts();
-			let newScripts = selectedScripts
-				.reduce((arrNewScripts, script)=>{
-					// newApplicationScripts
-					let applicationsNames = this.angularPage.getApplicationsNamesOfScript({script});
-					let applicationsScripts = applicationsNames
-						.map((applicationName)=>{
-							let applicationInfos = this.angularPage.getApplicationInfos({applicationName});
-							if(!applicationInfos){
-								return null;
-							}
-							let declarationCode = helpers.getDeclarationCodeOfApplication({applicationInfos});
-							return this.documentEditor.scriptManager.createEmbdedScript({
-								content: declarationCode,
-								text: 'Application '+applicationInfos.applicationName
-							});
-						}).filter(helpers.isOk);
-					arrNewScripts = arrNewScripts.concat(applicationsScripts);
-					// recipes scripts
-					let recipesScripts = this.angularPage.getRecipesByScript({script})
-						.map((recipe)=>{
-							let code = recipe.code;
-							return this.documentEditor.scriptManager.createEmbdedScript({
-								content: code,
-								text: recipe.type+' '+recipe.name
-							});
-						});
-					return arrNewScripts.concat(recipesScripts);
-					// embeded create a new script/scripts that containe the script informations
-				}, []);
-
-			this.documentEditor.addRemoveScripts({
-				scriptsToAdd: newScripts,
-				scriptsToRemove: selectedScripts
-			});
+			this.angularPage.reorganizeScripts({scripts: selectedScripts});
 		};
 		this.scriptsRendererContainer.appendChild(button);
 	}
