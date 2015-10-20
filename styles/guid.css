@@ -32,3 +32,49 @@
 .highligh2{
   background-color: rgba(218, 193, 122, 0.20)
 }
+
+#boxManager {
+  width: 200px;
+  height: 95px;
+  position: relative;
+}
+
+#boxManager input {
+  height: 20px;
+  width: 50px;
+  text-align: center;
+  font-size: 12px;
+}
+
+#boxManager > div {
+  height: 40px;
+  width: 80px;
+  background-color: #6F7478;
+  position: absolute;
+  top: 25px;
+  left: 60px;
+}
+
+#boxManager #boxManagerTop {
+  position: absolute;
+  top: 0;
+  left: 74px;
+}
+
+#boxManager #boxManagerBottom {
+  position: absolute;
+  bottom: 3px;
+  left: 74px;
+}
+
+#boxManager #boxManagerLeft {
+  position: absolute;
+  top: 37px;
+  left: 0;
+}
+
+#boxManager #boxManagerRight {
+  position: absolute;
+  right: 0;
+  top: 37px;
+}

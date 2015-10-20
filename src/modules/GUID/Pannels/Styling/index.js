@@ -3,6 +3,7 @@ import HtmlAttributeInput from './Components/HtmlAttributeInput';
 import FontSizePicker from './Components/FontSizePicker';
 import FlexboxgridManager from './Components/FlexboxgridManager';
 import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
+import BoxManager from './Components/BoxManager';
 
 class Styling {
 
@@ -84,6 +85,11 @@ class Styling {
     let flexboxgridManager = new FlexboxgridManager({
       documentEditor: this.documentEditor
     });
+
+    let boxManager = new BoxManager({
+      documentEditor: this.documentEditor
+    });
+    boxManager.appendToElement(this.container);
 
     // let saveButton = document.createElement('button');
     // saveButton.textContent = 'Save style';
