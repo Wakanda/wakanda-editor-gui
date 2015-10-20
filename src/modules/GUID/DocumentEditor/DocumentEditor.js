@@ -283,7 +283,15 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 	onElementAttributeChange(callBack) {
-		this.events.on('GUID.dom.attribute.change', callBack);
+		this.events.on('GUID.dom.element.changeAttribute', callBack);
+	}
+	onElementChange(callBack){
+		this.events.on('GUID.dom.element.*', function({element}){
+			let eventName = this.eventName;
+			let changeType = eventName.split('.').pop(); //		append, remove, changeText
+
+			callBack({changeType, element});
+		});
 	}
 
 	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){

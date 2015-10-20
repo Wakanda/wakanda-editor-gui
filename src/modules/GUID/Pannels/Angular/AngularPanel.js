@@ -290,7 +290,9 @@ class AngularPanel{
 
     this.initScriptRenderer();
     this.initRecipeRenderer();
-    this.initAngularPage();
+
+		this.angularPage = new AngularPage({documentEditor});
+		this.initAngularPageEvents();
 
     this.initScripts();
 
@@ -338,16 +340,13 @@ class AngularPanel{
     this.scriptsRenderer.render({scripts});
     this.documentEditor.onAddScript(({script})=>{
       this.scriptsRenderer.addScript({script});
-      this.angularPage.addScript({script});
     });
     this.documentEditor.onRemoveScript(({script})=>{
       this.scriptsRenderer.removeScript({script});
-      this.angularPage.removeScript({script});
     });
   }
 
-  initAngularPage(){
-    this.angularPage = new AngularPage();
+  initAngularPageEvents(){
     this.angularPage.
       onAddRecipe(({recipe})=>{
         this.recipeRenderer.addRecipe({recipe});
@@ -355,9 +354,6 @@ class AngularPanel{
       .onRemoveRecipe(({recipe})=>{
         this.recipeRenderer.removeRecipe({recipe});
       });
-    this.documentEditor.scripts.forEach((script)=>{
-      this.angularPage.addScript({script});
-    });
   }
   initRecipeRenderer(){
     this.recipeRendererContainer = document.createElement('div');

@@ -258,7 +258,7 @@ class CommandFactory {
 				element.removeAttribute(attribute);
 			}
 			if(changeIt || removeIt){
-				this.events.emit('GUID.dom.attribute.change', {
+				this.events.emit('GUID.dom.element.changeAttribute', {
 					element, attribute, oldValue, value
 				});
 			}

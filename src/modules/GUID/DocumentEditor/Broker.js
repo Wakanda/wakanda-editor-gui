@@ -12,7 +12,7 @@ class Broker {
 		if(command){
 			this.history.splice(this.currentState, Number.MAX_VALUE, command);
 		}else{
-			console.error('the commanf given is null');
+			console.error('the given command is null');
 		}
 
 		return this;
@@ -51,10 +51,18 @@ class Broker {
 		return this;
 	}
 
+	get canUndo(){
+		return this.currentState > 0;
+	}
+
+	get canRedo(){
+		return this.currentState < this.history.length;
+	}
+
 	emitChange() {
 		let changeInfos = {
-			canUndo: this.currentState > 0,
-			canRedo: this.currentState < this.history.length
+			canUndo: this.canUndo,
+			canRedo: this.canRedo
 		};
 
 		for (let changeCallBack of this.onChanges) {
