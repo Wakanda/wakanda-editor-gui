@@ -5,7 +5,7 @@ class ColorPicker {
 
     this.htmlElement = document.createElement('input');
     this.htmlElement.id = id;
-    this.htmlElement.className = 'color';
+    this.jsColorPicker = new jscolor.color(this.htmlElement);
     this.htmlElement.placeholder = placeholder;
 
     this._subscribeToDocumentEditorEvents();
@@ -34,21 +34,21 @@ class ColorPicker {
   }
 
   _cleanPicker() {
-    this.htmlElement.color.fromRGB(1, 1, 1);
+    this.jsColorPicker.fromRGB(1, 1, 1);
     this.htmlElement.value = null;
   }
 
   _subscribeToDocumentEditorEvents() {
 
-    //TODO: BUG, body fires onElementSelected on UI when selected but not here, can not find out why...
+    //TODO: BUG, <body> fires onElementSelected on UI when selected but not here, can not find out why...
     this.documentEditor.onElementSelected( ({element: selectedElement}) => {
+      this.selectedElement = selectedElement;
 
       if (selectedElement) {
         let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:'color'});
         if (color) {
-          console.log('color picked', color);
           let {r, g, b} = this._rgbStringToRgbObj(color);
-          this.htmlElement.color.fromRGB(r, g, b);
+          this.jsColorPicker.fromRGB(r,g,b);
         }
         else {
           this._cleanPicker();
@@ -57,7 +57,22 @@ class ColorPicker {
     });
 
     this.documentEditor.onElementDeselected(() => {
+      this.selectedElement = null;
       this._cleanPicker();
+    });
+
+    this.documentEditor.onElementStyleAttributeChange(({element, attribute, oldValue, value}) => {
+
+      if (element === this.selectedElement) {
+        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:'color'});
+        if (color) {
+          let {r, g, b} = this._rgbStringToRgbObj(color);
+          this.jsColorPicker.fromRGB(r,g,b);
+        }
+        else {
+          this._cleanPicker();
+        }
+      }
     });
   }
 }
