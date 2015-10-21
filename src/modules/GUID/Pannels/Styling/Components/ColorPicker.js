@@ -1,7 +1,8 @@
 class ColorPicker {
 
-  constructor({documentEditor, id, placeholder}) {
+  constructor({documentEditor, id, placeholder, attributeName}) {
     this.documentEditor = documentEditor;
+    this.attributeName = attributeName;
 
     this.htmlElement = document.createElement('input');
     this.htmlElement.id = id;
@@ -45,7 +46,7 @@ class ColorPicker {
       this.selectedElement = selectedElement;
 
       if (selectedElement) {
-        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:'color'});
+        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:this.attributeName});
         if (color) {
           let {r, g, b} = this._rgbStringToRgbObj(color);
           this.jsColorPicker.fromRGB(r,g,b);
@@ -64,7 +65,7 @@ class ColorPicker {
     this.documentEditor.onElementStyleAttributeChange(({element, attribute, oldValue, value}) => {
 
       if (element === this.selectedElement) {
-        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:'color'});
+        let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:this.attributeName});
         if (color) {
           let {r, g, b} = this._rgbStringToRgbObj(color);
           this.jsColorPicker.fromRGB(r,g,b);

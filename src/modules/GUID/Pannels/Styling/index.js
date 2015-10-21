@@ -50,12 +50,27 @@ class Styling {
     this.colorPicker = new ColorPicker({
       documentEditor: this.documentEditor,
       id:'colorPicker',
-      placeholder: 'Text color'
+      placeholder: 'Text color',
+      attributeName: 'color'
     });
     this.colorPicker.appendToElement(this.container);
     this.colorPicker.onColorChange((colorHexFormat) => {
       this.documentEditor.changeSelectedElementStyleAttribute({
         attribute: 'color',
+        value: '#' + colorHexFormat
+      });
+    });
+
+    this.bgColorPicker = new ColorPicker({
+      documentEditor: this.documentEditor,
+      id:'bgColorPicker',
+      placeholder: 'Background color',
+      attributeName: 'background-color'
+    });
+    this.bgColorPicker.appendToElement(this.container);
+    this.bgColorPicker.onColorChange((colorHexFormat) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'background-color',
         value: '#' + colorHexFormat
       });
     });
