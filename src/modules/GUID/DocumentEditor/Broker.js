@@ -1,5 +1,6 @@
 //implementing a chaining pattern
 // this class manage history of changes, it need more traitement, for example to concatenate n commandes one one commande ... (it will be needed for onkeyup changes ...)
+
 class Broker {
 	constructor(...args) {
 		this.onChanges = [];
@@ -74,4 +75,25 @@ class Broker {
 
 }
 
-export default Broker;
+class TemporaryBroker extends Broker {
+	// when using this class keep in mind that you must not use the inherited methods
+	constructor(){
+		super();
+	}
+	exec({command}){
+		this.createCommand(command)
+				.executeNextCommand();
+	}
+	setToinitialState(){
+		while (this.canUndo) {
+			this.undo();
+		}
+	}
+	setToFinalState(){
+		while (this.canRedo) {
+			this.redo();
+		}
+	}
+};
+
+export {Broker, TemporaryBroker};

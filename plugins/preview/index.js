@@ -25,9 +25,7 @@ export default {
 	},
 
 	preview(){
-
-		let html = IDE.GUID.documentEditor.document.children[0];
-		let cloneHtml = html.cloneNode(true);
+		let cloneHtml = IDE.GUID.documentEditor.htmlClone;
 
 		let head = cloneHtml.querySelector('head');
 		let firstScript = head.querySelector('script');
@@ -45,6 +43,9 @@ export default {
 
 			this.prevIframe.src = response;
 			let iframePrev = this.prevIframe;
+			iframePrev.onLoad = function(){
+				log(this.contentWindow.location);
+			};
 
 			bootbox.dialog({
 				message: iframePrev,
