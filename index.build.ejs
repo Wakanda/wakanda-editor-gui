@@ -61,13 +61,6 @@
     </div>
   </div>
 
-
-  <!-- <div class="cloud-ide-tree-editor-handle unselectable">
-    <div>.
-      <br>.
-      <br>.</div>
-  </div> -->
-
   <div class="cloud-ide-editor" id="cloud-ide-editor"></div>
   <% if(env === 'development') { %>
     <script src="http://localhost:9000/webpack-dev-server.js"></script>
@@ -75,9 +68,7 @@
       <script src="./lib/emmet.js"></script>
       <script src="./lib/ace-min-noconflict/ace.js"></script>
       <script src="./lib/jscolor/jscolor.js"></script>
-      </script>
-      <script src="/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
+      <script src="./build/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
 </body>
-
 
 </html>

@@ -12,13 +12,8 @@ var Module = {
 			var Styling = require("./Pannels/Styling");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
-			let path = IDE.qParams.path;
-			// console.log(IDE.qParams.path);
-			let strWebFolder = 'WebFolder';
-			let i = path.indexOf(strWebFolder);
-			path = path.substring(i + strWebFolder.length);
-			//TODO mongoose.exe
-			path = `http://localhost:9090${path}`;
+			//TODO
+			let path = './workspace/';
 
 			IDE.GUID.documentEditor = new Editor({
 				path

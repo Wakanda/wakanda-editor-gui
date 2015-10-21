@@ -6,7 +6,7 @@ class FlexboxgridManager {
       this.documentEditor = documentEditor;
 
       //FIXME: has to find a better way to do that
-      this.FLEXBOXGRID_URL = 'http://localhost:9090/flexboxgrid.min.css';
+      this.FLEXBOXGRID_URL = '../lib/flexboxgrid.min.css';
 
       this._injectLib({
         flexboxgridUrl: this.FLEXBOXGRID_URL
