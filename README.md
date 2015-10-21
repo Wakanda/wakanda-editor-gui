@@ -3,6 +3,9 @@ New-GUI
 
 Welcome to the repository of the new Wakanda GUI Designer. It is currently a **Proof Of Concept**, so it might be unstable and contains bug. Do not hesistate to report if you find one by opening an issue.
 
+**Note**
+This version has been pulled from [this commit on GUID branch, repo Wakanda/sw](https://github.com/Wakanda/sw/commit/bd08f08b7efaabc830a8e82fd43e79ac51dccfaa), then adapt to run standalone.
+
 #Setup
 ##Prerequisites
 - NodeJS (tested with node v4)
