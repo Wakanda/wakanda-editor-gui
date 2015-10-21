@@ -1,5 +1,3 @@
-import AngularRecipe from './AngularPage/AngularRecipe';
-
 let helpers = {
   // NOTE: temporary
   getConfigRoutesCode({routes, otherwise, applicationName}){
@@ -22,6 +20,15 @@ let helpers = {
     })(angular.module('${applicationName}'));
     `;
     return code;
+  },
+
+  // NOTE: I do not write this function so, it must be rewritten (its probabely buggy)
+  //  from http://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically-from-javascript
+  getFunctionParamsAsStringArray({func}){
+    return func.toString()
+    .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s))/mg,'')
+    .match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+    .split(/,/);
   },
   getDeclarationCodeOfApplication({applicationInfos: application}){
     let applicationName = application.applicationName;
@@ -62,30 +69,6 @@ let helpers = {
       elementIterate = elementIterate.parentElement;
     }
     return elementIterate !== null;
-  },
-  createRecipes({applicationInfos}){
-    let recipes = applicationInfos.recipes;
-    let applicationName = applicationInfos.applicationName;
-    return this.recipeTypes.getAsArray()
-    .map((recipeType)=>{
-      let currentRecipes = recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
-      // TODO: there is surely something to improve here
-      return currentRecipes.map((currentRecipe)=>{
-        return this.createRecipe({recipe: currentRecipe, recipeType, applicationName});
-      });
-    }).reduce((allRecips, currentRecips)=>{
-      return allRecips.concat(currentRecips);
-    }, []);
-  },
-  createRecipe({recipe, recipeType, applicationName}){
-    let recipeContent = recipe[recipeType + 'Content'];
-    let recipeName = recipe[recipeType + 'Name'];
-    return new AngularRecipe({
-      applicationName,
-      recipeType,
-      recipeContent,
-      recipeName
-    });
   },
   extractInfos({script}) {
 		return script

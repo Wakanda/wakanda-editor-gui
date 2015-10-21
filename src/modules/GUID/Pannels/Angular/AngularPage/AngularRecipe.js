@@ -38,6 +38,7 @@ class AngularRecipe{
   }
 
   get code(){
+    // TODO: use templates
     if(this.type === recipeTypes.recipes.config){
       let dependenciesCode = this._dependenciesNames
                                  .map((dep)=>`'${dep}'`)
@@ -101,7 +102,7 @@ class AngularRecipe{
       functionObject = dependencies.pop();
     }else if (recipeContent instanceof Function){
       // from function
-      dependencies = AngularRecipe.getFunctionParamsAsStringArray({func: recipeContent});
+      dependencies = helpers.getFunctionParamsAsStringArray({func: recipeContent});
       functionObject = recipeContent;
     }else{
       console.warn("must be a constant, if not it's weird");
@@ -109,13 +110,28 @@ class AngularRecipe{
 
     return {dependencies, functionObject};
   }
-  // NOTE: I do not write this function so, it must be rewritten (its probabely buggy) in future is is from
-  //       http://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically-from-javascript
-  static getFunctionParamsAsStringArray({func}){
-    return func.toString()
-    .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s))/mg,'')
-    .match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
-    .split(/,/);
+
+  static createRecipes({applicationInfos}){
+    let recipes = applicationInfos.recipes;
+    let applicationName = applicationInfos.applicationName;
+    return this.recipeTypes.getAsArray()
+      .map((recipeType)=>{
+        let currentRecipes = recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
+        // TODO: there is surely something to improve here
+        return currentRecipes.map((currentRecipe)=>{
+          let recipeName = currentRecipe[recipeType + 'Name'],
+              recipeContent = currentRecipe[recipeType + 'Content'];
+          return new AngularRecipe({
+            applicationName,
+            recipeType,
+            recipeContent,
+            recipeName
+          });
+        });
+      })
+      .reduce((allRecips, currentRecips)=>{
+        return allRecips.concat(currentRecips);
+      }, []);
   }
 
 }
