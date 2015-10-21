@@ -3,7 +3,7 @@ import Outline         from './Outline';
 import Components      from './Components';
 import Attributes      from './Attributes';
 import Styling         from './Styling';
-import AngularPanel    from './Angular/AngularPanel';
+import AngularPanel    from './Angular';
 import ResponsiveSelector from './ResponsiveSelector';
 
 
