@@ -77,4 +77,12 @@
   position: absolute;
   right: 0;
   top: 37px;
+.panelClassList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.panelClassList .elementClassDelete {
+  font-weight: bold;
+  padding-right: 5px;
 }

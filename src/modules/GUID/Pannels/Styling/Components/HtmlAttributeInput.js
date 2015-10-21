@@ -31,12 +31,6 @@ class HtmlAttributeInput {
         this.htmlElement.value = value;
       }
     });
-
-    this.documentEditor.onElementClassChange(({changeType, element, className}) => {
-      if (this.attributeName === 'class') {
-        this.htmlElement.value = element.className;
-      }
-    });
   }
 }
 

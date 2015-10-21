@@ -4,6 +4,7 @@ import FontSizePicker from './Components/FontSizePicker';
 import FlexboxgridManager from './Components/FlexboxgridManager';
 import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
 import BoxManager from './Components/BoxManager';
+import ClassPicker from './Components/ClassPicker';
 
 class Styling {
 
@@ -46,18 +47,6 @@ class Styling {
       });
     });
 
-    let classInput = new HtmlAttributeInput({
-      documentEditor: this.documentEditor,
-      attributeName: 'class',
-      placeholder: 'class'
-    });
-    classInput.appendToElement(this.container);
-    classInput.onValueChange((value) => {
-      this.documentEditor.changeElementClass({
-        fullClassName: value
-      });
-    });
-
     this.colorPicker = new ColorPicker({
       documentEditor: this.documentEditor,
       id:'colorPicker',
@@ -90,6 +79,13 @@ class Styling {
       documentEditor: this.documentEditor
     });
     boxManager.appendToElement(this.container);
+    let classPicker = new ClassPicker({
+      documentEditor: this.documentEditor
+    });
+    classPicker.appendToElement(this.container);
+    classPicker.onClassInputValueChange(({value}) => {
+      this.documentEditor.addClass({className: value});
+    });
 
     // let saveButton = document.createElement('button');
     // saveButton.textContent = 'Save style';

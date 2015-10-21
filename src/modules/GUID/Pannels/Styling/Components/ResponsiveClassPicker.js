@@ -120,12 +120,6 @@ class ResponsiveClassPicker {
         this._determineResponsiveClass({element: this.selectedElement});
       }
     });
-
-    this.documentEditor.onElementClassChange(() =>{
-      if (this.selectedElement) {
-        this._determineResponsiveClass({element: this.selectedElement});
-      }
-    });
   }
 }
 
