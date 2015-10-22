@@ -3,7 +3,7 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling"], function(require) {
+		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling", "./DragulaManager"], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
@@ -11,8 +11,9 @@ var Module = {
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
+			var DragulaManager = require('./DragulaManager');
 
-			//TODO
+			//TODO - URL of the iframe content
 			let path = './workspace/';
 
 			IDE.GUID.documentEditor = new Editor({
@@ -25,6 +26,11 @@ var Module = {
 				});
 				IDE.GUID.documentEditorBroker = documentEditor.broker;
 
+				IDE.GUID.dragulaManager = new DragulaManager({
+					documentEditor,
+					sourceContainerId: 'components'
+				});
+
 				// load Pannels
 				IDE.GUID.panels = {};
 				// Outline
@@ -32,7 +38,7 @@ var Module = {
 					containerId: 'outline',
 					documentEditor
 				});
-				Components
+				// Components
 				IDE.GUID.panels.htmlComponents = new Components({
 					documentEditor,
 					containerId: 'components',

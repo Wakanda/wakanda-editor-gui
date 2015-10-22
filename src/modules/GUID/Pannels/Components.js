@@ -1,37 +1,34 @@
-import { 	HtmlComponent, PolymerComponent }
-from '../Component';
+import { 	HtmlComponent, PolymerComponent } from '../Component';
 
 class Components {
 	constructor({documentEditor, containerId}) {
 		this.documentEditor = documentEditor || IDE.GUID.documentEditor;
+		this.events = this.documentEditor.events;
 
-		this.container = document.createElement('ul');
-		document.getElementById(containerId).appendChild(this.container);
+		this.container = document.getElementById(containerId);
 
-		this.documentEditor.documentPromise.then((iframeDoc) => {
-			this.htmlComponents = new HtmlComponent({
-				document: iframeDoc
-			});
-
-			this.render();
+		this.htmlComponents = new HtmlComponent({
+			document: this.documentEditor.document
 		});
+
+		this.render();
 	}
 
 	render() {
-		let createInsert = (compoName) => {
-			return () => {
-				let element = this.htmlComponents.renderComponent(compoName /*, compoName*/ );
-				this.documentEditor.appendElement({element});
-			}
-		};
+		// let createInsert = (compoName) => {
+		// 	return () => {
+		// 		let element = this.htmlComponents.renderComponent(compoName);
+		// 		this.documentEditor.appendElement({element});
+		// 	};
+		// };
 
 		let compoNames = this.htmlComponents.getComponentsNames();
 		for (let compoName of compoNames) {
-			let li = document.createElement('li');
-			li.textContent = compoName;
-			li.addEventListener('click', createInsert(compoName));
+			let div = document.createElement('div');
+			div.innerHTML = compoName;
+			// div.addEventListener('click', createInsert(compoName));
 
-			this.container.appendChild(li);
+			this.container.appendChild(div);
 		}
 	}
 
