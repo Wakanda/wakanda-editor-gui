@@ -35,11 +35,14 @@ pluginsToLoad.push(function() {
 });
 
 module.exports = {
-  entry: "./main.js",
+  entry: [
+    "webpack/hot/dev-server",
+    "./main.js"
+  ],
   output: {
     filename: environment === 'production' ? "[name].build.[hash].js" : "[name].build.js",
-    path: "./build/assets/js/",
-    publicPath: './build/assets/js/'
+    path: __dirname + "/build/assets/js/",
+    publicPath: 'http://localhost:9090/build/assets/js/'
   },
   resolve: {
     alias: {

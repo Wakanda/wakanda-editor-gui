@@ -9,8 +9,7 @@
     "webpack-build": "node ./node_modules/webpack/bin/webpack.js --progress --colors -d",
     "webpack-build-test": "NODE_ENV=test node ./node_modules/webpack/bin/webpack.js --progress --colors -d",
     "webpack-build-prod": "NODE_ENV=production node ./node_modules/webpack/bin/webpack.js --progress --colors -p",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npm run webpack-build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Wakanda SAS",
   "dependencies": {
