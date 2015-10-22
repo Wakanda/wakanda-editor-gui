@@ -193,7 +193,7 @@ class AngularPage {
               // NOTE:  temporary
               this.applicationNameToInfos.set(applicationName, application);
             }
-            let allRecipes = AngularRecipe.createRecipes({applicationInfos});
+            let allRecipes = AngularRecipe.createRecipes({applicationInfos: application});
             allRecipes.forEach((recipe)=>{
               this.addRecipe({recipe});
               this.recipeToScript.set(recipe, script);
