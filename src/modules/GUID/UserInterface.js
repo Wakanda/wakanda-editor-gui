@@ -102,6 +102,14 @@ class UserInterface {
 				console.log('position over canvas', this.lastPosition);
 				let availableElement = this._elementAtPosition(this.lastPosition);
 				if (availableElement) {
+
+					if (availableElement.tagName.toLowerCase() === 'html') {
+						availableElement = this.documentEditor.document.body;
+					}
+
+					//FIXME
+					element.style.border = null;
+
 					this.documentEditor.appendElement({
 						element,
 						parent: availableElement
@@ -267,15 +275,19 @@ class UserInterface {
 			this.resetCanvasDimentions();
 		});
 		this.documentEditor.onAppendElement(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onRemoveElement(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onElementStyleAttributeChange(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onElementClassChange(({element, className}) => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 	}

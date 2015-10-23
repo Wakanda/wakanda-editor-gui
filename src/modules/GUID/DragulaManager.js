@@ -36,6 +36,8 @@ class DragulaManager {
 
 		this.drake.on('cloned', (clone, original, type) => {
 			console.log('[dragula] cloned element clone, original', clone, original);
+
+      //FIXME
       clone.style.border = '1px solid red';
 		});
   }
