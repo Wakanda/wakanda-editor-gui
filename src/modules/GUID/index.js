@@ -40,10 +40,9 @@ var Module = {
 					documentEditor
 				});
 				// Components
-				IDE.GUID.panels.htmlComponents = new Components({
+				IDE.GUID.panels.components = new Components({
 					documentEditor,
-					containerId: 'components',
-					userInterface: IDE.GUID.userInterface
+					containerId: 'components'
 				});
 				// angular panel
 				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
