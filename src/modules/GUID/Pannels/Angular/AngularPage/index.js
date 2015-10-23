@@ -3,9 +3,13 @@ import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
 import helpers from '../helpers';
 
+const NGAPPATTRIBUTE = 'ng-app';
+
 class AngularPage {
   constructor({documentEditor}){
     this.documentEditor = documentEditor;
+
+    this._applicationElement = this.documentEditor.document.querySelector(`[${NGAPPATTRIBUTE}]`);
 
     this.applicationNameToScript = new Map();
     this.applicationNameToInfos = new Map();
@@ -27,6 +31,21 @@ class AngularPage {
         }
       });
     });
+  }
+  get ready(){
+    return this.scriptsPromise.then(()=>{
+      return this;
+    });
+  }
+  get recipes(){
+    return Array.from(this.recipesMap.values());
+  }
+  get applicationName(){
+    let ngAppAttContent = this.applicationElement.getAttribute(NGAPPATTRIBUTE);
+    if(!this.applicationNameToScript.has(ngAppAttContent)){
+      console.warn('arror');
+    }
+    return ngAppAttContent; //must be just one
   }
   reorganizeScripts({scripts: selectedScripts}){
     let newScripts = selectedScripts
@@ -63,6 +82,53 @@ class AngularPage {
       scriptsToAdd: newScripts,
       scriptsToRemove: selectedScripts
     });
+  }
+  get applicationElement(){
+    if (this._applicationElement){
+      return this._applicationElement;
+    }else{
+      return null;
+    }
+  }
+  setApplicationToSelectedElement({applicationName}){
+    let selectedElement = this.documentEditor.selectedElement;
+    if(!selectedElement){
+      return false;
+    }
+    this.setApplicationElement({
+      applicationElement: selectedElement,
+      applicationName
+    });
+
+    let declarationCode = `
+      angular.module('${applicationName}', []);
+    `;
+
+    let script = this.documentEditor.scriptManager.createEmbdedScript({
+      content: declarationCode,
+      text: 'Application '+ applicationName
+    });
+
+    this.documentEditor.addScript({script});
+
+    return true;
+  }
+  setApplicationElement({applicationElement, applicationName}){
+    let oldApplicationElement = this.applicationElement;
+    let elements = [],
+        attributes = [],
+        values = [];
+
+    if(oldApplicationElement && oldApplicationElement.getAttribute(NGAPPATTRIBUTE)){
+      elements.push(oldApplicationElement);
+      attributes.push(NGAPPATTRIBUTE);
+      values.push(null);
+    }
+    elements.push(applicationElement);
+    attributes.push(NGAPPATTRIBUTE);
+    values.push(applicationName);
+
+    this.documentEditor.changeElementAttributes({elements, attributes, values});
   }
   get routesPromise(){
     return this._routesPromise;
@@ -195,8 +261,8 @@ class AngularPage {
             }
             let allRecipes = AngularRecipe.createRecipes({applicationInfos: application});
             allRecipes.forEach((recipe)=>{
-              this.addRecipe({recipe});
               this.recipeToScript.set(recipe, script);
+              this.addRecipe({recipe});
             });
           });
           return script;
