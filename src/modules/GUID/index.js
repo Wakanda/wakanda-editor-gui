@@ -21,15 +21,16 @@ var Module = {
 			})
 			.onReady((documentEditor) => {
 
-				IDE.GUID.userInterface = new UserInterface({
-					documentEditor
-				});
-				IDE.GUID.documentEditorBroker = documentEditor.broker;
-
+				//DragulaManager must be initialized *before* UserInterface
 				IDE.GUID.dragulaManager = new DragulaManager({
 					documentEditor,
 					sourceContainerId: 'components'
 				});
+
+				IDE.GUID.userInterface = new UserInterface({
+					documentEditor
+				});
+				IDE.GUID.documentEditorBroker = documentEditor.broker;
 
 				// load Pannels
 				IDE.GUID.panels = {};
