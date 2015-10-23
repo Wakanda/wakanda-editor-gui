@@ -13,7 +13,7 @@ var Module = {
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
 			//TODO
-			let path = './workspace/';
+			let path = './workspace/' + location.hash.substring(1);
 
 			IDE.GUID.documentEditor = new Editor({
 				path
