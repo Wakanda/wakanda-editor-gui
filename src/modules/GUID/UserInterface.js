@@ -97,6 +97,10 @@ class UserInterface {
 	_subscribeToDragulaEvent() {
 		let dragulaManager = this.documentEditor.dragulaManager;
 
+		dragulaManager.onCloned((clone, original) => {
+			clone.renderComponent = original.renderComponent;
+		});
+
 		dragulaManager.onDrop((element, target) => {
 			if (this.mouseOverCanvas) {
 				console.log('position over canvas', this.lastPosition);
@@ -111,7 +115,7 @@ class UserInterface {
 					element.style.border = null;
 
 					this.documentEditor.appendElement({
-						element,
+						element: element.renderComponent(),
 						parent: availableElement
 					});
 				}

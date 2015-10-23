@@ -22,7 +22,7 @@ export default {
 		'attributes': [{
 			'name': 'href',
 			'type': 'string', //TODO see if its better to change it to select
-			'defeaultValue': '/#'
+			'defaultValue': '/#'
 		}],
 		creationStep: functUtils.fillwithName
 	},
@@ -38,11 +38,11 @@ export default {
 		'attributes': [{
 				'name': 'src',
 				'type': 'string',
-				'defeaultValue': '/src/wakanda.jpg'
+				'defaultValue': '/src/wakanda.jpg'
 			}, {
 				'name': 'alt',
 				'type': 'string',
-				'defeaultValue': 'Alternate text'
+				'defaultValue': 'Alternate text'
 			}
 			// TODO height & width in styling
 		],

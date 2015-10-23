@@ -18,8 +18,8 @@ class HtmlComponent extends Component{
 			let node = this.documentEditor.document.createElement(componentName);
 
 			htmlComponent.attributes.forEach(function(attr) {
-				if (attr['defeaultValue'] !== undefined) {
-					node.setAttribute(attr['name'], attr['defeaultValue']);
+				if (attr['defaultValue'] !== undefined) {
+					node.setAttribute(attr['name'], attr['defaultValue']);
 				}
 			});
 

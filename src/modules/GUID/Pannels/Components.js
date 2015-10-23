@@ -26,6 +26,9 @@ class Components {
 		for (let compoName of compoNames) {
 			let div = document.createElement('div');
 			div.innerHTML = compoName;
+			div.renderComponent = () => {
+				return this.htmlComponents.renderComponent(compoName);
+			};
 			// div.addEventListener('click', createInsert(compoName));
 
 			this.container.appendChild(div);
