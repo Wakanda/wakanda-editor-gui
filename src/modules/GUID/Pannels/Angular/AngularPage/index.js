@@ -100,6 +100,9 @@ class AngularPage {
     if(!selectedElement){
       return false;
     }
+    let currentApplicationName = this.applicationName;
+    let oldApplicationScript = this.applicationNameToScript.get(currentApplicationName);
+
     this.setApplicationElement({
       applicationElement: selectedElement,
       applicationName
@@ -114,7 +117,10 @@ class AngularPage {
       text: 'Application '+ applicationName
     });
 
-    this.documentEditor.addScript({script});
+    this.documentEditor.addRemoveScripts({
+      scriptsToAdd: [script],
+      scriptsToRemove: oldApplicationScript ? [oldApplicationScript] : []
+    });
 
     return true;
   }
@@ -132,6 +138,8 @@ class AngularPage {
     elements.push(applicationElement);
     attributes.push(NGAPPATTRIBUTE);
     values.push(applicationName);
+
+    this._applicationElement = applicationElement
 
     this.documentEditor.changeElementAttributes({elements, attributes, values});
   }
