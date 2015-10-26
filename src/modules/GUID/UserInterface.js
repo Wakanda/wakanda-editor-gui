@@ -27,6 +27,9 @@ class UserInterface {
 
 		let keyboardJS = require('../../../lib/keyboardjs');
 		this.initKeyboardWatchers(keyboardJS);
+		this.lastPosition = null;
+		this.mouseOverCanvas = false;
+		this._subscribeToDragulaEvent();
 	}
 
 	initKeyboardWatchers(keyboardJS) {
@@ -79,21 +82,62 @@ class UserInterface {
 		this.events.on('GUID.UI.clearHighLighting', callBack);
 	}
 
+	_elementAtPosition({x, y}) {
+		if (x >= 0 && y > 0) {
+			return this.documentEditor.getElementFromPoint({
+				x,
+				y
+			});
+		}
+		else {
+			return null;
+		}
+	}
+
+	_subscribeToDragulaEvent() {
+		let dragulaManager = this.documentEditor.dragulaManager;
+
+		dragulaManager.onCloned((clone, original) => {
+			clone.renderComponent = original.renderComponent;
+		});
+
+		dragulaManager.onDrop((element, target) => {
+			if (this.mouseOverCanvas) {
+				console.log('position over canvas', this.lastPosition);
+				let availableElement = this._elementAtPosition(this.lastPosition);
+				if (availableElement) {
+
+					if (availableElement.tagName.toLowerCase() === 'html') {
+						availableElement = this.documentEditor.document.body;
+					}
+
+					//FIXME
+					element.style.border = null;
+
+					this.documentEditor.appendElement({
+						element: element.renderComponent(),
+						parent: availableElement
+					});
+				}
+			}
+		});
+	}
+
 	initHighLighting() {
 		this.cloudEditorIDE.addEventListener('mouseleave', () => {
 			this.clearHighLighting();
+			this.mouseOverCanvas = false;
 		});
 
 		this.fabric_canvas.on('mouse:move', (options) => {
+			this.mouseOverCanvas = true;
 			// TODO : DEFER (?)
 			let [x, y] = [options.e.offsetX, options.e.offsetY];
+			this.lastPosition = {x, y};
 
-			if (x >= 0 && y > 0) {
-				let elementsAtLocation = this.documentEditor.getElementFromPoint({
-					x: options.e.offsetX,
-					y: options.e.offsetY
-				});
-				this.highLightElement(elementsAtLocation);
+			let element = this._elementAtPosition({x, y});
+			if (element) {
+				this.highLightElement(element);
 			}
 		});
 
@@ -235,15 +279,19 @@ class UserInterface {
 			this.resetCanvasDimentions();
 		});
 		this.documentEditor.onAppendElement(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onRemoveElement(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onElementStyleAttributeChange(() => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 		this.documentEditor.onElementClassChange(({element, className}) => {
+			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 	}

@@ -3,7 +3,7 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling"], function(require) {
+		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling", "./DragulaManager"], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
@@ -11,14 +11,21 @@ var Module = {
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
+			var DragulaManager = require('./DragulaManager');
 
-			//TODO
+			//TODO - URL of the iframe content
 			let path = './workspace/' + location.hash.substring(1);
 
 			IDE.GUID.documentEditor = new Editor({
 				path
 			})
 			.onReady((documentEditor) => {
+
+				//NOTE DragulaManager must be initialized *before* UserInterface
+				IDE.GUID.dragulaManager = new DragulaManager({
+					documentEditor,
+					sourceContainerId: 'components'
+				});
 
 				IDE.GUID.userInterface = new UserInterface({
 					documentEditor
@@ -32,11 +39,10 @@ var Module = {
 					containerId: 'outline',
 					documentEditor
 				});
-				Components
-				IDE.GUID.panels.htmlComponents = new Components({
+				// Components
+				IDE.GUID.panels.components = new Components({
 					documentEditor,
-					containerId: 'components',
-					userInterface: IDE.GUID.userInterface
+					containerId: 'components'
 				});
 				// angular panel
 				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({

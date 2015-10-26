@@ -29,6 +29,10 @@ class DocumentEditor {
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
 
+				//FIXME - Ugly fix to force html and body to fill iframe properly
+				this.document.documentElement.style.height = '100%';
+				this.document.body.style.margin = '0';
+
 				this.styleManager = new StyleManager({
 					document: iframeDoc
 				});
