@@ -41,11 +41,16 @@ class AngularPage {
     return Array.from(this.recipesMap.values());
   }
   get applicationName(){
-    let ngAppAttContent = this.applicationElement.getAttribute(NGAPPATTRIBUTE);
-    if(!this.applicationNameToScript.has(ngAppAttContent)){
-      console.warn('arror');
+    let applicationElement = this.applicationElement;
+    if(applicationElement){
+      let ngAppAttContent = this.applicationElement.getAttribute(NGAPPATTRIBUTE);
+      if(!this.applicationNameToScript.has(ngAppAttContent)){
+        console.warn('arror');
+      }
+      return ngAppAttContent; //must be just one
+    }else{
+      return null;
     }
-    return ngAppAttContent; //must be just one
   }
   reorganizeScripts({scripts: selectedScripts}){
     let newScripts = selectedScripts

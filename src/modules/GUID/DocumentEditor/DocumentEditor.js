@@ -24,6 +24,7 @@ class DocumentEditor {
 		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
+		this._path = path;
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
@@ -46,6 +47,10 @@ class DocumentEditor {
 
 				return iframeDoc;
 			});
+	}
+
+	get path(){
+		return this._path;
 	}
 
 	loadIframe({path}) {
