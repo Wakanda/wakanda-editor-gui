@@ -64,6 +64,13 @@ class Outline {
 		let {
 			id, parent, text, icon
 		} = this.createJsTreeNode(element);
+		debugger;
+
+		if (this.idToElementMap.has(id)) {
+			let e = this.idToElementMap.get(id);
+			let newNode = this.createJsTreeNode(e);
+			debugger;
+		}
 
 		this.idToElementMap.set(id, element);
 
@@ -165,7 +172,7 @@ class Outline {
 
 		let icon = require('./html.png');
 
-		this.idToElementMap.set(id, item);
+		// this.idToElementMap.set(id, item);
 
 		return {
 			id, parent, text, icon

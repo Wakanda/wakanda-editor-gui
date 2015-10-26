@@ -22,13 +22,13 @@ class DragulaManager {
       }
 		});
 
-    // this.drake.on('drag', (element, source) => {
-		// 	console.log('[dragula] starting to drag element', element);
-		// });
-    //
-		// this.drake.on('dragend', (element) => {
-		// 	console.log('[dragula] drag ended', element);
-		// });
+    this.drake.on('drag', (element, source) => {
+			console.log('[dragula] starting to drag element', element);
+		});
+
+		this.drake.on('dragend', (element) => {
+			console.log('[dragula] drag ended', element);
+		});
 
 		this.drake.on('drop', (element, target, source, sibling) => {
 			console.log('[dragula] drop element, target, sibling', element, target, sibling);
@@ -36,9 +36,6 @@ class DragulaManager {
 
 		this.drake.on('cloned', (clone, original, type) => {
 			console.log('[dragula] cloned element clone, original', clone, original);
-
-      //FIXME
-      clone.style.border = '1px solid red';
 		});
   }
 
@@ -49,7 +46,7 @@ class DragulaManager {
 
   //element
   onDragEnd(callback) {
-    this.drake.on('dragend');
+    this.drake.on('dragend', callback);
   }
 
   //element, target, source, sibling

@@ -203,6 +203,25 @@ class DocumentEditor {
 			.executeNextCommand();
 	}
 
+	appendAfterElement({element, elementRef = this.selectedElement}) { // append element after selected element if elementRef is undefined
+		let command = this.commandFactory.appendAfterElement({
+			element, elementRef
+		});
+		command.afterExecute = () => {
+			this.selectElement({
+				element
+			});
+		};
+		command.afterUndo = () => {
+			this.selectElement({
+				element: elementRef
+			});
+		};
+
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+
 	temporaryAppendElement({element, parent = this.selectedElement}){
 		let command = this.commandFactory.appendElement({
 			parent,

@@ -112,6 +112,27 @@ class CommandFactory {
 		});
 	}
 
+	appendAfterElement({element, elementRef}) {
+		let parent = elementRef.parentElement;
+
+		let execute = () => {
+			parent.insertBefore(element, elementRef.nextSibling);
+			this.events.emit('GUID.dom.element.append', {
+				parent, child: element, elementRef: elementRef.nextSibling
+			});
+		};
+		let undo = () => {
+			parent.removeChild(element);
+			this.events.emit('GUID.dom.element.remove', {
+				parent, child: element
+			});
+		};
+
+		return new AtomicCommand({
+			execute, undo
+		});
+	}
+
 	changeElementText({text, element}){
 
 		let childNodes = element.childNodes;
