@@ -37,7 +37,8 @@ var Module = {
 				// Outline
 				IDE.GUID.panels.outline = new Outline({
 					containerId: 'outline',
-					documentEditor
+					documentEditor,
+					userInterface: IDE.GUID.userInterface
 				});
 				// Components
 				IDE.GUID.panels.components = new Components({

@@ -174,7 +174,7 @@ class UserInterface {
 				this.highLightElement(element);
 			}
 
-			let tagName = element.tagName.toLowerCase();
+			let tagName = element ? element.tagName.toLowerCase() : null;
 			if(this.isDraggingElement && element && tagName != 'body' && tagName != 'html') {
 				let elRect = element.getBoundingClientRect();
 				let coef = 0.2;

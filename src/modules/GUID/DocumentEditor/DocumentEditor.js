@@ -165,7 +165,7 @@ class DocumentEditor {
 
 		let command = this.commandFactory.removeElement({element});
 
-		let parent = this.selectedElement.parentElement;
+		let parent = element.parentElement;
 
 		command.afterExecute = () => {
 			if (this.selectedElement === element) {
