@@ -13,88 +13,90 @@ var Module = {
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 			var DragulaManager = require('./DragulaManager');
 
-			//TODO - URL of the iframe content
-			let path = './workspace/' + location.hash.substring(1);
+			window.onhashchange = ()=>{
+				//TODO - URL of the iframe content
+				let path = './workspace/' + location.hash.substring(1);
 
-			IDE.GUID.documentEditor = new Editor({
-				path
-			})
-			.onReady((documentEditor) => {
+				IDE.GUID.documentEditor = new Editor({
+					path
+				})
+				.onReady((documentEditor) => {
 
-				//NOTE DragulaManager must be initialized *before* UserInterface
-				IDE.GUID.dragulaManager = new DragulaManager({
-					documentEditor,
-					sourceContainerId: 'components'
+					//NOTE DragulaManager must be initialized *before* UserInterface
+					IDE.GUID.dragulaManager = new DragulaManager({
+						documentEditor,
+						sourceContainerId: 'components'
+					});
+
+					IDE.GUID.userInterface = new UserInterface({
+						documentEditor
+					});
+
+					// load Pannels
+					IDE.GUID.panels = {};
+					// Outline
+					IDE.GUID.panels.outline = new Outline({
+						containerId: 'outline',
+						documentEditor
+					});
+					// Components
+					IDE.GUID.panels.components = new Components({
+						documentEditor,
+						containerId: 'components'
+					});
+					// angular panel
+					let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
+						documentEditor,
+						containerId: 'angular',
+						userInterface: IDE.GUID.userInterface
+					});
+
+					IDE.GUID.panels.styling = new Styling({
+						containerId: 'styling',
+						documentEditor
+					});
+
+					IDE.GUID.panels.responsive = new ResponsiveSelector({
+						documentEditor,
+						containerId: 'responsiveButtonsList'
+					});
+
+					//undoRedoManagement
+					let plugin = 'GuidHistoryManager',
+						type = 'button';
+					let items = [{
+						action: 'undo',
+						name: 'undo',
+						plugin,
+						type
+					}, {
+						action: 'redo',
+						name: 'redo',
+						plugin,
+						type
+					}];
+					IDE.toolbar.addItems(items);
+					// console.log(items);
+
+					//debug infos
+					// documentEditor.onElementSelected(function(arg) {
+					// 	console.log(arg.element);
+					// });
+
+					// documentEditor.onDocumentSizeChange(function(a) {
+					// 	console.log(a);
+					// });
+
+					//to use it on devtool
+					window.d = documentEditor;
+					window.o = IDE.GUID.panels.outline;
+
+					// activate
+					loaded();
 				});
+			}
 
-				IDE.GUID.userInterface = new UserInterface({
-					documentEditor
-				});
-				IDE.GUID.documentEditorBroker = documentEditor.broker;
-
-				// load Pannels
-				IDE.GUID.panels = {};
-				// Outline
-				IDE.GUID.panels.outline = new Outline({
-					containerId: 'outline',
-					documentEditor
-				});
-				// Components
-				IDE.GUID.panels.components = new Components({
-					documentEditor,
-					containerId: 'components'
-				});
-				// angular panel
-				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
-					documentEditor,
-					containerId: 'angular',
-					userInterface: IDE.GUID.userInterface
-				});
-
-				IDE.GUID.panels.styling = new Styling({
-					containerId: 'styling',
-					documentEditor
-				});
-
-				IDE.GUID.panels.responsive = new ResponsiveSelector({
-					documentEditor,
-					containerId: 'responsiveButtonsList'
-				});
-
-				//undoRedoManagement
-				let plugin = 'GuidHistoryManager',
-					type = 'button';
-				let items = [{
-					action: 'undo',
-					name: 'undo',
-					plugin,
-					type
-				}, {
-					action: 'redo',
-					name: 'redo',
-					plugin,
-					type
-				}];
-				IDE.toolbar.addItems(items);
-				// console.log(items);
-
-				//debug infos
-				// documentEditor.onElementSelected(function(arg) {
-				// 	console.log(arg.element);
-				// });
-
-				// documentEditor.onDocumentSizeChange(function(a) {
-				// 	console.log(a);
-				// });
-
-				//to use it on devtool
-				window.d = documentEditor;
-				window.o = IDE.GUID.panels.outline;
-
-				// activate
-				loaded();
-			});
-
+			window.onhashchange();
 			//TODO remove this
 			let tree = document.getElementById('tree');
 			tree.hidden = true;
