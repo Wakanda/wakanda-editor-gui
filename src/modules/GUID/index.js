@@ -14,14 +14,14 @@ var Module = {
 			var DragulaManager = require('./DragulaManager');
 
 			//TODO - URL of the iframe content
-			let path = './workspace/';
+			let path = './workspace/' + location.hash.substring(1);
 
 			IDE.GUID.documentEditor = new Editor({
 				path
 			})
 			.onReady((documentEditor) => {
 
-				//DragulaManager must be initialized *before* UserInterface
+				//NOTE DragulaManager must be initialized *before* UserInterface
 				IDE.GUID.dragulaManager = new DragulaManager({
 					documentEditor,
 					sourceContainerId: 'components'

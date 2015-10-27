@@ -24,6 +24,7 @@ class DocumentEditor {
 		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
+		this._path = path;
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
@@ -50,6 +51,10 @@ class DocumentEditor {
 
 				return iframeDoc;
 			});
+	}
+
+	get path(){
+		return this._path;
 	}
 
 	loadIframe({path}) {
@@ -290,25 +295,26 @@ class DocumentEditor {
 		this.broker.createCommand(command)
 			.executeNextCommand();
 	}
-	changeElementAttributes({element = this.selectedElement, attributes, values}){
+	changeElementAttributes({element = this.selectedElement, elements = [], attributes, values}){
 		let len = attributes.length;
-		if(len === 0 || len !== values.length){
+		if(len === 0 || len !== values.length || (elements && len !== elements.length)){
 			console.error("somth' goew wrong here");
 			return false;
 		}
 		let commands = [];
 		for(let ii = 0; ii < len; ii++){
 			let attribute = attributes[ii],
-					value = values[ii];
+					value = values[ii],
+					currentElement = elements[ii] || element;
 			let command = this.commandFactory.changeAttribute({
-				element,
+				element: currentElement,
 				attribute,
 				value
 			});
 			commands.push(command);
 		}
 		let finalCommand = new Command({commands});
-		this.broker.createCommand(command)
+		this.broker.createCommand(finalCommand)
 			.executeNextCommand();
 	}
 	onElementAttributeChange(callBack) {

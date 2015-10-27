@@ -1,15 +1,30 @@
 import helpers from '../helpers';
+import Renderer from './Renderer';
 
-class RecipeRenderer{
+class ApplicationRenderer extends Renderer{
   constructor({container, angularPage}){
-    this.container = container;
+    super({
+      title: 'Application',
+      container
+    });
     this._angularPage = angularPage;
 
-    this.recipeToLi = new WeakMap();
-    this.container.appendChild(helpers.createTitle({text: 'Angular Components : '}));
+    let {label, input, li} = helpers.createInputWithLabel({
+      labelContent: 'application',
+      content: this._angularPage.applicationName,
+      withLi :true
+    });
 
-    let addControllerButton = document.createElement('button');
+    let setAppButton = document.createElement('button');
+    setAppButton.innerText = 'Set App on selected element';
+    setAppButton.onclick = () => {
+      let applicationName = input.value;
+      this._angularPage.setApplicationToSelectedElement({applicationName});
+    }
+    li.appendChild(setAppButton);
+    this.ul.appendChild(li);
   }
+
   highlightRecipes({recipes, level = ''}){
     this.clearHlighting({level});
     recipes.forEach((recipe)=>{
@@ -52,16 +67,6 @@ class RecipeRenderer{
   addRecipe({recipe}){
     let li = this.getRecipeLi({recipe});
     li.innerText = recipe.name;
-    li.appendChild(this.getEditRecipeButton({recipe}));
-  }
-  getEditRecipeButton({recipe}){
-    let editButton = document.createElement('button');
-    editButton.innerText = 'edit';
-    let script = this._angularPage.getScriptOfRecipe({recipe});
-    editButton.onclick = ()=>{
-      helpers.editScript(script);
-    };
-    return editButton;
   }
   getRecipeUl({recipe}){
     let recipeType = recipe.type;
@@ -78,4 +83,4 @@ class RecipeRenderer{
   }
 }
 
-export default RecipeRenderer;
+export default ApplicationRenderer;

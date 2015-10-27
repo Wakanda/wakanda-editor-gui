@@ -90,7 +90,7 @@ class SctriptFile extends Script {
 			console.log('not yet ' + src);
 			return null;
 		}
-		return `${this.document.location.origin}${src}`;
+		return `${this.document.location.origin}/workspace/${src}`;
 	}
 
 	get type(){

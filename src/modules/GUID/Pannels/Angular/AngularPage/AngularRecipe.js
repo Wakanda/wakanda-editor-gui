@@ -1,4 +1,4 @@
-import recipeTypes from '../helpers';
+import helpers from '../helpers';
 // TODO: neeed refactoring
 class AngularRecipe{
   constructor({recipeContent, recipeType, recipeName, /*fromScript,*/ applicationName}){
@@ -39,7 +39,7 @@ class AngularRecipe{
 
   get code(){
     // TODO: use templates
-    if(this.type === recipeTypes.recipes.config){
+    if(this.type === helpers.recipeTypes.recipes.config){
       let dependenciesCode = this._dependenciesNames
                                  .map((dep)=>`'${dep}'`)
                                  .join(', ');
@@ -114,7 +114,7 @@ class AngularRecipe{
   static createRecipes({applicationInfos}){
     let recipes = applicationInfos.recipes;
     let applicationName = applicationInfos.applicationName;
-    return this.recipeTypes.getAsArray()
+    return helpers.recipeTypes.getAsArray()
       .map((recipeType)=>{
         let currentRecipes = recipes[recipeType] || []; // of type {{recipeType}} you got the {{}} :p
         // TODO: there is surely something to improve here
