@@ -170,7 +170,7 @@ class DocumentEditor {
 
 		let command = this.commandFactory.removeElement({element});
 
-		let parent = this.selectedElement.parentElement;
+		let parent = element.parentElement;
 
 		command.afterExecute = () => {
 			if (this.selectedElement === element) {
@@ -191,6 +191,25 @@ class DocumentEditor {
 	}
 	prependElement({element, elementRef = this.selectedElement}) { // append element before selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
+			element, elementRef
+		});
+		command.afterExecute = () => {
+			this.selectElement({
+				element
+			});
+		};
+		command.afterUndo = () => {
+			this.selectElement({
+				element: elementRef
+			});
+		};
+
+		this.broker.createCommand(command)
+			.executeNextCommand();
+	}
+
+	appendAfterElement({element, elementRef = this.selectedElement}) { // append element after selected element if elementRef is undefined
+		let command = this.commandFactory.appendAfterElement({
 			element, elementRef
 		});
 		command.afterExecute = () => {

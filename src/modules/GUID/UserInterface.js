@@ -96,9 +96,21 @@ class UserInterface {
 
 	_subscribeToDragulaEvent() {
 		let dragulaManager = this.documentEditor.dragulaManager;
+		this.isDraggingElement = false;
 
 		dragulaManager.onCloned((clone, original) => {
 			clone.renderComponent = original.renderComponent;
+
+			//FIXME
+      clone.style.border = '1px solid red';
+		});
+
+		dragulaManager.onDragStart(() => {
+			this.isDraggingElement = true;
+		})
+
+		dragulaManager.onDragEnd(() => {
+			this.isDraggingElement = false;
 		});
 
 		dragulaManager.onDrop((element, target) => {
@@ -111,13 +123,28 @@ class UserInterface {
 						availableElement = this.documentEditor.document.body;
 					}
 
-					//FIXME
-					element.style.border = null;
-
-					this.documentEditor.appendElement({
-						element: element.renderComponent(),
-						parent: availableElement
-					});
+					switch (this.dropPosition) {
+						case 'inside':
+							this.documentEditor.appendElement({
+								element: element.renderComponent(),
+								parent: availableElement
+							});
+							break;
+						case 'top':
+							this.documentEditor.prependElement({
+								element: element.renderComponent(),
+								elementRef: availableElement
+							});
+							break;
+						case 'bottom':
+							this.documentEditor.appendAfterElement({
+								element: element.renderComponent(),
+								elementRef: availableElement
+							});
+							break;
+						default:
+							console.error('Invalid drop position');
+					}
 				}
 			}
 		});
@@ -131,6 +158,13 @@ class UserInterface {
 
 		this.fabric_canvas.on('mouse:move', (options) => {
 			this.mouseOverCanvas = true;
+
+			if (this.dragMark) {
+				this.fabric_canvas.remove(this.dragMark);
+				this.dragMark = null;
+			}
+			this.dropPosition = 'inside';
+
 			// TODO : DEFER (?)
 			let [x, y] = [options.e.offsetX, options.e.offsetY];
 			this.lastPosition = {x, y};
@@ -139,8 +173,73 @@ class UserInterface {
 			if (element) {
 				this.highLightElement(element);
 			}
-		});
 
+			let tagName = element ? element.tagName.toLowerCase() : null;
+			if(this.isDraggingElement && element && tagName != 'body' && tagName != 'html') {
+				let elRect = element.getBoundingClientRect();
+				let coef = 0.2;
+
+				if (y >= Math.floor(elRect.top) && y <= Math.ceil(elRect.top + coef * elRect.height)) {
+					this.addDragMark({
+						position: 'top',
+						elementRect: elRect
+					});
+					this.dropPosition = 'top';
+				}
+				else if (y <= Math.floor(elRect.bottom) && y >= Math.ceil(elRect.bottom - coef * elRect.height)) {
+					this.addDragMark({
+						position: 'bottom',
+						elementRect: elRect
+					});
+					this.dropPosition = 'bottom';
+				}
+				else {
+					this.dropPosition = 'inside';
+				}
+			}
+		});
+	}
+
+	addDragMark({position, elementRect}) {
+		let coords = {x: null, y: null, width: null, height: null};
+
+		switch (position) {
+			case 'left':
+
+				break;
+			case 'rigth':
+
+				break;
+			case 'top':
+				coords = {
+					x: elementRect.left,
+					y: elementRect.top - 1,
+					width: elementRect.width,
+					height: 1
+				};
+				break;
+			case 'bottom':
+				coords = {
+					x: elementRect.left,
+					y: elementRect.bottom + 1,
+					width: elementRect.width,
+					height: 1
+				};
+				break;
+			default:
+				console.error('addDragMark, position not valid');
+		}
+
+		this.dragMark = new fabric.Rect({
+			left: coords.x,
+			top: coords.y,
+			fill: 'blue',
+			opacity: 1,
+			width: coords.width,
+			height: coords.height,
+			selectable: false
+		});
+		this.fabric_canvas.add(this.dragMark);
 	}
 
 	highLightElement(element) {

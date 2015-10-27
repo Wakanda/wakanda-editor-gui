@@ -21,7 +21,6 @@ var Module = {
 					path
 				})
 				.onReady((documentEditor) => {
-
 					//NOTE DragulaManager must be initialized *before* UserInterface
 					IDE.GUID.dragulaManager = new DragulaManager({
 						documentEditor,
@@ -31,13 +30,15 @@ var Module = {
 					IDE.GUID.userInterface = new UserInterface({
 						documentEditor
 					});
+					IDE.GUID.documentEditorBroker = documentEditor.broker;
 
 					// load Pannels
 					IDE.GUID.panels = {};
 					// Outline
 					IDE.GUID.panels.outline = new Outline({
 						containerId: 'outline',
-						documentEditor
+						documentEditor,
+						userInterface: IDE.GUID.userInterface
 					});
 					// Components
 					IDE.GUID.panels.components = new Components({
