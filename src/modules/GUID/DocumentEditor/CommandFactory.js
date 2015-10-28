@@ -133,6 +133,84 @@ class CommandFactory {
 		});
 	}
 
+	moveBeforeElement({element, elementRef}) {
+		let refParent = elementRef.parentElement;
+		let elementParent = element.parentElement;
+		let elementSibling = element.nextElementSibling;
+
+		let execute = () => {
+			refParent.insertBefore(element, elementRef);
+			this.events.emit('GUID.dom.element.append', {
+				parent: refParent,
+				child: element,
+				elementRef
+			});
+		};
+
+		let undo = () => {
+			elementParent.insertBefore(element, elementSibling);
+			this.events.emit('GUID.dom.element.append', {
+				parent: elementParent,
+				child: element,
+				elementRef: elementSibling
+			});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
+	moveAfterElement({element, elementRef}) {
+		let refParent = elementRef.parentElement;
+		let elementParent = element.parentElement;
+		let elementSibling = element.nextElementSibling;
+
+		let execute = () => {
+			refParent.insertBefore(element, elementRef.nextElementSibling);
+			this.events.emit('GUID.dom.element.append', {
+				parent: refParent,
+				child: element,
+				elementRef: elementRef.nextSibling
+			});
+		};
+
+		let undo = () => {
+			elementParent.insertBefore(element, elementSibling);
+			this.events.emit('GUID.dom.element.append', {
+				parent: elementParent,
+				child: element,
+				elementRef: elementSibling
+			});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
+	moveInsideElement({element, elementRef}) {
+		let refParent = elementRef.parentElement;
+		let elementParent = element.parentElement;
+		let elementSibling = element.nextElementSibling;
+
+		let execute = () => {
+			elementRef.appendChild(element);
+			this.events.emit('GUID.dom.element.append', {
+				parent: refParent,
+				child: element,
+				elementRef: elementRef
+			});
+		};
+
+		let undo = () => {
+			elementParent.insertBefore(element, elementSibling);
+			this.events.emit('GUID.dom.element.append', {
+				parent: elementParent,
+				child: element,
+				elementRef: elementSibling
+			});
+		};
+
+		return new AtomicCommand({execute, undo});
+	}
+
 	changeElementText({text, element}){
 
 		let childNodes = element.childNodes;

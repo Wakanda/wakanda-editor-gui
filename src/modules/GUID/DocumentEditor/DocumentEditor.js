@@ -189,6 +189,40 @@ class DocumentEditor {
 			element: this.selectedElement
 		});
 	}
+
+	moveBeforeElement({element, elementRef}) {
+		let command = this.commandFactory.moveBeforeElement({element, elementRef});
+		command.afterExecute = () => {
+			this.selectElement({element});
+		}
+		command.afterUndo = () => {
+			this.selectElement({element});
+		}
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
+	moveAfterElement({element, elementRef}) {
+		let command = this.commandFactory.moveAfterElement({element, elementRef});
+		command.afterExecute = () => {
+			this.selectElement({element});
+		}
+		command.afterUndo = () => {
+			this.selectElement({element});
+		}
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
+	moveInsideElement({element, elementRef}) {
+		let command = this.commandFactory.moveInsideElement({element, elementRef});
+		command.afterExecute = () => {
+			this.selectElement({element});
+		}
+		command.afterUndo = () => {
+			this.selectElement({element});
+		}
+		this.broker.createCommand(command).executeNextCommand();
+	}
+
 	prependElement({element, elementRef = this.selectedElement}) { // append element before selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
 			element, elementRef

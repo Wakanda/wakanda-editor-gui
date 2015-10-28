@@ -156,6 +156,79 @@ class UserInterface {
 			this.mouseOverCanvas = false;
 		});
 
+		this.fabric_canvas.on('mouse:down', () => {
+			let element = this._elementAtPosition(this.lastPosition);
+			let tagName = element ? element.tagName.toLowerCase() : null;
+			if (element && tagName !== 'html' && tagName !== 'body') {
+				console.log('fabric:mouse:down on element', element);
+
+				let floatingElement = document.createElement('div');
+				floatingElement.innerHTML = element.tagName.toLowerCase();
+				floatingElement.style.border = '1px solid red';
+				floatingElement.style['z-index'] = '10000';
+				floatingElement.style.position = 'absolute';
+				floatingElement.style.left = '-1000px';
+				floatingElement.style.top = '-1000px';
+
+				document.body.appendChild(floatingElement);
+
+				this.mouseListener = (e) => {
+					floatingElement.style.left = (e.clientX + 15) + 'px';
+					floatingElement.style.top = (e.clientY + 15) + 'px';
+				};
+
+				window.addEventListener('mousemove', this.mouseListener);
+
+				this.isDraggingElement = true;
+				this.isDraggingExistingElement = true;
+				this.existingElementDragged = element;
+				this.movingElementMark = floatingElement;
+			}
+		});
+
+		this.fabric_canvas.on('mouse:up', () => {
+			if (this.isDraggingExistingElement) {
+				this.isDraggingElement = false;
+				this.isDraggingExistingElement = false;
+
+				let availableElement = this._elementAtPosition(this.lastPosition);
+				if (availableElement && availableElement !== this.existingElementDragged) {
+
+					if (availableElement.tagName.toLowerCase() === 'html') {
+						availableElement = this.documentEditor.document.body;
+					}
+
+					switch (this.dropPosition) {
+						case 'inside':
+							this.documentEditor.moveInsideElement({
+								element: this.existingElementDragged,
+								elementRef: availableElement
+							});
+							break;
+						case 'top':
+							this.documentEditor.moveBeforeElement({
+								element: this.existingElementDragged,
+								elementRef: availableElement
+							});
+							break;
+						case 'bottom':
+							this.documentEditor.moveAfterElement({
+								element: this.existingElementDragged,
+								elementRef: availableElement
+							});
+							break;
+						default:
+							console.error('Invalid drop position');
+					}
+				}
+
+				document.body.removeChild(this.movingElementMark);
+				this.movingElementMark = null;
+				window.removeEventListener('mousemove', this.mouseListener);
+				this.existingElementDragged = null;
+			}
+		});
+
 		this.fabric_canvas.on('mouse:move', (options) => {
 			this.mouseOverCanvas = true;
 
