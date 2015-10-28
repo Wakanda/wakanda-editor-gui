@@ -3,13 +3,23 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling", "./DragulaManager"], function(require) {
+		require.ensure([
+			"./DocumentEditor",
+			"./UserInterface",
+			"./Pannels/Outline",
+			"./Pannels/Components",
+			"./Pannels/Angular",
+			"./Pannels/Styling",
+			"./Pannels/Attributes",
+			"./DragulaManager"
+		], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
+			var AttributesPanel = require("./Pannels/Attributes");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 			var DragulaManager = require('./DragulaManager');
 
@@ -60,6 +70,11 @@ var Module = {
 					IDE.GUID.panels.responsive = new ResponsiveSelector({
 						documentEditor,
 						containerId: 'responsiveButtonsList'
+					});
+
+					IDE.GUID.panels.attributesPanel = new AttributesPanel({
+						documentEditor,
+						containerId: 'attributes'
 					});
 
 					//undoRedoManagement

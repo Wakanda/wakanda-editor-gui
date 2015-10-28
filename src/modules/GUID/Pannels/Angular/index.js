@@ -1,6 +1,6 @@
 import AngularPage from './AngularPage';
 import {ScriptsRenderer, RecipeRenderer, RoutesRenderer, ApplicationRenderer} from './Renderers';
-import helpers from './helpers';
+import helpers from '../helpers';
 
 class AngularPanel{
   constructor({documentEditor, containerId}){

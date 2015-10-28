@@ -145,7 +145,7 @@ class CommandFactory {
 			execute, undo
 		});
 	}
-
+	// FIXME: 
 	changeElementText({text, element}){
 
 		let childNodes = element.childNodes;

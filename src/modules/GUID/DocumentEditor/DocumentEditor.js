@@ -498,9 +498,19 @@ class DocumentEditor {
 		this.events.on('GUID.dom.import.remove', callBack);
 	}
 
-	changeSelectedElementText({text, justReturnCommand = false}){
+	// FIXME:
+	getElementText({element = this.selectedElement}){
+		let childNodes = element.childNodes;
+		// NOTE: tested only on chrome
+		if(childNodes.length === 1 && childNodes[0].nodeType ===3 ){
+			return element.innerText;
+		}else{
+			return null;
+		}
+	}
+	changeElementText({element = this.selectedElement, text, justReturnCommand = false}){
 		let command = this.commandFactory.changeElementText({
-			element: this.selectedElement,
+			element,
 			text
 		});
 

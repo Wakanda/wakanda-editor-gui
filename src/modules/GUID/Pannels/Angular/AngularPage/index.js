@@ -1,7 +1,7 @@
 import Routes from './Routes';
 import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
-import helpers from '../helpers';
+import helpers from '../../helpers';
 
 const NGAPPATTRIBUTE = 'ng-app';
 const NGCTRLATTRIBUTE = 'ng-controller';
