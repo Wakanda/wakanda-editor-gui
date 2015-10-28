@@ -200,10 +200,12 @@ class UserInterface {
 
 					switch (this.dropPosition) {
 						case 'inside':
-							this.documentEditor.moveInsideElement({
-								element: this.existingElementDragged,
-								elementRef: availableElement
-							});
+							if (!this.existingElementDragged.contains(availableElement)) {
+								this.documentEditor.moveInsideElement({
+									element: this.existingElementDragged,
+									elementRef: availableElement
+								});
+							}
 							break;
 						case 'top':
 							this.documentEditor.moveBeforeElement({
