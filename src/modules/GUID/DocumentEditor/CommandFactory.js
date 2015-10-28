@@ -1,12 +1,23 @@
+import Broker from './Broker';
 
 class Command {
-	constructor({commands, afterExecute, afterUndo, thisArg}) {
+	constructor({commands, afterExecute, afterUndo, thisArg, broker}) {
 		this._commands = commands;
+		this._broker = broker;
 
 		//optional
 		this._thisArg = thisArg;
 		this._afterExecute = afterExecute;
 		this._afterUndo = afterUndo;
+	}
+
+	get broker(){
+		return this._broker;
+	}
+	// execute via broker
+	exec(){
+		this._broker.createCommand(this)
+			.executeNextCommand();
 	}
 
 	execute() {
@@ -46,9 +57,8 @@ class Command {
 }
 
 class AtomicCommand extends Command {
-	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
-		super({commands: [], afterExecute, afterUndo, thisArg});
-
+	constructor({execute, undo, thisArg, afterExecute, afterUndo, broker}) {
+		super({commands: [], afterExecute, afterUndo, thisArg, broker});
 
 		this._execute = execute;
 		this._undo = undo;
@@ -84,7 +94,9 @@ class AtomicCommand extends Command {
 }
 
 class CommandFactory {
-	constructor({events, linkImport, scriptManager, styleManager}) {
+	constructor({events, linkImport, scriptManager, styleManager, broker = new Broker()}) {
+		this.broker = broker;
+
 		this.events = events;
 		this.linkImport = linkImport;
 		this.scriptManager = scriptManager;
@@ -108,6 +120,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -173,7 +186,7 @@ class CommandFactory {
 			 }
 		 }
 
-		 command = new AtomicCommand({execute, undo});
+		 command = new AtomicCommand({ execute, undo, broker: this.broker});
 		}
 
 		return command; //it can be null if the element contains other elements
@@ -203,6 +216,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -234,6 +248,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -263,7 +278,7 @@ class CommandFactory {
 			});
 		};
 
-		return new AtomicCommand({execute, undo});
+		return new AtomicCommand({ execute, undo, broker: this.broker});
 	}
 
 	changeAttribute({element, attribute, value}) {
@@ -293,6 +308,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -332,6 +348,7 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -367,6 +384,7 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -403,6 +421,7 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
