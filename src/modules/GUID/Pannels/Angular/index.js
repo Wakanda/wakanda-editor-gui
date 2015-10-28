@@ -14,10 +14,12 @@ class AngularPanel{
       this._scriptsRenderer = this.initScriptRenderer();
       this._scriptsRenderer.container.hidden = true;
       this._recipeRenderer = this.initRecipeRenderer();
-  		this._routesRenderer = this.initRoutesRenderer();
+      this._routesRenderer = this.initRoutesRenderer();
+      this._applicationRenderer = this.initApplicationRenderer();
+      this._scriptsRenderer.container.hidden = true;
 
-  		this.initAngularPageEvents();
-  		this.listenToDocumentEditorEvents();
+      this.initAngularPageEvents();
+      this.listenToDocumentEditorEvents();
       this.initScripts();
       this.initAddButtons();
     });
@@ -27,18 +29,19 @@ class AngularPanel{
     let addControllerButton = document.createElement('button');
     addControllerButton.innerText = 'Add Controller';
     addControllerButton.onclick = ()=>{
+      let newControllerName = prompt("Controller Name");
       let applicationName = this._angularPage.applicationName;
       // TODO: temporary
       let controllerCode = `
         (function(app){
-          app.controller('myNewController', ['$scope', function($scope){
+          app.controller('${newControllerName}', ['$scope', function($scope){
             // your content here
           }]);
         })(angular.module('${applicationName}'));
       `;
       let controllerScript = this._documentEditor.scriptManager.createEmbdedScript({
         content: controllerCode,
-        text: 'myNewController'
+        text: newControllerName
       });
       this._documentEditor.addScript({script: controllerScript});
     }
