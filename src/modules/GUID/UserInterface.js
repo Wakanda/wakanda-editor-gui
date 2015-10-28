@@ -146,6 +146,11 @@ class UserInterface {
 							console.error('Invalid drop position');
 					}
 				}
+
+				if (this.dragMark) {
+					this.fabric_canvas.remove(this.dragMark);
+					this.dragMark = null;
+				}
 			}
 		});
 	}
@@ -156,9 +161,11 @@ class UserInterface {
 			this.mouseOverCanvas = false;
 		});
 
-		this.fabric_canvas.on('mouse:down', () => {
+		this.fabric_canvas.on('mouse:down', (options) => {
 			let element = this._elementAtPosition(this.lastPosition);
 			let tagName = element ? element.tagName.toLowerCase() : null;
+			this.mouseDownPosition = {x: options.e.offsetX, y: options.e.offsetY};
+
 			if (element && tagName !== 'html' && tagName !== 'body') {
 				console.log('fabric:mouse:down on element', element);
 
@@ -186,7 +193,13 @@ class UserInterface {
 			}
 		});
 
-		this.fabric_canvas.on('mouse:up', () => {
+		this.fabric_canvas.on('mouse:up', (options) => {
+
+			if (this.dragMark) {
+				this.fabric_canvas.remove(this.dragMark);
+				this.dragMark = null;
+			}
+
 			if (this.isDraggingExistingElement) {
 				this.isDraggingElement = false;
 				this.isDraggingExistingElement = false;
@@ -232,6 +245,15 @@ class UserInterface {
 				this.movingElementMark = null;
 				window.removeEventListener('mousemove', this.mouseListener);
 				this.existingElementDragged = null;
+			}
+
+			let mouseUpPosition = {x: options.e.offsetX, y: options.e.offsetY};
+			if (mouseUpPosition.x === this.mouseDownPosition.x &&
+					mouseUpPosition.y === this.mouseDownPosition.y) {
+				this.documentEditor.selectElementByPoint({
+					x: options.e.offsetX,
+					y: options.e.offsetY
+				});
 			}
 		});
 
@@ -401,12 +423,6 @@ class UserInterface {
 	}
 
 	initElementSelection() {
-		this.fabric_canvas.on('mouse:up', (options) => {
-			this.documentEditor.selectElementByPoint({
-				x: options.e.offsetX,
-				y: options.e.offsetY
-			});
-		});
 
 		this.documentEditor.onElementSelected(() => {
 			this.updateSelectedElementBorder();
@@ -459,6 +475,7 @@ class UserInterface {
 		this.documentEditor.onAppendElement(() => {
 			this.resetCanvasDimentions();
 			this.updateSelectedElementBorder();
+			this.clearHighLighting();
 		});
 		this.documentEditor.onRemoveElement(() => {
 			this.resetCanvasDimentions();

@@ -180,6 +180,13 @@ class DocumentEditor {
 		let command = this.commandFactory.removeElement({element});
 		let parent = element.parentElement;
 
+		command.afterExecute = () => {
+			if (this.selectedElement === element) {
+				this.selectElement({
+					element: parent
+				});
+			}
+		};
 		return executeOrReturn({command, justReturnCommand});
 	}
 
@@ -198,6 +205,7 @@ class DocumentEditor {
 
 	moveAfterElement({element, elementRef, justReturnCommand = false}) {
 		let command = this.commandFactory.moveAfterElement({element, elementRef});
+
 		return executeOrReturn({command, justReturnCommand});
 	}
 
@@ -238,11 +246,12 @@ class DocumentEditor {
 		});
 
 		return executeOrReturn({command, justReturnCommand});
-
 	}
+
 	onAppendElement(callBack) {
 		this.events.on('GUID.dom.element.append', callBack);
 	}
+
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack);
 	}
