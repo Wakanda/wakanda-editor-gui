@@ -426,6 +426,12 @@ class CommandFactory {
 		});
 	}
 
+	regroupCommands({commands}){
+		return new Command({
+			commands,
+			broker: this.broker
+		});
+	}
 }
 
 export {CommandFactory, Command};

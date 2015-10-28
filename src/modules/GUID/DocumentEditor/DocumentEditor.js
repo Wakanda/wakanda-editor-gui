@@ -327,7 +327,7 @@ class DocumentEditor {
 			});
 			commands.push(command);
 		}
-		let finalCommand = new Command({commands});
+		let finalCommand = this.commandFactory.regroupCommands({commands});
 
 		return executeOrReturn({command: finalCommand, justReturnCommand});
 	}
@@ -364,10 +364,9 @@ class DocumentEditor {
 			});
 		});
 
-		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
 		return executeOrReturn({command, justReturnCommand});
-
 	}
 
 	toggleClass({className, element = this.selectedElement, justReturnCommand = false}) {
@@ -528,7 +527,7 @@ class DocumentEditor {
 			});
 		});
 
-		let command = new Command({commands: [...removeCommands, ...addCommands]});
+		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
 		return executeOrReturn({command, justReturnCommand});
 
