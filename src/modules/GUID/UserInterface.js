@@ -208,16 +208,20 @@ class UserInterface {
 							}
 							break;
 						case 'top':
-							this.documentEditor.moveBeforeElement({
-								element: this.existingElementDragged,
-								elementRef: availableElement
-							});
+							if (!this.existingElementDragged.contains(availableElement)) {
+								this.documentEditor.moveBeforeElement({
+									element: this.existingElementDragged,
+									elementRef: availableElement
+								});
+							}
 							break;
 						case 'bottom':
-							this.documentEditor.moveAfterElement({
-								element: this.existingElementDragged,
-								elementRef: availableElement
-							});
+							if (!this.existingElementDragged.contains(availableElement)) {
+								this.documentEditor.moveAfterElement({
+									element: this.existingElementDragged,
+									elementRef: availableElement
+								});
+							}
 							break;
 						default:
 							console.error('Invalid drop position');
