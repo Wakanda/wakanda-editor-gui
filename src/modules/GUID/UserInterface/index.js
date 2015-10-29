@@ -20,7 +20,8 @@ class UserInterface {
 		this.fabric_canvas = new fabric.Canvas(this.canvas);
 		this.highlightManager = new HighlightManager({
 			fabricCanvas: this.fabric_canvas,
-			events: this.events
+			events: this.events,
+			documentEditor: this.documentEditor
 		});
 
 		this.resetCanvasDimentions();
