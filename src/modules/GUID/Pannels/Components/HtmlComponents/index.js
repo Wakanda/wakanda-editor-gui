@@ -1,5 +1,6 @@
 import div from './templates/div';
 import searchBar from './templates/searchbar';
+import textInput from './templates/textInput';
 
 let htmlComponents = [
   {
@@ -9,6 +10,10 @@ let htmlComponents = [
   {
     name: 'search bar',
     template: searchBar
+  },
+  {
+    name: 'Text Input',
+    template: textInput
   }
 ];
 
