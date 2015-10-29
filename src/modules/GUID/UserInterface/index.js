@@ -9,7 +9,6 @@ class UserInterface {
 
 		this.documentEditor = documentEditor;
 		this.canvas = document.createElement('canvas');
-		this.HIGHLIGHT = null;
 		this._highLightedElement = null;
 
 		this.canvas.classList.add('user-interface-canvas');
@@ -49,6 +48,7 @@ class UserInterface {
 		//Remove the selected element if any
 		keyboardJS.bind('del', () => {
 
+			//FIXME
 			let element = _this._highLightedElement;
 
 			if (element.tagName != 'BODY') {
