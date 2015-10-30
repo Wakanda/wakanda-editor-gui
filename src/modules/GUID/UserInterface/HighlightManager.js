@@ -15,92 +15,180 @@ class HighlightManager {
         bottom: null,
         left: null,
         right: null
+      },
+      padding: {
+        top: null,
+        bottom: null,
+        left: null,
+        right: null
       }
     };
   }
 
   highLightElement({element}) {
-    this.clearHighLighting();
+
     if (this.highlitedElement !== element) {
       if (!element) {
         return;
       }
 
-      let boundingRect = element.getBoundingClientRect();
+      this.clearHighLighting();
 
-      let elementRect = this._highLightArea({
-        coords: boundingRect,
-        color: 'blue',
-        opacity: 0.1
-      });
-      this.currentHighlights.element = elementRect;
+      let boundingRect = element.getBoundingClientRect();
       this.highlitedElement = element;
 
-      //Margin rects
-      let marginPositions = {};
-      let getMarginValue = (position) => {
-        if (!marginPositions[position]) {
-          let value = this.documentEditor.getElementStyleAttribute({
-            element,
-            attribute: 'margin-' + position
-          });
-          marginPositions[position] = parseInt(value.replace('px', ''));
-        }
-        return marginPositions[position];
-      };
+      this._highlightMargins({element, boundingRect});
+      let paddingPositions = this._highlightPaddings({element, boundingRect});
+      this._highlightElement({element, boundingRect, paddingPositions});
 
-      let positions = ['top', 'right', 'bottom', 'left']; //clock-wise. order MATTERS
-      for (var i = 0; i < 4; i++) {
-        let position = positions[i];
-        let nextPosition = positions [(i + 1) % 4];
-        let marginPosition = getMarginValue(position);
-        let marginNextPosition = getMarginValue(nextPosition);
+      this.events.emit('GUID.UI.element.highlight', {
+        element
+      });
+    }
+  }
 
-        let coords;
-        if (position === 'top') {
-          coords = {
-            left: boundingRect.left,
-            top: boundingRect.top - marginPosition,
-            width: boundingRect.width + marginNextPosition,
-            height: marginPosition
-          };
-        }
-        else if (position === 'right') {
-          coords = {
-            left: boundingRect.left + boundingRect.width,
-            top: boundingRect.top,
-            width: marginPosition,
-            height: boundingRect.height + marginNextPosition
-          };
-        }
-        else if (position === 'bottom') {
-          coords = {
-            left: boundingRect.left - marginNextPosition,
-            top: boundingRect.top + boundingRect.height,
-            width: boundingRect.width + marginNextPosition,
-            height: marginPosition
-          };
-        }
-        else if (position === 'left') {
-          coords = {
-            left: boundingRect.left - marginPosition,
-            top: boundingRect.top - marginNextPosition,
-            width: marginPosition,
-            height: boundingRect.height + marginPosition
-          };
-        }
+  _highlightElement({element, boundingRect, paddingPositions}) {
+    let elementRect = this._highLightArea({
+      coords: {
+        left: boundingRect.left + paddingPositions.left,
+        top: boundingRect.top + paddingPositions.top,
+        width: boundingRect.width - paddingPositions.left - paddingPositions.right,
+        height: boundingRect.height - paddingPositions.top - paddingPositions.bottom
+      },
+      color: 'blue',
+      opacity: 0.15
+    });
+    this.currentHighlights.element = elementRect;
+  }
 
-        let rect = this._highLightArea({
-          coords,
-          color: 'green',
-          opacity: 0.3
+  //Return padding positions object to process element rect later
+  _highlightPaddings({element, boundingRect}) {
+    let paddingPositions = {};
+    let getPaddingValue = (position) => {
+      if (!(typeof paddingPositions[position] === 'number')) {
+        let value = this.documentEditor.getElementStyleAttribute({
+          element,
+          attribute: 'padding-' + position
         });
-        this.currentHighlights.margin[position] = rect;
+
+        paddingPositions[position] = value === '' ? 0 : parseInt(value.replace('px', ''));
+      }
+      return paddingPositions[position];
+    }
+
+    let positions = ['top', 'left', 'bottom', 'right']; //counter clock-wise. order *MATTERS*
+    for (var i = 0; i < 4; i++) {
+      let position = positions[i];
+      let nextPosition = positions[(i + 1) % 4];
+      let paddingPosition = getPaddingValue(position);
+      let paddingNextPosition = getPaddingValue(nextPosition);
+
+      let coords;
+      if (position === 'top') {
+        coords = {
+          left: boundingRect.left + paddingNextPosition,
+          top: boundingRect.top,
+          width: boundingRect.width - paddingNextPosition,
+          height: paddingPosition
+        };
+      }
+      else if (position === 'left') {
+        coords = {
+          left: boundingRect.left,
+          top: boundingRect.top,
+          width: paddingPosition,
+          height: boundingRect.height - paddingNextPosition
+        };
+      }
+      else if (position === 'bottom') {
+        coords = {
+          left: boundingRect.left,
+          top: boundingRect.top + boundingRect.height - paddingPosition,
+          width: boundingRect.width - paddingNextPosition,
+          height: paddingPosition
+        };
+      }
+      else if (position === 'right') {
+        coords = {
+          left: boundingRect.left + boundingRect.width - paddingPosition,
+          top: boundingRect.top + paddingNextPosition,
+          width: paddingPosition,
+          height: boundingRect.height - paddingNextPosition
+        };
       }
 
-      // this.events.emit('GUID.UI.element.highlight', {
-      //   element
-      // });
+      let rect = this._highLightArea({
+        coords,
+        color: 'green',
+        opacity: 0.4
+      });
+      this.currentHighlights.padding[position] = rect;
+    }
+
+    return paddingPositions;
+  }
+
+  _highlightMargins({element, boundingRect}) {
+    let marginPositions = {};
+    let getMarginValue = (position) => {
+      if (!(typeof marginPositions[position] === 'number')) {
+        let value = this.documentEditor.getElementStyleAttribute({
+          element,
+          attribute: 'margin-' + position
+        });
+
+        marginPositions[position] = value === '' ? 0 : parseInt(value.replace('px', ''));
+      }
+      return marginPositions[position];
+    };
+
+    let positions = ['top', 'right', 'bottom', 'left']; //clock-wise. order *MATTERS*
+    for (var i = 0; i < 4; i++) {
+      let position = positions[i];
+      let nextPosition = positions[(i + 1) % 4];
+      let marginPosition = getMarginValue(position);
+      let marginNextPosition = getMarginValue(nextPosition);
+
+      let coords;
+      if (position === 'top') {
+        coords = {
+          left: boundingRect.left,
+          top: boundingRect.top - marginPosition,
+          width: boundingRect.width + marginNextPosition,
+          height: marginPosition
+        };
+      }
+      else if (position === 'right') {
+        coords = {
+          left: boundingRect.left + boundingRect.width,
+          top: boundingRect.top,
+          width: marginPosition,
+          height: boundingRect.height + marginNextPosition
+        };
+      }
+      else if (position === 'bottom') {
+        coords = {
+          left: boundingRect.left - marginNextPosition,
+          top: boundingRect.top + boundingRect.height,
+          width: boundingRect.width + marginNextPosition,
+          height: marginPosition
+        };
+      }
+      else if (position === 'left') {
+        coords = {
+          left: boundingRect.left - marginPosition,
+          top: boundingRect.top - marginNextPosition,
+          width: marginPosition,
+          height: boundingRect.height + marginNextPosition
+        };
+      }
+
+      let rect = this._highLightArea({
+        coords,
+        color: 'orange',
+        opacity: 0.4
+      });
+      this.currentHighlights.margin[position] = rect;
     }
   }
 
@@ -109,8 +197,6 @@ class HighlightManager {
     let {
       left, top, width, height
     } = coords;
-
-    // this.clearHighLighting();
 
     let rect = new fabric.Rect({
       type: 'highlight',
@@ -125,7 +211,6 @@ class HighlightManager {
     });
 
     this.fabricCanvas.add(rect);
-    //TODO sendToBack ?
     this.fabricCanvas.sendToBack(rect);
     return rect;
   }
@@ -136,9 +221,10 @@ class HighlightManager {
       let element = this.highlitedElement;
 
       let elRect = this.currentHighlights.element;
-      let {top, bottom, left, right} = this.currentHighlights.margin;
+      let {top: mtop, bottom: mbottom, left: mleft, right: mright} = this.currentHighlights.margin;
+      let {top: rtop, bottom: rbottom, left: rleft, right: rright} = this.currentHighlights.padding;
 
-      for (let rect of [elRect, top, bottom, left, right]) {
+      for (let rect of [elRect, mtop, mbottom, mleft, mright, rtop, rbottom, rleft, rright]) {
         if (rect) {
           this.fabricCanvas.remove(rect);
         }
@@ -153,6 +239,12 @@ class HighlightManager {
     this.currentHighlights = {
       element: null,
       margin: {
+        top: null,
+        bottom: null,
+        left: null,
+        right: null
+      },
+      padding: {
         top: null,
         bottom: null,
         left: null,

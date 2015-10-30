@@ -288,7 +288,6 @@ class UserInterface {
 			});
 
 			this.fabric_canvas.add(this.rectSelected);
-			this.fabric_canvas.moveTo(this.rectSelected, 0);
 		}
 	}
 
