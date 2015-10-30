@@ -5,6 +5,7 @@ import FlexboxgridManager from './Components/FlexboxgridManager';
 import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
 import BoxManager from './Components/BoxManager';
 import ClassPicker from './Components/ClassPicker';
+import BorderManager from './Components/BorderManager';
 
 class Styling {
 
@@ -101,6 +102,11 @@ class Styling {
     classPicker.onClassInputValueChange(({value}) => {
       this.documentEditor.addClass({className: value});
     });
+
+    let borderManager = new BorderManager({
+      documentEditor: this.documentEditor
+    });
+    borderManager.appendToElement(this.container);
 
     // let saveButton = document.createElement('button');
     // saveButton.textContent = 'Save style';
