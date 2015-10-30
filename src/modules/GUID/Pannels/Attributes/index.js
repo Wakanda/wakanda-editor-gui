@@ -51,6 +51,10 @@ class AttributesPannel{
       }
     });
 
+    attributesRenderer.onClickAdd = ({attributeName, value})=>{
+      this._documentEditor.changeElementAttribute({attribute: attributeName, value});
+    };
+
     return attributesRenderer;
   }
   initContentRenderer(){

@@ -4,18 +4,16 @@ import Renderer from '../Renderer';
 class ContentRenderer{
   constructor({container}){
     this._container = container;
-
     this._input = this.initInput();
   }
   initInput(){
-    let input = document.createElement('input');
-    input.type = 'text';
-    this._container.appendChild(input);
+    let {input, label} = helpers.createInputWithLabel({ labelContent: 'Text content' });
+    this._container.appendChild(label);
     input.onchange = ()=>{
       if(this.onChange){
         this.onChange(input.value);
       }
-    }
+    };
 
     return input;
   }

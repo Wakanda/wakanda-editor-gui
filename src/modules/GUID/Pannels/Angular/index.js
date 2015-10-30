@@ -15,7 +15,6 @@ class AngularPanel{
       this._scriptsRenderer.container.hidden = true;
       this._recipeRenderer = this.initRecipeRenderer();
       this._routesRenderer = this.initRoutesRenderer();
-      this._applicationRenderer = this.initApplicationRenderer();
       this._scriptsRenderer.container.hidden = true;
 
       this.initAngularPageEvents();

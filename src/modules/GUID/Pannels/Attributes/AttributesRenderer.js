@@ -7,6 +7,38 @@ class AttributesRenderer extends Renderer{
   constructor({container, angularPage}){
     super({ title: 'Attributes :', container });
 
+    let {attributeInput, valueInput} = this.initAddAttribute();
+    this._addAttributeInput = attributeInput;
+    this._addValueInput = valueInput;
+  }
+  initAddAttribute(){
+    let addTitle = helpers.createTitle({text: 'Add Attributes', h: 'h4'});
+    let attributeInput = document.createElement('input'),
+        valueInput = document.createElement('input');
+
+    attributeInput.type = valueInput.type = 'text';
+    attributeInput.style.width = valueInput.style.width = '100px';
+
+    let li = document.createElement('li');
+
+    li.appendChild(attributeInput);
+    li.appendChild(valueInput);
+
+    this.container.appendChild(addTitle);
+    this.container.appendChild(li);
+
+    let addButton = document.createElement('button');
+    addButton.onclick = ()=>{
+      this.onClickAdd({
+        attributeName: attributeInput.value,
+        value: valueInput.value
+      });
+    };
+    addButton.innerText = 'Add';
+
+    li.appendChild(addButton);
+
+    return {attributeInput, valueInput};
   }
   clearAttributesList(){
     this.ul.innerHTML = "";
@@ -29,6 +61,14 @@ class AttributesRenderer extends Renderer{
 
       this.ul.appendChild(label);
     }
+  }
+
+  set onClickAdd(callBack){
+    this._onClickAdd = callBack;
+  }
+
+  get onClickAdd(){
+    return this._onClickAdd || noop;
   }
 
   set onAttributeChange(callBack){
