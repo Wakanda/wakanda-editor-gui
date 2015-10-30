@@ -11,7 +11,7 @@ var Module = {
 			"./Pannels/Angular",
 			"./Pannels/Styling",
 			"./Pannels/Attributes",
-			"./DragulaManager"
+			"./UserInterface/DragulaManager"
 		], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
@@ -21,8 +21,9 @@ var Module = {
 			var Styling = require("./Pannels/Styling");
 			var AttributesPanel = require("./Pannels/Attributes");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
-			var DragulaManager = require('./DragulaManager');
-			
+			var DragulaManager = require('./UserInterface/DragulaManager');
+
+
 			//TODO - URL of the iframe content
 			let path = './workspace/' + location.hash.substring(1);
 
