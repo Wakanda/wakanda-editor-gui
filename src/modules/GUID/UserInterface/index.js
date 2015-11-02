@@ -39,21 +39,20 @@ class UserInterface {
 
 	initKeyboardWatchers(keyboardJS) {
 
-		var _this = this;
-
 		//Deselect the selected element if any
 		keyboardJS.bind('esc', () => {
-			_this.documentEditor.deselectElement();
+			this.documentEditor.deselectElement();
 		});
 
 		//Remove the selected element if any
 		keyboardJS.bind('del', () => {
 
-			//FIXME
-			let element = _this._highLightedElement;
-
-			if (element.tagName != 'BODY') {
-				_this.documentEditor.removeElement({element});
+			let element = this.documentEditor.selectedElement;
+			if (element) {
+				let tagName = element.tagName.toLowerCase();
+				if (tagName !== 'body' && tagName !== 'html') {
+					this.documentEditor.removeElement({element});
+				}
 			}
 		});
 	}

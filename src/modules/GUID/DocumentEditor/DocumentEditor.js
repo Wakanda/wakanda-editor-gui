@@ -177,22 +177,10 @@ class DocumentEditor {
 	}
 
 	removeElement({element, justReturnCommand = false}) {
-
 		let command = this.commandFactory.removeElement({element});
-
 		let parent = element.parentElement;
 
-		command.afterExecute = () => {
-			if (this.selectedElement === element) {
-				this.selectElement({
-					element: parent
-				});
-			}
-		};
-
 		return executeOrReturn({command, justReturnCommand});
-
-
 	}
 
 	removeSelectedElement(justReturnCommand = false) {
