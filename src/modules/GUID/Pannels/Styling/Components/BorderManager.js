@@ -15,6 +15,8 @@ class BorderManager {
     this._initHtmlElement();
     this._initButtonListeners();
     this._updateUI();
+    this._watchForValueChange();
+    this._subscribeToDocumentEditorEvents();
   }
 
   appendToElement(element) {
@@ -50,7 +52,8 @@ class BorderManager {
       documentEditor: this.documentEditor,
       id: 'border-color-picker',
       placeholder: 'Border color',
-      attributeName: 'border-color'
+      attributeName: 'border-color',
+      disabledDocumentEditorSubscription: true
     });
     this.colorPicker.appendToElement(div);
 
@@ -84,6 +87,14 @@ class BorderManager {
     }
   }
 
+  _disableAllButtons() {
+    this._disableAllSingleButtons();
+    this._toggleButton({
+      button: this.modeButtons['all'],
+      on: false
+    });
+  }
+
   _disableAllSingleButtons() {
     for (let m of this.modes) {
       if (m !== 'all') {
@@ -96,11 +107,22 @@ class BorderManager {
   }
 
   _enableMode({mode}) {
-    if (mode === 'all') {
+    if (mode === null) {
+      this.currentMode = null;
+    }
+    else if (mode === 'all') {
       this.currentMode = 'all';
     }
     else {
       if (!this.currentMode || !(typeof this.currentMode === 'object')) { //array in this case
+
+        if (this.currentMode === 'all') {
+          this.documentEditor.changeSelectedElementStyleAttribute({
+            attribute: 'border',
+            value: null
+          });
+        }
+
         this.currentMode = [];
       }
       if (this.currentMode.indexOf(mode) === -1) {
@@ -113,6 +135,10 @@ class BorderManager {
   _disableMode({mode}) {
     if (mode === 'all') {
       this.currentMode = null;
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'border',
+        value: null
+      });
     }
     else
     {
@@ -120,6 +146,10 @@ class BorderManager {
         let index = this.currentMode.indexOf(mode);
         if (index !== -1) {
           this.currentMode.splice(index, 1);
+          this.documentEditor.changeSelectedElementStyleAttribute({
+            attribute: 'border-' + mode,
+            value: null
+          });
         }
       }
     }
@@ -164,6 +194,7 @@ class BorderManager {
         button: allButton,
         on: !allButton.isOn
       });
+      this._redraw();
       console.log('currentMode:', this.currentMode);
     });
 
@@ -188,10 +219,135 @@ class BorderManager {
             button,
             on: !button.isOn
           });
+          this._redraw();
           console.log('currentMode:', this.currentMode);
         });
       }
     }
+  }
+
+  _softReset() {
+    this._cleanManager();
+    this._disableAllButtons();
+    this._enableMode({mode: null});
+  }
+
+  _setManager({elementStyleManager: esm, enabledBorders}) {
+    this._softReset();
+
+    for (let side of enabledBorders) {
+      this._enableMode({mode: side});
+      this._toggleButton({
+        button: this.modeButtons[side],
+        on: true
+      });
+
+      let prefix = side === 'all' ? 'border-' : 'border-' + side + '-';
+
+      let color = esm.getAttributeValue(prefix + 'color');
+      if (color) {
+        this.colorPicker.setColor({rgbString: color});
+      }
+
+      let size = esm.getAttributeValue(prefix + 'width');
+      if (size) {
+        this.sizeInput.value = parseInt(size.replace('px', ''));
+      }
+
+      let style = esm.getAttributeValue(prefix + 'style');
+      if (style) {
+        this.styleSelect.value = style;
+      }
+    }
+  }
+
+  _changeAttributeForModes({attribute, value}) {
+    if (this.selectedElement) {
+      if (this.currentMode && this.currentMode.length > 0) {
+        if (this.currentMode === 'all')
+        {
+          this.documentEditor.changeSelectedElementStyleAttribute({
+            attribute: 'border-' + attribute,
+            value
+          });
+        }
+        else {
+          for (let side of this.currentMode) {
+            let attr = 'border-' + side + '-' + attribute;
+            this.documentEditor.changeSelectedElementStyleAttribute({
+              attribute: attr,
+              value
+            });
+          }
+        }
+      }
+    }
+  }
+
+  _redraw() {
+    if (this.sizeInput.value || this.sizeInput.value === '0') {
+      this._changeAttributeForModes({
+        attribute: 'width',
+        value: this.sizeInput.value + 'px'
+      });
+    }
+
+    this._changeAttributeForModes({
+      attribute: 'color',
+      value: '#' + this.colorPicker.colorValueHexFormat
+    });
+
+    this._changeAttributeForModes({
+      attribute: 'style',
+      value: this.styleSelect.value
+    });
+  }
+
+  _watchForValueChange() {
+    this.sizeInput.addEventListener('change', () => {
+      if (this.sizeInput.value || this.sizeInput.value === '0') {
+        this._changeAttributeForModes({
+          attribute: 'width',
+          value: this.sizeInput.value + 'px'
+        });
+      }
+    });
+
+    this.colorPicker.onColorChange((hexFormat) => {
+      this._changeAttributeForModes({
+        attribute: 'color',
+        value: '#' + hexFormat
+      });
+    });
+
+    this.styleSelect.addEventListener('change', () => {
+      this._changeAttributeForModes({
+        attribute: 'style',
+        value: this.styleSelect.value
+      });
+    });
+  }
+
+  _subscribeToDocumentEditorEvents() {
+    this.documentEditor.onElementSelected(({element}) => {
+      if (this.selectedElement !== element) {
+        this.selectedElement = element;
+
+        let esm = this.documentEditor.styleManager.getElementStyleManager({element});
+        let enabledBorders = esm.getEnabledBorders();
+
+        this._setManager({
+          elementStyleManager: esm,
+          enabledBorders
+        });
+      }
+    });
+
+    this.documentEditor.onElementDeselected(() => {
+      this.selectedElement = null;
+
+      this._softReset();
+    });
   }
 }
 
