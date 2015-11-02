@@ -10,9 +10,11 @@ class BorderManager {
     this.modeButtons = {};
     this.classButtonOn = 'btn-primary';
     this.classButtonOff = 'btn-default';
+    this.currentMode = null;
 
     this._initHtmlElement();
     this._initButtonListeners();
+    this._updateUI();
   }
 
   appendToElement(element) {
@@ -93,15 +95,76 @@ class BorderManager {
     }
   }
 
+  _enableMode({mode}) {
+    if (mode === 'all') {
+      this.currentMode = 'all';
+    }
+    else {
+      if (!this.currentMode || !(typeof this.currentMode === 'object')) { //array in this case
+        this.currentMode = [];
+      }
+      if (this.currentMode.indexOf(mode) === -1) {
+        this.currentMode.push(mode);
+      }
+    }
+    this._updateUI();
+  }
+
+  _disableMode({mode}) {
+    if (mode === 'all') {
+      this.currentMode = null;
+    }
+    else
+    {
+      if (this.currentMode && (typeof this.currentMode === 'object')) {
+        let index = this.currentMode.indexOf(mode);
+        if (index !== -1) {
+          this.currentMode.splice(index, 1);
+        }
+      }
+    }
+    this._updateUI();
+  }
+
+  //Enable or disable components of this manager according to current mode
+  _updateUI() {
+    if (!this.currentMode || this.currentMode.length === 0) {
+      this.colorPicker.disable();
+      this.sizeInput.disabled = true;
+      this.styleSelect.disabled = true;
+      this._cleanManager();
+    }
+    else {
+      this.colorPicker.enable();
+      this.sizeInput.disabled = false;
+      this.styleSelect.disabled = false;
+    }
+  }
+
+  _cleanManager() {
+    this.colorPicker._cleanPicker();
+    this.sizeInput.value = null;
+    this.styleSelect.value = 'none';
+  }
+
   _initButtonListeners() {
 
     let allButton = this.modeButtons['all'];
     allButton.addEventListener('click', () => {
       this._disableAllSingleButtons();
+
+      if (allButton.isOn) {
+        this._disableMode({mode: 'all'});
+      }
+      else {
+        this._enableMode({mode: 'all'});
+      }
+
       this._toggleButton({
         button: allButton,
         on: !allButton.isOn
       });
+      console.log('currentMode:', this.currentMode);
     });
 
     for (let mode of this.modes) {
@@ -114,10 +177,18 @@ class BorderManager {
             on: false
           });
 
+          if (button.isOn) {
+            this._disableMode({mode});
+          }
+          else {
+            this._enableMode({mode});
+          }
+
           this._toggleButton({
             button,
             on: !button.isOn
           });
+          console.log('currentMode:', this.currentMode);
         });
       }
     }

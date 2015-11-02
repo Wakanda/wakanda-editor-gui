@@ -26,6 +26,14 @@ class ColorPicker {
     });
   }
 
+  disable() {
+    this.htmlElement.disabled = true;
+  }
+
+  enable() {
+    this.htmlElement.disabled = false;
+  }
+
   _rgbStringToRgbObj(rgbString) {
     var arr = rgbString.replace(/[^\d,]/g, '').split(',');
     for (var i = 0; i < 3; i++) {
