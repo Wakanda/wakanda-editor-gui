@@ -195,7 +195,6 @@ class BorderManager {
         on: !allButton.isOn
       });
       this._redraw();
-      console.log('currentMode:', this.currentMode);
     });
 
     for (let mode of this.modes) {
@@ -220,7 +219,6 @@ class BorderManager {
             on: !button.isOn
           });
           this._redraw();
-          console.log('currentMode:', this.currentMode);
         });
       }
     }
