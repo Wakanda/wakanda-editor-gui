@@ -145,7 +145,7 @@ class CommandFactory {
 			execute, undo
 		});
 	}
-	// FIXME: 
+	// FIXME:
 	changeElementText({text, element}){
 
 		let childNodes = element.childNodes;
@@ -227,20 +227,24 @@ class CommandFactory {
 		let parent = element.parentElement;
 
 		let execute = () => {
-			parent.removeChild(element);
-			this.events.emit('GUID.dom.element.remove', {
-				parent, child: element
-			});
+			if (parent) {
+				parent.removeChild(element);
+				this.events.emit('GUID.dom.element.remove', {
+					parent, child: element
+				});
+			}
 
 			return {
 				parent, child: element
 			};
 		};
 		let undo = () => {
-			parent.insertBefore(element, nextNode);
-			this.events.emit('GUID.dom.element.append', {
-				parent, child: element
-			});
+			if (parent) {
+				parent.insertBefore(element, nextNode);
+				this.events.emit('GUID.dom.element.append', {
+					parent, child: element
+				});
+			}
 
 			return {
 				parent, child: element
