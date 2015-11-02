@@ -5,6 +5,7 @@ import FlexboxgridManager from './Components/FlexboxgridManager';
 import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
 import BoxManager from './Components/BoxManager';
 import ClassPicker from './Components/ClassPicker';
+import AlignmentManager from './Components/AlignmentManager';
 
 class Styling {
 
@@ -100,6 +101,17 @@ class Styling {
     classPicker.appendToElement(this.container);
     classPicker.onClassInputValueChange(({value}) => {
       this.documentEditor.addClass({className: value});
+    });
+
+    let alignmentManager = new AlignmentManager({
+      documentEditor: this.documentEditor
+    });
+    alignmentManager.appendToElement(this.container);
+    alignmentManager.onHorizontalValueChange((value) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'text-align',
+        value
+      });
     });
 
     // let saveButton = document.createElement('button');
