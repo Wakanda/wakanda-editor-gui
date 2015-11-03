@@ -1,4 +1,5 @@
-import MultiEvent from '../../../lib/multi-event-master/src/multi-event-es6.js';
+import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+import HighlightManager from './HighlightManager';
 
 class UserInterface {
 	constructor({documentEditor}) {
@@ -8,16 +9,20 @@ class UserInterface {
 
 		this.documentEditor = documentEditor;
 		this.canvas = document.createElement('canvas');
-		this.HIGHLIGHT = null;
 		this._highLightedElement = null;
 
 		this.canvas.classList.add('user-interface-canvas');
 		this.cloudEditorIDE = documentEditor.cloudEditorIDE;
 		this.cloudEditorIDE.appendChild(this.canvas);
 
-		let fabric = require('../../../lib/fabric.js');
+		let fabric = require('../../../../lib/fabric.js');
 
 		this.fabric_canvas = new fabric.Canvas(this.canvas);
+		this.highlightManager = new HighlightManager({
+			fabricCanvas: this.fabric_canvas,
+			events: this.events,
+			documentEditor: this.documentEditor
+		});
 
 		this.resetCanvasDimentions();
 
@@ -25,7 +30,7 @@ class UserInterface {
 		this.initElementSelection();
 		this.subscribeToDocumentEditorEvents();
 
-		let keyboardJS = require('../../../lib/keyboardjs');
+		let keyboardJS = require('../../../../lib/keyboardjs');
 		this.initKeyboardWatchers(keyboardJS);
 		this.lastPosition = null;
 		this.mouseOverCanvas = false;
@@ -34,20 +39,20 @@ class UserInterface {
 
 	initKeyboardWatchers(keyboardJS) {
 
-		var _this = this;
-
 		//Deselect the selected element if any
 		keyboardJS.bind('esc', () => {
-			_this.documentEditor.deselectElement();
+			this.documentEditor.deselectElement();
 		});
 
 		//Remove the selected element if any
 		keyboardJS.bind('del', () => {
 
-			let element = _this._highLightedElement;
-
-			if (element.tagName != 'BODY') {
-				_this.documentEditor.removeElement({element});
+			let element = this.documentEditor.selectedElement;
+			if (element) {
+				let tagName = element.tagName.toLowerCase();
+				if (tagName !== 'body' && tagName !== 'html') {
+					this.documentEditor.removeElement({element});
+				}
 			}
 		});
 	}
@@ -62,20 +67,7 @@ class UserInterface {
 	}
 
 	clearHighLighting() {
-		let a = this.HIGHLIGHT == null;
-		let b = this._highLightedElement == null;
-		if (a != b) {
-			console.log(this);
-		}
-		if (this.HIGHLIGHT) {
-			let element = this._highLightedElement;
-			this.fabric_canvas.remove(this.HIGHLIGHT);
-			this.HIGHLIGHT = null;
-			this._highLightedElement = null;
-			this.events.emit('GUID.UI.clearHighLighting', {
-				element
-			});
-		}
+		this.highlightManager.clearHighLighting();
 	}
 
 	onClearHighLighting(callBack) {
@@ -344,23 +336,7 @@ class UserInterface {
 	}
 
 	highLightElement(element) {
-		if (this._highLightedElement !== element) {
-
-			if (!element) {
-				// console.log(options.e.offsetX, options.e.offsetY);
-				return this.clearHighLighting();
-			}
-
-			let boundingRect = element.getBoundingClientRect();
-			let coords = {};
-
-			this.highLightArea(boundingRect);
-			this._highLightedElement = element;
-
-			this.events.emit('GUID.UI.element.highlight', {
-				element
-			});
-		}
+		this.highlightManager.highLightElement({element});
 	}
 
 	onElementHighLight(callBack) {
@@ -412,7 +388,6 @@ class UserInterface {
 			});
 
 			this.fabric_canvas.add(this.rectSelected);
-			this.fabric_canvas.moveTo(this.rectSelected, 0);
 		}
 	}
 
@@ -442,30 +417,6 @@ class UserInterface {
 		this.documentEditor.onElementTextChange(()=> {
 			this.updateSelectedElementBorder();
 		});
-	}
-
-	highLightArea(coords) {
-		let {
-			left, top, width, height
-		} = coords;
-
-		this.clearHighLighting();
-
-		this.HIGHLIGHT = new fabric.Rect({
-			type: 'highlight',
-			left: left,
-			top: top,
-			fill: 'blue',
-			opacity: 0.1,
-			strokeWidth: 2,
-			width: width,
-			height: height,
-			selectable: false
-		});
-
-		this.fabric_canvas.add(this.HIGHLIGHT);
-		//TODO sendToBack ?
-		this.fabric_canvas.sendToBack(this.HIGHLIGHT);
 	}
 
 	subscribeToDocumentEditorEvents() {

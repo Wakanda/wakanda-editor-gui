@@ -180,13 +180,6 @@ class DocumentEditor {
 		let command = this.commandFactory.removeElement({element});
 		let parent = element.parentElement;
 
-		command.afterExecute = () => {
-			if (this.selectedElement === element) {
-				this.selectElement({
-					element: parent
-				});
-			}
-		};
 		return executeOrReturn({command, justReturnCommand});
 	}
 
@@ -254,6 +247,13 @@ class DocumentEditor {
 
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack);
+	}
+
+	getElementStyleAttribute({element, attribute}) {
+		return this.styleManager.getInlineStyleAttribute({
+			element,
+			attribute
+		});
 	}
 
 	getSelectedElementStyleAttribute({attribute}){
@@ -489,9 +489,19 @@ class DocumentEditor {
 		this.events.on('GUID.dom.import.remove', callBack);
 	}
 
-	changeSelectedElementText({text, justReturnCommand = false}){
+	// FIXME:
+	getElementText({element = this.selectedElement}){
+		let childNodes = element.childNodes;
+		// NOTE: tested only on chrome
+		if(childNodes.length === 1 && childNodes[0].nodeType ===3 ){
+			return element.innerText;
+		}else{
+			return null;
+		}
+	}
+	changeElementText({element = this.selectedElement, text, justReturnCommand = false}){
 		let command = this.commandFactory.changeElementText({
-			element: this.selectedElement,
+			element,
 			text
 		});
 

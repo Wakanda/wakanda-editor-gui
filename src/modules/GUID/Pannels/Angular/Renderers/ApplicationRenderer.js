@@ -1,12 +1,9 @@
-import helpers from '../helpers';
-import Renderer from './Renderer';
+import helpers from '../../helpers';
+import Renderer from '../../Renderer';
 
 class ApplicationRenderer extends Renderer{
   constructor({container, angularPage}){
-    super({
-      title: 'Application',
-      container
-    });
+    super({ title: 'Application', container });
     this._angularPage = angularPage;
 
     let {label, input, li} = helpers.createInputWithLabel({

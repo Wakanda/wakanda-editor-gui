@@ -1,4 +1,4 @@
-import helpers from '../helpers';
+import helpers from '../../helpers';
 
 class RecipeRenderer{
   constructor({container, angularPage}){
@@ -53,12 +53,24 @@ class RecipeRenderer{
     let li = this.getRecipeLi({recipe});
     li.innerText = recipe.name;
     li.appendChild(this.getEditRecipeButton({recipe}));
+    if(recipe.type === helpers.recipeTypes.recipes.controller){
+      li.appendChild(this.getBindControllerButton({recipe}));
+    }
+  }
+  getBindControllerButton({recipe}){
+    let bindCtrlButton = document.createElement('button');
+    bindCtrlButton.innerText = 'bind';
+    bindCtrlButton.onclick = ()=>{
+      this._angularPage.setControllerToElement({controller: recipe});
+    };
+    return bindCtrlButton;
   }
   getEditRecipeButton({recipe}){
     let editButton = document.createElement('button');
     editButton.innerText = 'edit';
     let script = this._angularPage.getScriptOfRecipe({recipe});
     editButton.onclick = ()=>{
+      //TODO emit changes (change via documentEditor)
       helpers.editScript(script);
     };
     return editButton;

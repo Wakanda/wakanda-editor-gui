@@ -1,3 +1,5 @@
+import HtmlColorNames from './HtmlColorNames';
+
 class ColorPicker {
 
   constructor({documentEditor, id, placeholder, attributeName}) {
@@ -39,6 +41,10 @@ class ColorPicker {
     this.htmlElement.value = null;
   }
 
+  _htmlColorNameToHex(colorName) {
+    return HtmlColorNames[colorName];
+  }
+
   _subscribeToDocumentEditorEvents() {
 
     //TODO: BUG, <body> fires onElementSelected on UI when selected but not here, can not find out why...
@@ -48,8 +54,20 @@ class ColorPicker {
       if (selectedElement) {
         let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:this.attributeName});
         if (color) {
-          let {r, g, b} = this._rgbStringToRgbObj(color);
-          this.jsColorPicker.fromRGB(r,g,b);
+          if (color.match(/^rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)$/))
+          {
+            let {r, g, b} = this._rgbStringToRgbObj(color);
+            this.jsColorPicker.fromRGB(r,g,b);
+          }
+          else {
+            let hexFromName = this._htmlColorNameToHex(color);
+            if (hexFromName) {
+              this.jsColorPicker.fromString(hexFromName.replace('#', ''));
+            }
+            else {
+              this._cleanPicker();
+            }
+          }
         }
         else {
           this._cleanPicker();
@@ -64,11 +82,23 @@ class ColorPicker {
 
     this.documentEditor.onElementStyleAttributeChange(({element, attribute, oldValue, value}) => {
 
-      if (element === this.selectedElement) {
+      if (element === this.selectedElement && attribute === this.attributeName) {
         let color = this.documentEditor.getSelectedElementStyleAttribute({attribute:this.attributeName});
         if (color) {
-          let {r, g, b} = this._rgbStringToRgbObj(color);
-          this.jsColorPicker.fromRGB(r,g,b);
+          if (color.match(/^rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)$/))
+          {
+            let {r, g, b} = this._rgbStringToRgbObj(color);
+            this.jsColorPicker.fromRGB(r,g,b);
+          }
+          else {
+            let hexFromName = this._htmlColorNameToHex(color);
+            if (hexFromName) {
+              this.jsColorPicker.fromString(hexFromName.replace('#', ''));
+            }
+            else {
+              this._cleanPicker();
+            }
+          }
         }
         else {
           this._cleanPicker();

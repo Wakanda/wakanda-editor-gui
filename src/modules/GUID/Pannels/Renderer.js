@@ -1,4 +1,4 @@
-import helpers from '../helpers';
+import helpers from './helpers';
 
 class Renderer{
   constructor({title, container}){
@@ -11,6 +11,9 @@ class Renderer{
   }
   get ul(){
     return this._ul;
+  }
+  appendElement({element}){
+    this.container.appendChild(element);
   }
 }
 

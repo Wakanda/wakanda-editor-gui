@@ -1,9 +1,10 @@
 import Routes from './Routes';
 import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
-import helpers from '../helpers';
+import helpers from '../../helpers';
 
 const NGAPPATTRIBUTE = 'ng-app';
+const NGCTRLATTRIBUTE = 'ng-controller';
 
 class AngularPage {
   constructor({documentEditor}){
@@ -15,6 +16,8 @@ class AngularPage {
     this.applicationNameToInfos = new Map();
     this.recipesMap = new Map();
     this.recipeToScript = new Map();
+
+    this.controllerToElement = new Map();
 
     this.events = new MultiEvent();
 
@@ -39,6 +42,27 @@ class AngularPage {
   }
   get recipes(){
     return Array.from(this.recipesMap.values());
+  }
+  setControllerToElement({controller, element = this.documentEditor.selectedElement}){
+    let oldControllerElement = this.getControllerElement({controller});
+    let elements = [],
+        attributes = [],
+        values = [];
+    if(oldControllerElement && oldControllerElement.getAttribute(NGCTRLATTRIBUTE)){
+      elements.push(oldControllerElement);
+      attributes.push(NGCTRLATTRIBUTE);
+      values.push(null);
+    }
+    elements.push(element);
+    attributes.push(NGCTRLATTRIBUTE);
+    values.push(controller.name);
+
+    this.controllerToElement.set(controller, element);
+
+    this.documentEditor.changeElementAttributes({elements, attributes, values});
+  }
+  getControllerElement({controller}){
+    return this.controllerToElement.get(controller);
   }
   get applicationName(){
     let applicationElement = this.applicationElement;
