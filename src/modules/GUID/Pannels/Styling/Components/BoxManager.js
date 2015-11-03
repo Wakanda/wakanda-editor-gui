@@ -52,6 +52,19 @@ class BoxManager {
       attributeMap.set(pos, input);
       div.appendChild(input);
     }
+
+    let input = document.createElement('input');
+    input.className = 'boxManagerMiddle';
+    input.type = 'text';
+    input.addEventListener('change', () => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: attributeName,
+        value: input.value
+      });
+    });
+    attributeMap.set('all', input);
+    div.appendChild(input);
+
     div.appendChild(document.createElement('div'));
 
     container.appendChild(div);
@@ -68,11 +81,29 @@ class BoxManager {
       let input = attributeMap.get(pos);
       input.value = element.style[attributeName + '-' + pos];
     }
+
+    let inputMiddle = attributeMap.get('all');
+    let generalAttribute = element.style[attributeName];
+    if (generalAttribute.match(/^\d+px$/)) {
+      inputMiddle.value = generalAttribute;
+    }
+    else {
+      inputMiddle.value = null;
+    }
   }
 
   _resetSingleAttribute({element, position, attributeName, attributeMap}) {
     let input = attributeMap.get(position);
     input.value = element.style[attributeName + '-' + position];
+
+    let inputMiddle = attributeMap.get('all');
+    let generalAttribute = element.style[attributeName];
+    if (generalAttribute.match(/^\d+px$/)) {
+      inputMiddle.value = generalAttribute;
+    }
+    else {
+      inputMiddle.value = null;
+    }
   }
 
   _subscribeToDocumentEditorEvents() {
