@@ -2,7 +2,7 @@ import HtmlColorNames from './HtmlColorNames';
 
 class ColorPicker {
 
-  constructor({documentEditor, id, placeholder, attributeName}) {
+  constructor({documentEditor, id, placeholder, attributeName, disabledDocumentEditorSubscription}) {
     this.documentEditor = documentEditor;
     this.attributeName = attributeName;
 
@@ -11,7 +11,9 @@ class ColorPicker {
     this.jsColorPicker = new jscolor.color(this.htmlElement);
     this.htmlElement.placeholder = placeholder;
 
-    this._subscribeToDocumentEditorEvents();
+    if (!disabledDocumentEditorSubscription) {
+      this._subscribeToDocumentEditorEvents();
+    }
   }
 
   get colorValueHexFormat() {
@@ -26,6 +28,25 @@ class ColorPicker {
     this.htmlElement.addEventListener('change', () => {
       callback(this.colorValueHexFormat);
     });
+  }
+
+  disable() {
+    this.htmlElement.disabled = true;
+  }
+
+  enable() {
+    this.htmlElement.disabled = false;
+  }
+
+  setColor({rgbString}) {
+    if (rgbString) {
+      let {r, g, b} = this._rgbStringToRgbObj(rgbString);
+      this.jsColorPicker.fromRGB(r,g,b);
+    }
+    else {
+      this._cleanPicker();
+      console.warn('Invalid color for color picker', rgbString);
+    }
   }
 
   _rgbStringToRgbObj(rgbString) {
