@@ -1,28 +1,15 @@
+<!DOCTYPE html>
 <html>
-
 <head>
-  <link rel="stylesheet" href="./node_modules/jstree/dist/themes/default/style.css" type="text/css">
+  <meta charset="utf-8">
+  <title>Wakanda Designer</title>
 
-  <script src="./node_modules/jquery/dist/jquery.min.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
-
-  <script src="lib/bootstrap/bootstrap.min.js"></script>
-
-  <script src="lib/bootbox/bootbox.min.js"></script>
-
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
+  <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="lib/bootstrap-vertical-tabs/bootstrap.vertical-tabs.min.css">
   <link rel="stylesheet" href="./node_modules/awesomplete/awesomplete.css">
   <link rel="stylesheet" href="./node_modules/dragula/dist/dragula.min.css">
+  <link rel="stylesheet" href="./node_modules/jstree/dist/themes/default/style.css">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 </head>
 
@@ -68,14 +55,19 @@
   </div>
 
   <div class="cloud-ide-editor" id="cloud-ide-editor"></div>
+
   <% if(env === 'development') { %>
     <script src="http://localhost:9090/webpack-dev-server.js"></script>
-    <% } %>
-      <script src="./lib/emmet.js"></script>
-      <script src="./lib/ace-min-noconflict/ace.js"></script>
-      <script src="./lib/jscolor/jscolor.js"></script>
-      <script src="./build/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
+  <% } %>
 
+  <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="./node_modules/bootbox/bootbox.min.js"></script>
+
+  <script src="./lib/emmet.js"></script>
+  <script src="./lib/ace-min-noconflict/ace.js"></script>
+  <script src="./lib/jscolor/jscolor.js"></script>
+
+  <script src="./build/assets/js/main.build<% if(env === 'production') { %>.<%= hash %><% } %>.js"></script>
 </body>
-
 </html>

@@ -1,3 +1,7 @@
+html, body{
+  height: 100%;
+}
+
 .cloud-ide-editor {
   margin: auto;
   margin-bottom: 10px;
