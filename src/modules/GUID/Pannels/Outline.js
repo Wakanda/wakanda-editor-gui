@@ -14,8 +14,8 @@ class Outline {
   }
 
   _initJstree() {
-    var jstree = require("../../../../lib/jstree/jstree.js");
-		var $ = require("../../../../lib/jquery-2.1.3.min.js");
+    var $ = require("jquery");
+    var jstree = require("jstree");
 
     this.$container = $(this.container);
     this.$container.jstree({

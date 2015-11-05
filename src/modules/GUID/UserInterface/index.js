@@ -1,10 +1,10 @@
-import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import HighlightManager from './HighlightManager';
 
 class UserInterface {
 	constructor({documentEditor}) {
 		// let _EventEmitter = require('../../../lib/micro-events.js');
 		// this.events = new _EventEmitter();
+		var MultiEvent = require('multi-event');
 		this.events = new MultiEvent();
 
 		this.documentEditor = documentEditor;
@@ -15,7 +15,7 @@ class UserInterface {
 		this.cloudEditorIDE = documentEditor.cloudEditorIDE;
 		this.cloudEditorIDE.appendChild(this.canvas);
 
-		let fabric = require('../../../../lib/fabric.js');
+		let fabric = require('fabric');
 
 		this.fabric_canvas = new fabric.Canvas(this.canvas);
 		this.highlightManager = new HighlightManager({
@@ -30,7 +30,7 @@ class UserInterface {
 		this.initElementSelection();
 		this.subscribeToDocumentEditorEvents();
 
-		let keyboardJS = require('../../../../lib/keyboardjs');
+		let keyboardJS = require('keyboardjs');
 		this.initKeyboardWatchers(keyboardJS);
 		this.lastPosition = null;
 		this.mouseOverCanvas = false;

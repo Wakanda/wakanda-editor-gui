@@ -1,6 +1,5 @@
 import Routes from './Routes';
 import AngularRecipe from './AngularRecipe';
-import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
 import helpers from '../../helpers';
 
 const NGAPPATTRIBUTE = 'ng-app';
@@ -19,6 +18,7 @@ class AngularPage {
 
     this.controllerToElement = new Map();
 
+    var MultiEvent = require('multi-event');
     this.events = new MultiEvent();
 
     this.scriptsPromise = Promise.resolve([]);

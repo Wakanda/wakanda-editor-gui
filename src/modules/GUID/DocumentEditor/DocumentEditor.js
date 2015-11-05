@@ -1,7 +1,6 @@
 import LinkImport from './LinkImport';
 import {Broker, TemporaryBroker} from './Broker';
 import {CommandFactory, Command} from './CommandFactory.js';
-import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
 
@@ -19,9 +18,8 @@ class DocumentEditor {
 
 	//TODO rev
 	constructor({broker = new Broker(), path}) {
-		// let _EventEmitter = require('../../../../lib/micro-events.js');
-		// this.events = new _EventEmitter();
 
+		var MultiEvent = require('multi-event');
 		this.events = new MultiEvent();
 
 		this.mainBroker = broker;

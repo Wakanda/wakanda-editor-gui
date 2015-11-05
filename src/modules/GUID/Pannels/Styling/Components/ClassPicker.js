@@ -1,5 +1,3 @@
-import Awesomplete from '../../../../../../lib/awesomplete/awesomplete.js';
-
 class ClassPicker {
   constructor({documentEditor}) {
     this.documentEditor = documentEditor;
@@ -26,6 +24,7 @@ class ClassPicker {
     this.addInput = document.createElement('input');
     div.appendChild(this.addInput);
 
+    var Awesomplete = require('awesomplete');
     let awesomplete = new Awesomplete(this.addInput, {
       minChars: 1,
       maxItems: 5,

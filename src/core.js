@@ -5,31 +5,31 @@ var IDE = window.IDE || {};
 class Core {
 	constructor(coreModules){
 		var that = this;
-		
+
 		if( IDE.Core ) {
 			throw "Only one instance of core is allowed.";
 		}
-		
+
 		this.activatedPlugins = [];
 		this.plugins          = {};
-		
-		var _EventEmitter   = require('../lib/micro-events.js');
+
+		var _EventEmitter   = require('micro-events');
 		this.events = new _EventEmitter();
-		
+
 		coreModules.forEach(function(moduleName){
 			console.log(moduleName);
 			var module = require(`./modules/${moduleName}/index.js`);
-			
+
 			module.activate(function(){
 				that.activatedPlugins.push(moduleName);
-				
+
 				if(that.activatedPlugins.length === coreModules.length){
 					that.events.emit("ready");
 				}
 			});
-		});		
+		});
 	}
- 
+
 	get(pluginName) {
 		return this.plugins[pluginName]
 	}
@@ -46,7 +46,7 @@ class Core {
 		}
 		this.plugins[pluginName].isActivated = true;
 	}
-	
+
 	onReady(callback) {
 		this.events.on("ready", callback);
 	}

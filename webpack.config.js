@@ -46,9 +46,9 @@ module.exports = {
   },
   resolve: {
     alias: {
-      "jquery": "../jquery-2.1.3.min.js",
       "alias-example-logger": path.join(__dirname, './alias-example/logger/console.' + environment + '.js'),
-      "alias-example-geoloc-geoip": path.join(__dirname, './alias-example/geoloc/lib/geoip' + (environment === 'test' ? '.stub' : '') + '.js')
+      "alias-example-geoloc-geoip": path.join(__dirname, './alias-example/geoloc/lib/geoip' + (environment === 'test' ? '.stub' : '') + '.js'),
+      "fabric": '../../../../lib/fabric.js'
     }
   },
   module: {
