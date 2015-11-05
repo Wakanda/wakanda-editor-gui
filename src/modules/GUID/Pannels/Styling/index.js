@@ -6,6 +6,7 @@ import ResponsiveClassPicker from './Components/ResponsiveClassPicker';
 import BoxManager from './Components/BoxManager';
 import ClassPicker from './Components/ClassPicker';
 import BorderManager from './Components/BorderManager';
+import AlignmentManager from './Components/AlignmentManager';
 
 class Styling {
 
@@ -107,6 +108,16 @@ class Styling {
       documentEditor: this.documentEditor
     });
     borderManager.appendToElement(this.container);
+    let alignmentManager = new AlignmentManager({
+      documentEditor: this.documentEditor
+    });
+    alignmentManager.appendToElement(this.container);
+    alignmentManager.onHorizontalValueChange((value) => {
+      this.documentEditor.changeSelectedElementStyleAttribute({
+        attribute: 'text-align',
+        value
+      });
+    });
 
     // let saveButton = document.createElement('button');
     // saveButton.textContent = 'Save style';
