@@ -1,4 +1,15 @@
+import {HttpClient} from "../../../../lib/aurelia-http-client";
+
 let helpers = {
+  getFile({url}){
+  	let client = new HttpClient().configure(x => {
+      // x.withHeader('Content-Type', 'application/json');
+    });
+  	return client.get(url)
+  		.then(({response})=>{
+  			return response;
+  		});
+  },
   // NOTE: temporary
   getConfigRoutesCode({routes, otherwise, applicationName}){
     let codeRoutes = '';

@@ -33,10 +33,11 @@ class UIRouterRenderer{
 		this.routesContainer.appendChild(helpers.createTitle({text: 'Routes : '}));
 		let states = uiRouterInstance.states,
 				otherwise = uiRouterInstance.otherwise;
-		let onSelectView = ({value: state}) => {
-			// TODO: daba fill content in dom
-			// uiRouterInstance.selectView({path});
-			let controllerName = uiRouterInstance.statesMap.get(path).controller;
+		let onSelectView = ({value: stateName}) => {
+			//TODO: nested
+			uiRouterInstance.selectView({stateName});
+			// TODO: deal with controller
+			// let controllerName = uiRouterInstance.statesMap.get(path).controller;
 		},onSave = ({value: path})=>{
 			uiRouterInstance.saveTemplate({path})
 		};

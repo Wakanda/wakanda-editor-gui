@@ -1,3 +1,4 @@
+import {getFile, stringToDomElements} from '../helpers';
 const UIDIRATTNAME = 'ui-view';
 
 class UIRouter {
@@ -6,9 +7,23 @@ class UIRouter {
 		this._recipeConfig = this._angularPage.configRecipe;
 		this._otherwise = null;
 		this._statesMap = new Map();
+		this._templatesMap = new Map();
     this._viewElement = null;
 
 		this.initRoutes();
+		this.ready = this.loadTemplates().then(()=>this);
+	}
+	selectView({stateName}){
+		// TODO: daba save old content
+		let templateUrl = this._statesMap.get(stateName).templateUrl;
+		let templateContent = this._templatesMap.get(templateUrl);
+		// template contains only one root dom element
+		let domElements = stringToDomElements({content: templateContent});
+		let rootTemplateElement = domElements[0];
+
+		let docE = this._angularPage.documentEditor;
+		docE.temporaryBroker.setToinitialState();
+		docE.temporaryAppendElement({element: rootTemplateElement, parent: this.viewElement});
 	}
 
 	initRoutes() {
@@ -22,6 +37,8 @@ class UIRouter {
 		};
 		$urlRouterProvider.otherwise = (otherwise) => {
 			this._otherwise = otherwise;
+
+			return $urlRouterProvider;
 		};
 
 		let dependencies = { $stateProvider, $urlRouterProvider };
@@ -40,8 +57,23 @@ class UIRouter {
       }
     });
 
-    this._viewElement = viewElement
+    this._viewElement = viewElement;
   }
+	loadTemplates(){
+		let currentPath = this._angularPage.documentEditor.path;
+		let rootFolder = currentPath.substring(0,currentPath.lastIndexOf("/") + 1);
+		let loadingTemplatesPromises = [];
+		this._statesMap.forEach((opts, stateName)=>{
+			// loading template
+			let url = opts.templateUrl;
+			let loadPromise = getFile({url: rootFolder+url}).then((templateContent)=>{
+				this._templatesMap.set(url, templateContent);
+			});
+			loadingTemplatesPromises.push(loadPromise)
+		});
+
+		return Promise.all(loadingTemplatesPromises);
+	}
   get viewElement(){
     return this._viewElement;
   }
@@ -93,9 +125,9 @@ class UIRouter {
 			code += `
               .state('${key}', ${JSON.stringify(val)})
       `;
-		})
-		code += `;
-  });
+			})
+			code += `;
+	  });
       `;
     return code;
 	}

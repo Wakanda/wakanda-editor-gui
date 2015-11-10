@@ -12,12 +12,15 @@ class AngularPanel{
 
     this._angularPage.ready.then((angularPage)=>{
       this._uiRouter = new UIRouter({angularPage});
+      
+      this._uiRouter.ready.then((uirouter)=>{
+        this._uiRouterRenderer = this.initUIRouterRenderer();
+      });
 
       this._applicationRenderer = this.initApplicationRenderer();
       this._scriptsRenderer = this.initScriptRenderer();
       this._scriptsRenderer.container.hidden = true;
       this._recipeRenderer = this.initRecipeRenderer();
-      this._uiRouterRenderer = this.initUIRouterRenderer();
       this._scriptsRenderer.container.hidden = true;
 
       this.initAngularPageEvents();
