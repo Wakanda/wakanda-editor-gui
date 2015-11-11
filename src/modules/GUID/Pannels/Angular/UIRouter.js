@@ -14,16 +14,25 @@ class UIRouter {
 		this.ready = this.loadTemplates().then(()=>this);
 	}
 	selectView({stateName}){
-		// TODO: daba save old content
-		let templateUrl = this._statesMap.get(stateName).templateUrl;
-		let templateContent = this._templatesMap.get(templateUrl);
-		// template contains only one root dom element
-		let domElements = stringToDomElements({content: templateContent});
-		let rootTemplateElement = domElements[0];
-
 		let docE = this._angularPage.documentEditor;
 		docE.temporaryBroker.setToinitialState();
-		docE.temporaryAppendElement({element: rootTemplateElement, parent: this.viewElement});
+		let viewElement = this.viewElement;
+		let stateArray = stateName.split('.');
+		stateArray.forEach((subState, ii, arr) => {
+			let currentState = '';
+			for(let jj = 0; jj<=ii; jj++){
+				currentState += jj>0?'.':'';
+				currentState += arr[jj];
+			}
+			// TODO: daba save old content
+			let templateUrl = this._statesMap.get(currentState).templateUrl;
+			let templateContent = this._templatesMap.get(templateUrl);
+			// template contains only one root dom element
+			let domElements = stringToDomElements({content: templateContent});
+			let rootTemplateElement = domElements[0];
+			docE.temporaryAppendElement({element: rootTemplateElement, parent: viewElement});
+			viewElement = viewElement.querySelector(`[${UIDIRATTNAME}]`);
+		});
 	}
 
 	initRoutes() {
@@ -127,7 +136,7 @@ class UIRouter {
       `;
 			})
 			code += `;
-	  });
+	  	});
       `;
     return code;
 	}
