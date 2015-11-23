@@ -52,7 +52,11 @@ class UIRouter {
 
 		let dependencies = { $stateProvider, $urlRouterProvider };
 
-		this._recipeConfig.executeWithDependencies({ dependencies });
+		if(this._recipeConfig === null){
+			console.warn('config recipe is missing');
+		}else{
+			this._recipeConfig.executeWithDependencies({ dependencies });
+		}
 
     // find viewElement
     let viewElement = this._angularPage.documentEditor.document.querySelector(`[${UIDIRATTNAME}]`);
