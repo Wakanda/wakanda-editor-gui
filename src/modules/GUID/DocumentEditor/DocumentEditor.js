@@ -188,42 +188,40 @@ class DocumentEditor {
 			element: this.selectedElement
 		});
 	}
+
+
+	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
+		let command = this.commandFactory.moveBeforeElement({element, elementRef});
+
+		return executeOrReturn({command, justReturnCommand});
+	}
+
+	moveAfterElement({element, elementRef, justReturnCommand = false}) {
+		let command = this.commandFactory.moveAfterElement({element, elementRef});
+
+		return executeOrReturn({command, justReturnCommand});
+	}
+
+	moveInsideElement({element, elementRef, justReturnCommand = false}) {
+		let command = this.commandFactory.moveInsideElement({element, elementRef});
+
+		return executeOrReturn({command, justReturnCommand});
+	}
+
 	prependElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
 			element, elementRef
 		});
-		command.afterExecute = () => {
-			this.selectElement({
-				element
-			});
-		};
-		command.afterUndo = () => {
-			this.selectElement({
-				element: elementRef
-			});
-		};
 
 		return executeOrReturn({command, justReturnCommand});
-
 	}
 
-	appendAfterElement({element, elementRef = this.selectedElement}) { // append element after selected element if elementRef is undefined
+	appendAfterElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
 		let command = this.commandFactory.appendAfterElement({
 			element, elementRef
 		});
-		command.afterExecute = () => {
-			this.selectElement({
-				element
-			});
-		};
-		command.afterUndo = () => {
-			this.selectElement({
-				element: elementRef
-			});
-		};
 
-		this.broker.createCommand(command)
-			.executeNextCommand();
+		return executeOrReturn({command, justReturnCommand});
 	}
 
 	temporaryAppendElement({element, parent = this.selectedElement}){
@@ -240,16 +238,13 @@ class DocumentEditor {
 			child: element
 		});
 
-		command.afterUndo = ({parent}) => {
-			this.selectElement({ element: parent });
-		};
-
 		return executeOrReturn({command, justReturnCommand});
-
 	}
+
 	onAppendElement(callBack) {
 		this.events.on('GUID.dom.element.append', callBack);
 	}
+
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack);
 	}
@@ -277,7 +272,6 @@ class DocumentEditor {
 			});
 
 			return executeOrReturn({command, justReturnCommand});
-
 		}
 	}
 
@@ -431,11 +425,13 @@ class DocumentEditor {
 	}
 
 	selectElement({element}) {
-		this.selectedElement = element;
+		if (element) {
+			this.selectedElement = element;
 
-		this.events.emit('GUID.dom.select', {
-			element: this.selectedElement
-		});
+			this.events.emit('GUID.dom.select', {
+				element: this.selectedElement
+			});
+		}
 	}
 
 	selectElementByPoint(coords) {
