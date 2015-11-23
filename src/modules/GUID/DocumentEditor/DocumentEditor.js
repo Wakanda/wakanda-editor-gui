@@ -191,9 +191,17 @@ class DocumentEditor {
 
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
-		let command = this.commandFactory.moveBeforeElement({element, elementRef});
+		let removeCommand = this.commandFactory.removeElement({ element	});
+		let appendCommand = this.commandFactory.prependElement({
+			element,
+			elementRef
+		});
 
-		return executeOrReturn({command, justReturnCommand});
+		let finalCommand = this.commandFactory.regroupCommands({
+			commands: [removeCommand, appendCommand]
+		});
+
+		return executeOrReturn({command: finalCommand, justReturnCommand});
 	}
 
 	moveAfterElement({element, elementRef, justReturnCommand = false}) {
