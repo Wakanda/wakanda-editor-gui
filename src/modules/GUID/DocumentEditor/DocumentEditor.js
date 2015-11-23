@@ -215,9 +215,17 @@ class DocumentEditor {
 	}
 
 	moveInsideElement({element, elementRef, justReturnCommand = false}) {
-		let command = this.commandFactory.moveInsideElement({element, elementRef});
+		let removeCommand = this.commandFactory.removeElement({ element	});
+		let appendCommand = this.commandFactory.appendElement({
+			parent: elementRef,
+			child: element
+		});
 
-		return executeOrReturn({command, justReturnCommand});
+		let finalCommand = this.commandFactory.regroupCommands({
+			commands: [removeCommand, appendCommand]
+		});
+
+		return executeOrReturn({command: finalCommand, justReturnCommand});
 	}
 
 	prependElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
