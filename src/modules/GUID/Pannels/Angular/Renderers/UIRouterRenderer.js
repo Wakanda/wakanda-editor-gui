@@ -1,6 +1,6 @@
 import helpers from '../../helpers';
 
-class RoutesRenderer{
+class UIRouterRenderer{
 	constructor({container, documentEditor}){
 		this.documentEditor = documentEditor;
 		this.container = container;
@@ -13,38 +13,40 @@ class RoutesRenderer{
 		this.container.appendChild(this.routesContainer);
 
 	}
-	render({routesInstance}){
-		let viewElement = routesInstance.viewElement;
-
-		if(viewElement){
-			this.renderViewElementButtons({viewElement});
-		}
-		if(routesInstance.routes){
-			this.renderRoutes({routesInstance});
-		}
-	}
 	renderViewElementButtons({viewElement}){
 		this.buttonSelectElement.onclick = ()=>{
 			this.documentEditor.selectElement({element : viewElement});
 		};
 	}
-	renderRoutes({routesInstance}){
+	render({uiRouterInstance}){
+		let viewElement = uiRouterInstance.viewElement;
+
+		if(viewElement){
+			this.renderViewElementButtons({viewElement});
+		}
+		if(uiRouterInstance.states){
+			this.renderRoutes({uiRouterInstance});
+		}
+	}
+	renderRoutes({uiRouterInstance}){
 		this.routesContainer.innerHTML = "";
 		this.routesContainer.appendChild(helpers.createTitle({text: 'Routes : '}));
-		let routes = routesInstance.routes,
-				otherwise = routesInstance.routes;
-		let onSelectView = ({value: path})=>{
-			routesInstance.selectView({path});
-			let controllerName = routesInstance.routes.get(path).controller;
+		let states = uiRouterInstance.states,
+				otherwise = uiRouterInstance.otherwise;
+		let onSelectView = ({value: stateName}) => {
+			//TODO: nested
+			uiRouterInstance.selectView({stateName});
+			// TODO: deal with controller
+			// let controllerName = uiRouterInstance.statesMap.get(path).controller;
 		},onSave = ({value: path})=>{
-			routesInstance.saveTemplate({path})
+			uiRouterInstance.saveTemplate({path})
 		};
 		let ul = document.createElement('ul');
-		routes.forEach((route, path)=>{
+		states.forEach((state)=>{
 			let redioView = helpers.createRadioButton({
 				groupName: 'selectViews',
-				value: path,
-				text: path,
+				value: state,
+				text: state,
 				onChange: onSelectView,
 				onClickSave: onSave
 			});
@@ -54,4 +56,4 @@ class RoutesRenderer{
 	}
 }
 
-export default RoutesRenderer;
+export default UIRouterRenderer;

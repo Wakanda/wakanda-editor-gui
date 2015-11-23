@@ -1,4 +1,3 @@
-import Routes from './Routes';
 import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
 import helpers from '../../helpers';
@@ -8,7 +7,7 @@ const NGCTRLATTRIBUTE = 'ng-controller';
 
 class AngularPage {
   constructor({documentEditor}){
-    this.documentEditor = documentEditor;
+    this._documentEditor = documentEditor;
 
     this._applicationElement = this.documentEditor.document.querySelector(`[${NGAPPATTRIBUTE}]`);
 
@@ -24,16 +23,9 @@ class AngularPage {
     this.scriptsPromise = Promise.resolve([]);
 
     this.syncWithDocument();
-
-    // after loading recipes
-    this._routesPromise = this.scriptsPromise.then(()=>{
-      this._routes = new Routes({
-        angularPage: this,
-        changeCallBack: (routesInstance)=>{
-          this.events.emit('routes.change', {routesInstance});
-        }
-      });
-    });
+  }
+  get documentEditor(){
+    return this._documentEditor;
   }
   get ready(){
     return this.scriptsPromise.then(()=>{
@@ -167,9 +159,6 @@ class AngularPage {
 
     this.documentEditor.changeElementAttributes({elements, attributes, values});
   }
-  get routesPromise(){
-    return this._routesPromise;
-  }
   get configRecipe(){
     return this.getRecipeByName({name: 'config'});
   }
@@ -200,9 +189,6 @@ class AngularPage {
       this.recipesMap.set(name, recipe);
       this.events.emit('recipe.add', {recipe});
     }
-  }
-  onRoutesChage(callBack){
-    this.events.on('routes.change', callBack);
   }
   onAddRecipe(callBack){
     this.events.on('recipe.add', callBack);

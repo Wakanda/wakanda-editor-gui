@@ -14,6 +14,22 @@ class AngularRecipe{
 
   }
 
+  executeWithDependencies({thisArg = {}, dependencies}){
+    let depNames = this.dependenciesNames;
+    let argsArray = [];
+    for(let depName of depNames){
+      let currentArg = dependencies[depName];
+      // FIXME: test just in debug vertion
+      if( ! currentArg ){
+        console.error('dependencies error');
+      }
+      argsArray.push(currentArg);
+    }
+    let retValue = this.functionContent.apply(thisArg, argsArray);
+    // TODO: maybe return thisArg also
+    return retValue;
+  }
+
   get recipeArguments(){
     return this._dependenciesNames;
   }

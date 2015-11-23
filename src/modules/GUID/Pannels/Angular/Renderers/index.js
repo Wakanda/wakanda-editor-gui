@@ -1,7 +1,7 @@
 import RecipeRenderer from './RecipeRenderer';
-import RoutesRenderer from './RoutesRenderer';
+import UIRouterRenderer from './UIRouterRenderer';
 import ScriptsRenderer from './ScriptsRenderer';
 import ApplicationRenderer from './ApplicationRenderer';
 
 
-export { RecipeRenderer, RoutesRenderer, ScriptsRenderer, ApplicationRenderer };
+export { RecipeRenderer, UIRouterRenderer, ScriptsRenderer, ApplicationRenderer };

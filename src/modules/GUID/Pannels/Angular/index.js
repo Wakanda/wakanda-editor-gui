@@ -1,5 +1,6 @@
 import AngularPage from './AngularPage';
-import {ScriptsRenderer, RecipeRenderer, RoutesRenderer, ApplicationRenderer} from './Renderers';
+import UIRouter from './UIRouter';
+import {ScriptsRenderer, RecipeRenderer, UIRouterRenderer, ApplicationRenderer} from './Renderers';
 import helpers from '../helpers';
 
 class AngularPanel{
@@ -10,11 +11,16 @@ class AngularPanel{
 		this._angularPage = new AngularPage({documentEditor});
 
     this._angularPage.ready.then((angularPage)=>{
+      this._uiRouter = new UIRouter({angularPage});
+      
+      this._uiRouter.ready.then((uirouter)=>{
+        this._uiRouterRenderer = this.initUIRouterRenderer();
+      });
+
       this._applicationRenderer = this.initApplicationRenderer();
       this._scriptsRenderer = this.initScriptRenderer();
       this._scriptsRenderer.container.hidden = true;
       this._recipeRenderer = this.initRecipeRenderer();
-      this._routesRenderer = this.initRoutesRenderer();
       this._scriptsRenderer.container.hidden = true;
 
       this.initAngularPageEvents();
@@ -22,7 +28,9 @@ class AngularPanel{
       this.initScripts();
       this.initAddButtons();
     });
-
+  }
+  get uiRouter(){
+    return this._uiRouter;
   }
   initAddButtons(){
     let addControllerButton = document.createElement('button');
@@ -60,18 +68,18 @@ class AngularPanel{
     return applicationRenderer;
   }
 
-	initRoutesRenderer(){
-		let routesRendererContainer = document.createElement('div');
-		this.panelContainer.appendChild(routesRendererContainer);
+	initUIRouterRenderer(){
+		let uiRouterRendererContainer = document.createElement('div');
+		this.panelContainer.appendChild(uiRouterRendererContainer);
 
-		let routesRenderer = new RoutesRenderer({
-			container: routesRendererContainer,
+		let uiRouterRenderer = new UIRouterRenderer({
+			container: uiRouterRendererContainer,
 			documentEditor: this._documentEditor
 		});
-    // FIXME: for debug
-    window.r = routesRenderer;
 
-    return routesRenderer;
+    uiRouterRenderer.render({uiRouterInstance: this.uiRouter})
+
+    return uiRouterRenderer;
 	}
 
 	highlightControllerAndDependencies({controllersNames}){
@@ -135,11 +143,7 @@ class AngularPanel{
       })
       .onRemoveRecipe(({recipe})=>{
         this._recipeRenderer.removeRecipe({recipe});
-      })
-			.onRoutesChage(({routesInstance})=>{
-				// TODO: verify 1st call (archi)
-				this._routesRenderer.render({routesInstance});
-			});
+      });
     this._angularPage.recipes.forEach((recipe)=>{
       this._recipeRenderer.addRecipe({recipe});
     })

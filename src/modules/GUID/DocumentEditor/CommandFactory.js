@@ -378,8 +378,8 @@ class CommandFactory {
 
 		let changeValue = ({element, attribute, value}) => {
 			let oldValue = element.getAttribute(attribute);
-			let changeIt = !! value;
-			let removeIt = ! value && oldValue;
+			let changeIt = value !== null;
+			let removeIt = (value === null) && (oldValue !== null);
 			if(changeIt){
 				element.setAttribute(attribute, value);
 			}else if(removeIt){
