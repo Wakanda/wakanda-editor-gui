@@ -84,10 +84,10 @@ let helpers = {
     });
     return span.innerHTML;
   },
-  domArrayToDocumentFragment({domArray}){
+  domArrayToDocumentFragmentClone({domArray}){
     let docFrag = document.createDocumentFragment();
     domArray.forEach((item)=>{
-      docFrag.appendChild(item);
+      docFrag.appendChild(item.cloneNode(true));
     });
     return docFrag;
   },

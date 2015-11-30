@@ -1,4 +1,4 @@
-import {getFile, stringToDomElements, saveFileForPreview, domArrayToDocumentFragment, docFragmentToString} from '../helpers';
+import {getFile, stringToDomElements, saveFileForPreview, domArrayToDocumentFragmentClone, docFragmentToString} from '../helpers';
 const UIDIRATTNAME = 'ui-view';
 
 class UIRouter {
@@ -53,13 +53,12 @@ class UIRouter {
 			let templateUrl = stateContent.templateUrl;
 
 			let templateAsArray = this._templatesMap.get(templateUrl);
-			let clonedTemplateAsDocFrag = domArrayToDocumentFragment({domArray: templateAsArray}).cloneNode(true);
-			{
-				let tmpElementView;
-				while (tmpElementView = clonedTemplateAsDocFrag.querySelector(`[${UIDIRATTNAME}]`)) {
-					tmpElementView.parentElement.removeChild(tmpElementView);
+			let clonedTemplateAsDocFrag = domArrayToDocumentFragmentClone({domArray: templateAsArray});
+			[...clonedTemplateAsDocFrag.querySelectorAll(`[${UIDIRATTNAME}]`)].forEach((item)=>{
+				if(item){
+					item.innerHTML = '';
 				}
-			}
+			});
 
 			let templateTosave = docFragmentToString({documentFragment: clonedTemplateAsDocFrag});
 
