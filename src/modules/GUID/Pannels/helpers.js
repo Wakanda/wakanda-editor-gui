@@ -1,6 +1,22 @@
 import {HttpClient} from "../../../../lib/aurelia-http-client";
 
+const PORT = 9090;
+
 let helpers = {
+  saveFileForPreview({path, content}){
+    // FIXME: temporary saving mechanism
+    let postFile = ({requestType, pathToFile, fileContent}) => { //'save'/'preview'
+  		let client = new HttpClient().configure(x => {
+  	    x.withHeader('Content-Type', 'application/json');
+  	  });
+  		return client.post(`http://localhost:${PORT}/sevePreview`, {fileName: pathToFile, fileContent, requestType})
+  			.then(({response})=>{
+          console.log('file saved', response);
+  				return response;
+  			});
+  	};
+    return postFile({requestType: 'preview', pathToFile : path, fileContent: content});
+  },
   getFile({url}){
   	let client = new HttpClient().configure(x => {
       // x.withHeader('Content-Type', 'application/json');
@@ -66,6 +82,18 @@ let helpers = {
     [...elements].forEach((element)=>{
       span.appendChild(element.cloneNode(true));
     });
+    return span.innerHTML;
+  },
+  domArrayToDocumentFragment({domArray}){
+    let docFrag = document.createDocumentFragment();
+    domArray.forEach((item)=>{
+      docFrag.appendChild(item);
+    });
+    return docFrag;
+  },
+  docFragmentToString({documentFragment}){
+    let span = document.createElement('span');
+    span.appendChild(documentFragment);
     return span.innerHTML;
   },
   domElementToString({documentParent = document, element}){

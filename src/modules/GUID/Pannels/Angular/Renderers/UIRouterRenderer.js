@@ -38,8 +38,8 @@ class UIRouterRenderer{
 			uiRouterInstance.selectView({stateName});
 			// TODO: deal with controller
 			// let controllerName = uiRouterInstance.statesMap.get(path).controller;
-		},onSave = ({value: path})=>{
-			uiRouterInstance.saveTemplate({path})
+		},onSave = ({value: stateName})=>{
+			uiRouterInstance.saveTemplate({stateName})
 		};
 		let ul = document.createElement('ul');
 		states.forEach((state)=>{

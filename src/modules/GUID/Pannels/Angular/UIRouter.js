@@ -1,4 +1,4 @@
-import {getFile, stringToDomElements} from '../helpers';
+import {getFile, stringToDomElements, saveFileForPreview, domArrayToDocumentFragment, docFragmentToString} from '../helpers';
 const UIDIRATTNAME = 'ui-view';
 
 class UIRouter {
@@ -26,13 +26,53 @@ class UIRouter {
 			}
 			// TODO: daba save old content
 			let templateUrl = this._statesMap.get(currentState).templateUrl;
-			let templateContent = this._templatesMap.get(templateUrl);
-			// template contains only one root dom element
-			let domElements = stringToDomElements({content: templateContent});
-			let rootTemplateElement = domElements[0];
-			docE.temporaryAppendElement({element: rootTemplateElement, parent: viewElement});
+			let templateContentAsDom = this._templatesMap.get(templateUrl);
+			Array.prototype.forEach.call(templateContentAsDom, (element)=>{
+				docE.temporaryAppendElement({element, parent: viewElement});
+			});
 			viewElement = viewElement.querySelector(`[${UIDIRATTNAME}]`);
 		});
+	}
+
+	saveTemplate({stateName}){
+		let stateArray = stateName.split('.');
+		let currentViewElementClone = this.viewElement.cloneNode(true);
+		let currentPath = this._angularPage.documentEditor.path;
+		let rootFolder = currentPath.substring(0,currentPath.lastIndexOf("/")+1);
+
+		let savePromises = [];
+
+		stateArray.forEach((subState, ii, arr) => {
+			let currentState = '';
+			for(let jj = 0; jj<=ii; jj++){
+				currentState += jj>0?'.':'';
+				currentState += arr[jj];
+			}
+			let stateContent = this.getState({stateName: currentState});
+
+			let templateUrl = stateContent.templateUrl;
+
+			let templateAsArray = this._templatesMap.get(templateUrl);
+			let clonedTemplateAsDocFrag = domArrayToDocumentFragment({domArray: templateAsArray}).cloneNode(true);
+			{
+				let tmpElementView;
+				while (tmpElementView = clonedTemplateAsDocFrag.querySelector(`[${UIDIRATTNAME}]`)) {
+					tmpElementView.parentElement.removeChild(tmpElementView);
+				}
+			}
+
+			let templateTosave = docFragmentToString({documentFragment: clonedTemplateAsDocFrag});
+
+			// NOTE: include templates management in the document Editor
+
+			// this._templatesMap.set(templateUrl, templateTosave);
+			let savePromise = saveFileForPreview({path: rootFolder+templateUrl, content: templateTosave});
+			// FIXME: this is temporary (need fix asynchronous ...)
+
+			savePromises.push(savePromise);
+		});
+
+		return Promise.all(savePromises);
 	}
 
 	initRoutes() {
@@ -74,13 +114,14 @@ class UIRouter {
   }
 	loadTemplates(){
 		let currentPath = this._angularPage.documentEditor.path;
-		let rootFolder = currentPath.substring(0,currentPath.lastIndexOf("/") + 1);
+		let rootFolder = currentPath.substring(0,currentPath.lastIndexOf("/")+1);
 		let loadingTemplatesPromises = [];
 		this._statesMap.forEach((opts, stateName)=>{
 			// loading template
 			let url = opts.templateUrl;
 			let loadPromise = getFile({url: rootFolder+url}).then((templateContent)=>{
-				this._templatesMap.set(url, templateContent);
+				let templateAsDom = Array.from(stringToDomElements({content: templateContent}));
+				this._templatesMap.set(url, templateAsDom);
 			});
 			loadingTemplatesPromises.push(loadPromise)
 		});
@@ -114,7 +155,6 @@ class UIRouter {
   get otherwise(){
     return this._otherwise;
   }
-
   get statesMap(){
     return this._statesMap;
   }
