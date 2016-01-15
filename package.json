@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "webpack-server": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors -d --port 9090",
+    "webpack-server": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors -d --port 9090 --host 0.0.0.0",
     "webpack-watch": "node ./node_modules/webpack/bin/webpack.js --watch --progress --colors -d",
     "webpack-build": "node ./node_modules/webpack/bin/webpack.js --progress --colors -d",
     "webpack-build-test": "NODE_ENV=test node ./node_modules/webpack/bin/webpack.js --progress --colors -d",
