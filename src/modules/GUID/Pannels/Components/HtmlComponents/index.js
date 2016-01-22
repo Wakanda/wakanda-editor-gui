@@ -1,20 +1,6 @@
-import div from './templates/div';
-import searchBar from './templates/searchbar';
-import textInput from './templates/textInput';
+import div from './templates/div.js';
+import searchBar from './templates/searchBar.js';
+import textInput from './templates/textInput.js';
 
-let htmlComponents = [
-  {
-    name: 'div',
-    template: div
-  },
-  {
-    name: 'search bar',
-    template: searchBar
-  },
-  {
-    name: 'Text Input',
-    template: textInput
-  }
-];
 
-export default htmlComponents;
+export default [div, searchBar, textInput];
