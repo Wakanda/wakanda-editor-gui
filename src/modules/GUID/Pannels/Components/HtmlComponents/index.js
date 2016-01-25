@@ -1,6 +1,4 @@
-import div from './templates/div.js';
-import searchBar from './templates/searchBar.js';
-import textInput from './templates/textInput.js';
+let context = require.context("./templates", false, /^\.\/.*\.js$/);
+let modules = context.keys().map(context);
 
-
-export default [div, searchBar, textInput];
+export default modules;
