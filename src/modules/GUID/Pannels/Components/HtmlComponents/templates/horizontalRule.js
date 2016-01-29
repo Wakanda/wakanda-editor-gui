@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Text Input',
+    name: 'Horizontal Rule',
     properties:[],
     methodes: []
   },
-  template: `<input type="text" value=""></input>`
+  template: `<hr />`
 }
 
 export default componentJson;

@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Text Input',
+    name: 'Anchor',
     properties:[],
     methodes: []
   },
-  template: `<input type="text" value=""></input>`
+  template: `<a href="http://wakanda.io/">Link to Wakanda.io</a>`
 }
 
 export default componentJson;

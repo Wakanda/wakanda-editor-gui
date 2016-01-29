@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Text Input',
+    name: 'Nav',
     properties:[],
     methodes: []
   },
-  template: `<input type="text" value=""></input>`
+  template: `<nav></nav>`
 }
 
 export default componentJson;

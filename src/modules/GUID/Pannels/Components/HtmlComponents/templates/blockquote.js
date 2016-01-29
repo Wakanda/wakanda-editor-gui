@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Text Input',
+    name: 'Blockquote',
     properties:[],
     methodes: []
   },
-  template: `<input type="text" value=""></input>`
+  template: `<blockquote>“Wakanda is awesome.”</blockquote>`
 }
 
 export default componentJson;
