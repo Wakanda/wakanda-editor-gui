@@ -22,6 +22,8 @@
 
   <link rel="stylesheet" href="lib/bootstrap-vertical-tabs/bootstrap.vertical-tabs.min.css">
   <link rel="stylesheet" href="lib/awesomplete/awesomplete.css">
+  <link rel="stylesheet" href="./node_modules/dragula/dist/dragula.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -39,11 +41,14 @@
         <li>
           <a data-toggle="tab" href="#angular">Angular</a>
         </li>
-        <li class="active">
+        <li>
           <a data-toggle="tab" href="#styling">Styling</a>
         </li>
-        <li>
+          <li class="active">
           <a data-toggle="tab" href="#components">Components</a>
+        </li>
+        <li>
+          <a data-toggle="tab" href="#attributes">Attributes</a>
         </li>
       </ul>
       <ul id="responsiveButtonsList" class="nav nav-tabs tabs-left">
@@ -54,16 +59,17 @@
       <div class="cloud-ide-tree unselectable tab-pane" id="tree"></div>
       <div class="cloud-ide-tree unselectable tab-pane" id="outline"></div>
       <div class="cloud-ide-tree unselectable tab-pane" id="angular"></div>
-      <div class="cloud-ide-tree unselectable tab-pane active" id="styling">
+      <div class="cloud-ide-tree unselectable tab-pane" id="styling">
         <h3>Style</h3>
       </div>
-      <div class="cloud-ide-tree unselectable tab-pane" id="components"></div>
+      <div class="cloud-ide-tree unselectable tab-pane active" id="components"></div>
+      <div class="cloud-ide-tree unselectable tab-pane" id="attributes"></div>
     </div>
   </div>
 
   <div class="cloud-ide-editor" id="cloud-ide-editor"></div>
   <% if(env === 'development') { %>
-    <script src="http://localhost:9090/webpack-dev-server.js"></script>
+    <script src="/webpack-dev-server.js"></script>
     <% } %>
       <script src="./lib/emmet.js"></script>
       <script src="./lib/ace-min-noconflict/ace.js"></script>

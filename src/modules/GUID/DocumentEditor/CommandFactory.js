@@ -1,12 +1,23 @@
+import Broker from './Broker';
 
 class Command {
-	constructor({commands, afterExecute, afterUndo, thisArg}) {
+	constructor({commands, afterExecute, afterUndo, thisArg, broker}) {
 		this._commands = commands;
+		this._broker = broker;
 
 		//optional
 		this._thisArg = thisArg;
 		this._afterExecute = afterExecute;
 		this._afterUndo = afterUndo;
+	}
+
+	get broker(){
+		return this._broker;
+	}
+	// execute via broker
+	exec(){
+		this._broker.createCommand(this)
+			.executeNextCommand();
 	}
 
 	execute() {
@@ -46,9 +57,8 @@ class Command {
 }
 
 class AtomicCommand extends Command {
-	constructor({execute, undo, thisArg, afterExecute, afterUndo}) {
-		super({commands: [], afterExecute, afterUndo, thisArg});
-
+	constructor({execute, undo, thisArg, afterExecute, afterUndo, broker}) {
+		super({commands: [], afterExecute, afterUndo, thisArg, broker});
 
 		this._execute = execute;
 		this._undo = undo;
@@ -84,7 +94,9 @@ class AtomicCommand extends Command {
 }
 
 class CommandFactory {
-	constructor({events, linkImport, scriptManager, styleManager}) {
+	constructor({events, linkImport, scriptManager, styleManager, broker = new Broker()}) {
+		this.broker = broker;
+
 		this.events = events;
 		this.linkImport = linkImport;
 		this.scriptManager = scriptManager;
@@ -97,7 +109,9 @@ class CommandFactory {
 		let execute = () => {
 			parent.insertBefore(element, elementRef);
 			this.events.emit('GUID.dom.element.append', {
-				parent, child: element, elementRef
+				parent,
+				child: element,
+				elementRef
 			});
 		};
 		let undo = () => {
@@ -108,10 +122,12 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
 
+	// FIXME:
 	changeElementText({text, element}){
 
 		let childNodes = element.childNodes;
@@ -152,7 +168,7 @@ class CommandFactory {
 			 }
 		 }
 
-		 command = new AtomicCommand({execute, undo});
+		 command = new AtomicCommand({ execute, undo, broker: this.broker});
 		}
 
 		return command; //it can be null if the element contains other elements
@@ -163,7 +179,9 @@ class CommandFactory {
 		let execute = () => {
 			parent.appendChild(child);
 			this.events.emit('GUID.dom.element.append', {
-				parent, child
+				parent,
+				child,
+				elementRef: null
 			});
 
 			return {
@@ -182,6 +200,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -192,20 +211,26 @@ class CommandFactory {
 		let parent = element.parentElement;
 
 		let execute = () => {
-			parent.removeChild(element);
-			this.events.emit('GUID.dom.element.remove', {
-				parent, child: element
-			});
+			if (parent) {
+				parent.removeChild(element);
+				this.events.emit('GUID.dom.element.remove', {
+					parent, child: element
+				});
+			}
 
 			return {
 				parent, child: element
 			};
 		};
 		let undo = () => {
-			parent.insertBefore(element, nextNode);
-			this.events.emit('GUID.dom.element.append', {
-				parent, child: element
-			});
+			if (parent) {
+				parent.insertBefore(element, nextNode);
+				this.events.emit('GUID.dom.element.append', {
+					parent,
+					child: element,
+					elementRef: nextNode
+				});
+			}
 
 			return {
 				parent, child: element
@@ -213,6 +238,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -242,7 +268,7 @@ class CommandFactory {
 			});
 		};
 
-		return new AtomicCommand({execute, undo});
+		return new AtomicCommand({ execute, undo, broker: this.broker});
 	}
 
 	changeAttribute({element, attribute, value}) {
@@ -250,8 +276,8 @@ class CommandFactory {
 
 		let changeValue = ({element, attribute, value}) => {
 			let oldValue = element.getAttribute(attribute);
-			let changeIt = !! value;
-			let removeIt = ! value && oldValue;
+			let changeIt = value !== null;
+			let removeIt = (value === null) && (oldValue !== null);
 			if(changeIt){
 				element.setAttribute(attribute, value);
 			}else if(removeIt){
@@ -272,6 +298,7 @@ class CommandFactory {
 		};
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -311,6 +338,7 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -346,6 +374,7 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
@@ -382,10 +411,17 @@ class CommandFactory {
 		}
 
 		return new AtomicCommand({
+			broker: this.broker,
 			execute, undo
 		});
 	}
 
+	regroupCommands({commands}){
+		return new Command({
+			commands,
+			broker: this.broker
+		});
+	}
 }
 
 export {CommandFactory, Command};

@@ -5,6 +5,14 @@ import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.j
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
 
+let executeOrReturn = ({command, justReturnCommand})=>{
+	if(justReturnCommand){
+		return command;
+	}else{
+		command.exec();
+	}
+};
+
 //TODO !important loaded ///./../.
 
 class DocumentEditor {
@@ -16,7 +24,7 @@ class DocumentEditor {
 
 		this.events = new MultiEvent();
 
-		this.broker = broker;
+		this.mainBroker = broker;
 		this.temporaryBroker = new TemporaryBroker();
 		this.iframe = document.createElement('iframe');
 		this.iframe.classList.add('document-editor-iframe');
@@ -24,9 +32,14 @@ class DocumentEditor {
 		this.cloudEditorIDE.appendChild(this.iframe);
 
 		console.log(path);
+		this._path = path;
 		this.documentPromise = this.loadIframe({path})
 			.then((iframeDoc) => {
 				this.document = iframeDoc;
+
+				//FIXME - Ugly fix to force html and body to fill iframe properly
+				this.document.documentElement.style.height = '100%';
+				this.document.body.style.margin = '0';
 
 				this.styleManager = new StyleManager({
 					document: iframeDoc
@@ -46,6 +59,10 @@ class DocumentEditor {
 
 				return iframeDoc;
 			});
+	}
+
+	get path(){
+		return this._path;
 	}
 
 	loadIframe({path}) {
@@ -105,6 +122,8 @@ class DocumentEditor {
 
 	initCommands() {
 		this.commandFactory = new CommandFactory({
+			broker: this.mainBroker,
+
 			events: this.events,
 			linkImport: this.linkImport,
 			scriptManager: this.scriptManager,
@@ -157,46 +176,73 @@ class DocumentEditor {
 		return {height, width};
 	}
 
-	removeElement({element}) {
-
+	removeElement({element, justReturnCommand = false}) {
 		let command = this.commandFactory.removeElement({element});
+		let parent = element.parentElement;
 
-		let parent = this.selectedElement.parentElement;
-
-		command.afterExecute = () => {
-			if (this.selectedElement === element) {
-				this.selectElement({
-					element: parent
-				});
-			}
-		};
-		this.broker.createCommand(command)
-			.executeNextCommand();
-
+		return executeOrReturn({command, justReturnCommand});
 	}
 
-	removeSelectedElement() {
+	removeSelectedElement(justReturnCommand = false) {
 		this.removeElement({
 			element: this.selectedElement
 		});
 	}
-	prependElement({element, elementRef = this.selectedElement}) { // append element before selected element if elementRef is undefined
+
+
+	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
+		let removeCommand = this.commandFactory.removeElement({ element	});
+		let appendCommand = this.commandFactory.prependElement({
+			element,
+			elementRef
+		});
+
+		let finalCommand = this.commandFactory.regroupCommands({
+			commands: [removeCommand, appendCommand]
+		});
+
+		return executeOrReturn({command: finalCommand, justReturnCommand});
+	}
+
+	moveAfterElement({element, elementRef, justReturnCommand = false}) {
+		let nextSiblingNode = elementRef.nextSibling;
+
+		return this.moveBeforeElement({
+			element,
+			elementRef: nextSiblingNode,
+			justReturnCommand
+		});
+	}
+
+	moveInsideElement({element, elementRef, justReturnCommand = false}) {
+		let removeCommand = this.commandFactory.removeElement({ element	});
+		let appendCommand = this.commandFactory.appendElement({
+			parent: elementRef,
+			child: element
+		});
+
+		let finalCommand = this.commandFactory.regroupCommands({
+			commands: [removeCommand, appendCommand]
+		});
+
+		return executeOrReturn({command: finalCommand, justReturnCommand});
+	}
+
+	prependElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
 			element, elementRef
 		});
-		command.afterExecute = () => {
-			this.selectElement({
-				element
-			});
-		};
-		command.afterUndo = () => {
-			this.selectElement({
-				element: elementRef
-			});
-		};
 
-		this.broker.createCommand(command)
-			.executeNextCommand();
+		return executeOrReturn({command, justReturnCommand});
+	}
+
+	appendAfterElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
+		let command = this.commandFactory.prependElement({
+			element,
+			elementRef: elementRef.nextSibling
+		});
+
+		return executeOrReturn({command, justReturnCommand});
 	}
 
 	temporaryAppendElement({element, parent = this.selectedElement}){
@@ -207,24 +253,28 @@ class DocumentEditor {
 		this.temporaryBroker.exec({command});
 	}
 
-	appendElement({element, parent = this.selectedElement}) {
+	appendElement({element, parent = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.appendElement({
 			parent,
 			child: element
 		});
 
-		command.afterUndo = ({parent}) => {
-			this.selectElement({ element: parent });
-		};
-
-		this.broker.createCommand(command)
-			.executeNextCommand();
+		return executeOrReturn({command, justReturnCommand});
 	}
+
 	onAppendElement(callBack) {
 		this.events.on('GUID.dom.element.append', callBack);
 	}
+
 	onRemoveElement(callBack) {
 		this.events.on('GUID.dom.element.remove', callBack);
+	}
+
+	getElementStyleAttribute({element, attribute}) {
+		return this.styleManager.getInlineStyleAttribute({
+			element,
+			attribute
+		});
 	}
 
 	getSelectedElementStyleAttribute({attribute}){
@@ -234,14 +284,15 @@ class DocumentEditor {
 		});
 	}
 
-	changeSelectedElementStyleAttribute({attribute, value}) {
+	changeSelectedElementStyleAttribute({attribute, value, justReturnCommand = false}) {
 		if (this.selectedElement) {
 			let command = this.commandFactory.changeStyleAttribute({
 				element: this.selectedElement,
 				attribute,
 				value
 			});
-			this.broker.createCommand(command).executeNextCommand();
+
+			return executeOrReturn({command, justReturnCommand});
 		}
 	}
 
@@ -250,7 +301,7 @@ class DocumentEditor {
 	}
 
 	//to remove attribute set value to null
-	changeElementAttribute({element = this.selectedElement, attribute, value}) {
+	changeElementAttribute({element = this.selectedElement, attribute, value, justReturnCommand = false}) {
 		if(attribute === 'class'){
 			console.error('to chnage class attribute use class methods');
 			return false;
@@ -264,29 +315,31 @@ class DocumentEditor {
 			attribute,
 			value
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
-	changeElementAttributes({element = this.selectedElement, attributes, values}){
+	changeElementAttributes({element = this.selectedElement, elements = [], attributes, values, justReturnCommand = false}){
 		let len = attributes.length;
-		if(len === 0 || len !== values.length){
+		if(len === 0 || len !== values.length || (elements && len !== elements.length)){
 			console.error("somth' goew wrong here");
 			return false;
 		}
 		let commands = [];
 		for(let ii = 0; ii < len; ii++){
 			let attribute = attributes[ii],
-					value = values[ii];
+					value = values[ii],
+					currentElement = elements[ii] || element;
 			let command = this.commandFactory.changeAttribute({
-				element,
+				element: currentElement,
 				attribute,
 				value
 			});
 			commands.push(command);
 		}
-		let finalCommand = new Command({commands});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+		let finalCommand = this.commandFactory.regroupCommands({commands});
+
+		return executeOrReturn({command: finalCommand, justReturnCommand});
 	}
 	onElementAttributeChange(callBack) {
 		this.events.on('GUID.dom.element.changeAttribute', callBack);
@@ -304,7 +357,7 @@ class DocumentEditor {
 		});
 	}
 
-	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement}){
+	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement, justReturnCommand = false}){
 		let addCommands = classesToAdd.map((classToadd)=>{
 			return this.commandFactory.toggleClass({
 				element,
@@ -321,38 +374,42 @@ class DocumentEditor {
 			});
 		});
 
-		let command = new Command({commands: [...removeCommands, ...addCommands]});
-		this.broker.createCommand(command).executeNextCommand();
+		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
+
+		return executeOrReturn({command, justReturnCommand});
 	}
 
-	toggleClass({className, element = this.selectedElement}) {
+	toggleClass({className, element = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
-	addClass({className, element = this.selectedElement}) {
+	addClass({className, element = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: true
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onElementClassadd(callBack) {
 		this.events.on('GUID.dom.class.add', callBack);
 	}
-	removeClass({className, element = this.selectedElement}) {
+	removeClass({className, element = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: false
 		});
-		this.broker.createCommand(command)
-				.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onElementClassRemove(callBack) {
 		this.events.on('GUID.dom.class.remove', callBack);
@@ -389,11 +446,13 @@ class DocumentEditor {
 	}
 
 	selectElement({element}) {
-		this.selectedElement = element;
+		if (element) {
+			this.selectedElement = element;
 
-		this.events.emit('GUID.dom.select', {
-			element: this.selectedElement
-		});
+			this.events.emit('GUID.dom.select', {
+				element: this.selectedElement
+			});
+		}
 	}
 
 	selectElementByPoint(coords) {
@@ -417,44 +476,57 @@ class DocumentEditor {
 		this.events.on('GUID.dom.select', callBack);
 	}
 
-	toggleImportHtml({href}){
+	toggleImportHtml({href, justReturnCommand = false}){
 		let command = this.commandFactory.toggleImport({
 			href
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
-	addImportHtml({href}) {
+	addImportHtml({href, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleImport({
 			href,
 			forceAddRem: true
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onAddImport(callBack) {
 		this.events.on('GUID.dom.import.add', callBack);
 	}
 
-	removeImportHtml({href}) {
+	removeImportHtml({href, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleImport({
 			href,
 			forceAddRem: false
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onRemoveImport(callBack) {
 		this.events.on('GUID.dom.import.remove', callBack);
 	}
 
-	changeSelectedElementText({text}){
+	// FIXME:
+	getElementText({element = this.selectedElement}){
+		let childNodes = element.childNodes;
+		// NOTE: tested only on chrome
+		if(childNodes.length === 1 && childNodes[0].nodeType ===3 ){
+			return element.innerText;
+		}else{
+			return null;
+		}
+	}
+	changeElementText({element = this.selectedElement, text, justReturnCommand = false}){
 		let command = this.commandFactory.changeElementText({
-			element: this.selectedElement,
+			element,
 			text
 		});
-		this.broker.createCommand(command)
-							 .executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
 	}
 	onElementTextChange(callBack){
 		this.events.on('GUID.dom.element.changeText', callBack);
@@ -463,7 +535,7 @@ class DocumentEditor {
 	get scripts(){
 		return this.scriptManager.scripts;
 	}
-	addRemoveScripts({scriptsToAdd, scriptsToRemove}){
+	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({
 				script,
@@ -477,29 +549,33 @@ class DocumentEditor {
 			});
 		});
 
-		let command = new Command({commands: [...removeCommands, ...addCommands]});
-		this.broker.createCommand(command).executeNextCommand();
+		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 
-	addScript({script}) {
+	addScript({script, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleScript({
 			script,
 			forceAddRem: true
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onAddScript(callBack) {
 		this.events.on('GUID.script.add', callBack);
 	}
 
-	removeScript({script}) {
+	removeScript({script, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleScript({
 			script,
 			forceAddRem: false
 		});
-		this.broker.createCommand(command)
-			.executeNextCommand();
+
+		return executeOrReturn({command, justReturnCommand});
+
 	}
 	onRemoveScript(callBack) {
 		this.events.on('GUID.script.remove', callBack);

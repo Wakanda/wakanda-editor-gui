@@ -25,7 +25,8 @@ export default {
 	},
 
 	preview(){
-		let cloneHtml = IDE.GUID.documentEditor.htmlClone;
+		let cloneHtml = IDE.GUID.documentEditor.htmlClone,
+				pathToFile = IDE.GUID.documentEditor.path;
 
 		let head = cloneHtml.querySelector('head');
 		let firstScript = head.querySelector('script');
@@ -38,7 +39,7 @@ export default {
 		let client = new HttpClient().configure(x => {
 	    x.withHeader('Content-Type', 'application/json');
 	  });
-		client.post('http://localhost:3000/file', {fileName: 'tmp.html', fileContent})
+		client.post('http://localhost:3000/file', {fileName: pathToFile, fileContent})
 		.then(({response})=>{
 
 			this.prevIframe.src = response;

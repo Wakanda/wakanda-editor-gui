@@ -66,6 +66,24 @@ class ElementStyleManager{
       this.responsiveClasses.set(device.name, c);
     }
   }
+
+  //return an array container either "all" or actives borders (left, right, top and/or bottom)
+  getEnabledBorders() {
+    if (this.element.style.border.length > 0) {
+      return ['all'];
+    }
+    else {
+      let a = [];
+
+      for (let side of ['top', 'right', 'bottom', 'left']) {
+        if (this.element.style['border-' + side].length > 0) {
+          a.push(side);
+        }
+      }
+
+      return a;
+    }
+  }
 }
 
 

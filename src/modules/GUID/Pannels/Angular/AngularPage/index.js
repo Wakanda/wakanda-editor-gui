@@ -1,32 +1,72 @@
-import Routes from './Routes';
 import AngularRecipe from './AngularRecipe';
 import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
-import helpers from '../helpers';
+import helpers from '../../helpers';
+
+const NGAPPATTRIBUTE = 'ng-app';
+const NGCTRLATTRIBUTE = 'ng-controller';
 
 class AngularPage {
   constructor({documentEditor}){
-    this.documentEditor = documentEditor;
+    this._documentEditor = documentEditor;
+
+    this._applicationElement = this.documentEditor.document.querySelector(`[${NGAPPATTRIBUTE}]`);
 
     this.applicationNameToScript = new Map();
     this.applicationNameToInfos = new Map();
     this.recipesMap = new Map();
     this.recipeToScript = new Map();
 
+    this.controllerToElement = new Map();
+
     this.events = new MultiEvent();
 
     this.scriptsPromise = Promise.resolve([]);
 
     this.syncWithDocument();
-
-    // after loading recipes
-    this._routesPromise = this.scriptsPromise.then(()=>{
-      this._routes = new Routes({
-        angularPage: this,
-        changeCallBack: (routesInstance)=>{
-          this.events.emit('routes.change', {routesInstance});
-        }
-      });
+  }
+  get documentEditor(){
+    return this._documentEditor;
+  }
+  get ready(){
+    return this.scriptsPromise.then(()=>{
+      return this;
     });
+  }
+  get recipes(){
+    return Array.from(this.recipesMap.values());
+  }
+  setControllerToElement({controller, element = this.documentEditor.selectedElement}){
+    let oldControllerElement = this.getControllerElement({controller});
+    let elements = [],
+        attributes = [],
+        values = [];
+    if(oldControllerElement && oldControllerElement.getAttribute(NGCTRLATTRIBUTE)){
+      elements.push(oldControllerElement);
+      attributes.push(NGCTRLATTRIBUTE);
+      values.push(null);
+    }
+    elements.push(element);
+    attributes.push(NGCTRLATTRIBUTE);
+    values.push(controller.name);
+
+    this.controllerToElement.set(controller, element);
+
+    this.documentEditor.changeElementAttributes({elements, attributes, values});
+  }
+  getControllerElement({controller}){
+    return this.controllerToElement.get(controller);
+  }
+  get applicationName(){
+    let applicationElement = this.applicationElement;
+    if(applicationElement){
+      let ngAppAttContent = this.applicationElement.getAttribute(NGAPPATTRIBUTE);
+      if(!this.applicationNameToScript.has(ngAppAttContent)){
+        console.warn('arror');
+      }
+      return ngAppAttContent; //must be just one
+    }else{
+      return null;
+    }
   }
   reorganizeScripts({scripts: selectedScripts}){
     let newScripts = selectedScripts
@@ -64,8 +104,60 @@ class AngularPage {
       scriptsToRemove: selectedScripts
     });
   }
-  get routesPromise(){
-    return this._routesPromise;
+  get applicationElement(){
+    if (this._applicationElement){
+      return this._applicationElement;
+    }else{
+      return null;
+    }
+  }
+  setApplicationToSelectedElement({applicationName}){
+    let selectedElement = this.documentEditor.selectedElement;
+    if(!selectedElement){
+      return false;
+    }
+    let currentApplicationName = this.applicationName;
+    let oldApplicationScript = this.applicationNameToScript.get(currentApplicationName);
+
+    this.setApplicationElement({
+      applicationElement: selectedElement,
+      applicationName
+    });
+
+    let declarationCode = `
+      angular.module('${applicationName}', []);
+    `;
+
+    let script = this.documentEditor.scriptManager.createEmbdedScript({
+      content: declarationCode,
+      text: 'Application '+ applicationName
+    });
+
+    this.documentEditor.addRemoveScripts({
+      scriptsToAdd: [script],
+      scriptsToRemove: oldApplicationScript ? [oldApplicationScript] : []
+    });
+
+    return true;
+  }
+  setApplicationElement({applicationElement, applicationName}){
+    let oldApplicationElement = this.applicationElement;
+    let elements = [],
+        attributes = [],
+        values = [];
+
+    if(oldApplicationElement && oldApplicationElement.getAttribute(NGAPPATTRIBUTE)){
+      elements.push(oldApplicationElement);
+      attributes.push(NGAPPATTRIBUTE);
+      values.push(null);
+    }
+    elements.push(applicationElement);
+    attributes.push(NGAPPATTRIBUTE);
+    values.push(applicationName);
+
+    this._applicationElement = applicationElement
+
+    this.documentEditor.changeElementAttributes({elements, attributes, values});
   }
   get configRecipe(){
     return this.getRecipeByName({name: 'config'});
@@ -97,9 +189,6 @@ class AngularPage {
       this.recipesMap.set(name, recipe);
       this.events.emit('recipe.add', {recipe});
     }
-  }
-  onRoutesChage(callBack){
-    this.events.on('routes.change', callBack);
   }
   onAddRecipe(callBack){
     this.events.on('recipe.add', callBack);
@@ -195,8 +284,8 @@ class AngularPage {
             }
             let allRecipes = AngularRecipe.createRecipes({applicationInfos: application});
             allRecipes.forEach((recipe)=>{
-              this.addRecipe({recipe});
               this.recipeToScript.set(recipe, script);
+              this.addRecipe({recipe});
             });
           });
           return script;

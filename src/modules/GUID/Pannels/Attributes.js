@@ -1,6 +1,0 @@
-class Attributes{
-  constructor(...args){
-
-  }
-
-}

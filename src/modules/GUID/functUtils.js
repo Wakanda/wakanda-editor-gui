@@ -19,7 +19,12 @@ let functUtils = {
 		var elements = div.childNodes;
 
 		return elements;
-	}
+	},
+	elementFromTemplate({template}) {
+    let tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = template;
+    return tmpDiv.firstChild;
+  }
 }
 
 export default functUtils;

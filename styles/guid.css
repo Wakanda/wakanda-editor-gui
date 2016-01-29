@@ -1,5 +1,6 @@
 .cloud-ide-editor {
   margin: auto;
+  margin-bottom: 10px;
 }
 
 .document-editor-iframe {
@@ -69,15 +70,21 @@
 
 .boxManager .boxManagerLeft {
   position: absolute;
-  top: 37px;
+  top: 36px;
   left: 0;
 }
 
 .boxManager .boxManagerRight {
   position: absolute;
   right: 0;
-  top: 37px;
+  top: 36px;
+}
 
+.boxManager .boxManagerMiddle {
+  position: absolute;
+  top: 36px;
+  left: 74px;
+  z-index: 100;
 }
 
 .panelClassList {
@@ -88,4 +95,9 @@
 .panelClassList .elementClassDelete {
   font-weight: bold;
   padding-right: 5px;
+}
+
+.gu-mirror {
+  margin-top: 30px !important;
+  margin-left: 30px !important;
 }

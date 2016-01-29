@@ -42,7 +42,7 @@ module.exports = {
   output: {
     filename: environment === 'production' ? "[name].build.[hash].js" : "[name].build.js",
     path: __dirname + "/build/assets/js/",
-    publicPath: 'http://localhost:9090/build/assets/js/'
+    publicPath: '/build/assets/js/'
   },
   resolve: {
     alias: {

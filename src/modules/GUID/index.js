@@ -3,22 +3,39 @@ var Module = {
 		//Core Plugin Editor
 		IDE.GUID = {};
 
-		require.ensure(["./DocumentEditor", "./UserInterface", "./Pannels/Outline", "./Pannels/Components", "./Pannels/Angular", "./Pannels/Styling"], function(require) {
+		require.ensure([
+			"./DocumentEditor",
+			"./UserInterface",
+			"./Pannels/Outline",
+			"./Pannels/Components",
+			"./Pannels/Angular",
+			"./Pannels/Styling",
+			"./Pannels/Attributes",
+			"./UserInterface/DragulaManager"
+		], function(require) {
 			var Editor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
+			var AttributesPanel = require("./Pannels/Attributes");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
+			var DragulaManager = require('./UserInterface/DragulaManager');
 
-			//TODO
-			let path = './workspace/';
+
+			//TODO - URL of the iframe content
+			let path = './workspace/' + location.hash.substring(1);
 
 			IDE.GUID.documentEditor = new Editor({
 				path
 			})
 			.onReady((documentEditor) => {
+				//NOTE DragulaManager must be initialized *before* UserInterface
+				IDE.GUID.dragulaManager = new DragulaManager({
+					documentEditor,
+					sourceContainerId: 'components'
+				});
 
 				IDE.GUID.userInterface = new UserInterface({
 					documentEditor
@@ -30,13 +47,13 @@ var Module = {
 				// Outline
 				IDE.GUID.panels.outline = new Outline({
 					containerId: 'outline',
-					documentEditor
-				});
-				Components
-				IDE.GUID.panels.htmlComponents = new Components({
 					documentEditor,
-					containerId: 'components',
 					userInterface: IDE.GUID.userInterface
+				});
+				// Components
+				IDE.GUID.panels.components = new Components({
+					documentEditor,
+					containerId: 'components'
 				});
 				// angular panel
 				let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
@@ -53,6 +70,11 @@ var Module = {
 				IDE.GUID.panels.responsive = new ResponsiveSelector({
 					documentEditor,
 					containerId: 'responsiveButtonsList'
+				});
+
+				IDE.GUID.panels.attributesPanel = new AttributesPanel({
+					documentEditor,
+					containerId: 'attributes'
 				});
 
 				//undoRedoManagement

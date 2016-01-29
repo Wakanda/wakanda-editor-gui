@@ -1,34 +1,115 @@
-//TODO Join(' > ')
-
 class Outline {
-	constructor({
-		containerId, documentEditor = IDE.GUID.documentEditor,
-		userInterface = IDE.GUID.userInterface
-	}) {
-		this.documentEditor = documentEditor;
-		this.userInterface = userInterface;
+  constructor({containerId, documentEditor, userInterface}) {
+    this.documentEditor = documentEditor;
+    this.userInterface = userInterface;
+    this.container = document.getElementById(containerId);
 
-		this.container = document.getElementById(containerId);
+    this.jstreeData = [];
+    this.idToElementMap = new Map();
+    this.elementToIdMap = new Map();
+    this._initJstree();
 
-		this.elementToIdWP = new WeakMap();
-		this.render();
-		this.syncWihDocumentEditor();
-		this.syncWihUserInterface();
-	}
+    this._syncWithDocumentEditor();
+    this._syncWithUserInterface();
+  }
 
-	getDomPath(el) {
-		//TODO change this
-		// if (el.tagName.toLowerCase() === 'html' || !el) {
-		// 	el = el.getElementsByTagName('body');
-		// }
-		let el_o = el;
-		if (this.elementToIdWP.has(el)) {
-			return this.elementToIdWP.get(el).slice();
-		}
+  _initJstree() {
+    var jstree = require("../../../../lib/jstree/jstree.js");
+		var $ = require("../../../../lib/jquery-2.1.3.min.js");
+
+    this.$container = $(this.container);
+    this.$container.jstree({
+      plugins: ["contextmenu"],
+      contextmenu: {
+        items: ($node) => {
+          return {
+            Delete: {
+              label: "Remove",
+              action: (obj) => {
+                let {id} = $node;
+                let element = this._getElementFromId(id);
+                this.documentEditor.removeElement({
+                  element
+                });
+              }
+            }
+          };
+        }
+      },
+      core: {
+        data: (_, callback) => {
+          callback(this.jstreeData);
+        }
+      }
+    });
+
+    this.documentEditor.documentPromise.then((iframeDoc) => {
+      this._refreshAll();
+    });
+  }
+
+  _refreshAll() {
+    this._processBodyToTree({
+      bodyElement: this.documentEditor.document.body
+    });
+  }
+
+  _processBodyToTree({bodyElement}) {
+    var data = [];
+    this.idToElementMap.clear();
+    this.elementToIdMap.clear();
+
+    this._processElement({
+      element: bodyElement,
+      data
+    });
+
+    this.jstreeData = data;
+    this.$container.jstree().refresh();
+  }
+
+  //Recursive call, stop when element is null, data is filled by every call
+  _processElement({element, data}) {
+    if (element && element.tagName.toLowerCase() !== 'script') {
+      let jstreeNode = this._jstreeNodeFromElement({element});
+      data.push(jstreeNode);
+      this.idToElementMap.set(jstreeNode.id, element);
+      this.elementToIdMap.set(element, jstreeNode.id);
+
+      for (var i = 0; i < element.childElementCount; i++) {
+        this._processElement({
+          element: element.children[i],
+          data
+        });
+      }
+    }
+  }
+
+  _jstreeNodeFromElement({element}) {
+
+    let domPath = this._getDomPath(element);
+    let id = domPath.join(' > ');
+
+    //Remove last element to have parent string
+    domPath.splice(-1, 1);
+    let parent = domPath.length ? domPath.join(' > ') : '#';
+
+    let icon = require('./html.png');
+    let name = element.tagName.toLowerCase();
+    if (element.id.length > 0) {
+      name += '#' + element.id;
+    }
+
+    return {id, parent, text: name, icon};
+  }
+
+  _getDomPath(el) {
+
 		var stack = [];
-		while (el.parentNode != null) {
+		while (el.parentNode !== null) {
 			var sibCount = 0;
 			var sibIndex = 0;
+
 			for (var i = 0; i < el.parentNode.childNodes.length; i++) {
 				var sib = el.parentNode.childNodes[i];
 				if (sib.nodeName == el.nodeName) {
@@ -38,6 +119,7 @@ class Outline {
 					sibCount++;
 				}
 			}
+
 			if (el.hasAttribute('id') && el.id != '') {
 				stack.unshift(el.nodeName.toLowerCase() + '#' + el.id);
 			} else if (sibCount > 1) {
@@ -47,194 +129,93 @@ class Outline {
 			}
 			el = el.parentNode;
 		}
-		let ret = stack.slice(1);
-		this.elementToIdWP.set(el_o, ret);
-		return ret.slice(); // removes the html element
+
+    //Return ommiting the first element, which is HTML tag
+		return stack.slice(1);
 	}
 
-	getElementFromId(id) {
-		if (this.idToElementMap.has(id)) {
-			return this.idToElementMap.get(id);
-		} else {
-			console.log('warning');
-		}
-	}
+  _getElementFromId(id) {
+    if (this.idToElementMap.has(id)) {
+      return this.idToElementMap.get(id);
+    }
+    else {
+      return null;
+    }
+  }
 
-	addElement(element) {
-		let {
-			id, parent, text, icon
-		} = this.createJsTreeNode(element);
+  _getIdFromElement(element) {
+    if (this.elementToIdMap.has(element)) {
+      return this.elementToIdMap.get(element);
+    }
+    else {
+      return null;
+    }
+  }
 
-		this.idToElementMap.set(id, element);
+  _syncWithDocumentEditor() {
+    this.$container.on('changed.jstree', (_, data) => {
+      if (data.action === 'select_node') {
+        let element = this._getElementFromId(data.node.id);
+        if (this.documentEditor.selectedElement !== element) {
+          this.documentEditor.selectElement({element});
+        }
+      }
+    });
 
-		let jst = this.$container.jstree();
+    this.documentEditor.onElementSelected( ({element}) => {
+      let id = this._getIdFromElement(element);
+      if (id) {
+        let jstree = this.$container.jstree();
+        jstree.deselect_all();
+        jstree.select_node(id);
+      }
+    });
 
-		jst.create_node(parent, {
-			id, text, icon
-		});
+    this.documentEditor.onAppendElement(({child}) => {
+      this._refreshAll();
+    });
 
-		jst.refresh();
-	}
+    this.documentEditor.onRemoveElement(({child}) => {
+      this._refreshAll();
+    });
 
-	removeElement({element, id}) { // id or element
-		id = id || this.getDomPath(element).join(' > ');
-		let jst = this.$container.jstree();
+    this.documentEditor.onElementDeselected(() => {
+      this.$container.jstree().deselect_all();
+    });
+  }
 
-		jst.delete_node(id);
+  _syncWithUserInterface() {
+    this.$container.bind('hover_node.jstree', (_, data) => {
+      let element = this._getElementFromId(data.node.id);
+      this.userInterface.highLightElement(element);
+    });
 
-		jst.refresh();
-	}
+    this.$container.bind('dehover_node.jstree', (_, data) => {
+      this.userInterface.clearHighLighting();
+    });
 
-	render() {
-		let _this = this;
+    this.userInterface.onElementHighLight(({element}) => {
+      let jstree = this.$container.jstree();
+      if (element.tagName.toLowerCase() === 'html') {
+        jstree.dehover_node('body');
+      }
+      else {
+        let id = this._getIdFromElement(element);
+        jstree.hover_node(id);
+      }
+    });
 
-		var jstree = require("../../../../lib/jstree/jstree.js");
-		var $ = require("../../../../lib/jquery-2.1.3.min.js");
-
-		this.$container = $(this.container);
-		this.$container.jstree({
-			plugins: ["contextmenu"],
-			contextmenu: {
-				items: function($node) {
-					return {
-						Delete: {
-							label: "Remove",
-							action: function(obj) {
-								let {
-									id
-								} = $node;
-								let element = _this.getElementFromId(id);
-								_this.documentEditor.removeElement({
-									element
-								});
-							}
-						}
-					};
-				}
-			},
-			core: {
-				data: function(obj, cb) {
-					let data = [];
-
-					_this.documentEditor.documentPromise.then((iframeDoc) => {
-						let itemsN = iframeDoc.body.getElementsByTagName("*");
-						let items = [];
-						for (let i = 0; i < itemsN.length; i++) {
-							items.push(itemsN.item(i));
-						}
-						// items = Object.keys(items).map(key => items[key]);
-						items.push(iframeDoc.body);
-
-						_this.idToElementMap = new Map();
-
-						for (var i = 0; i < items.length; i++) {
-							let item = items[i];
-							if (item.tagName.toLowerCase() === 'script') {
-								continue;
-							}
-
-							let {
-								id, parent, text, icon
-							} = _this.createJsTreeNode(item);
-
-							_this.idToElementMap.set(id, item);
-
-							data.push({
-								id, parent, text, icon
-							});
-						}
-						cb(data);
-
-					});
-				}
-			}
-		});
-
-	}
-
-	createJsTreeNode(item) {
-		let itemPath = this.getDomPath(item);
-
-		let id = itemPath.join(' > ');
-		let text = item.tagName.toLowerCase();
-		let textWithId = itemPath.pop();
-		if (textWithId.indexOf('#') !== -1) {
-			text = textWithId;
-		}
-		let parent = itemPath.length ? itemPath.join(' > ') : '#';
-
-		let icon = require('./html.png');
-
-		this.idToElementMap.set(id, item);
-
-		return {
-			id, parent, text, icon
-		};
-	}
-	syncWihDocumentEditor() {
-		let _this = this;
-		this.$container.on("changed.jstree", function(e, data) {
-			if (data.action === "select_node") {
-				let element = _this.idToElementMap.get(data.node.id);
-				if (_this.documentEditor.selectedElement !== element) {
-					_this.documentEditor.selectElement({
-						element
-					});
-				}
-			}
-		});
-		this.documentEditor.onElementSelected( ({element}) => {
-			let id = _this.getDomPath(element).join(' > ');
-			let treeInstance = _this.$container.jstree(true);
-			treeInstance.deselect_all();
-			treeInstance.select_node(id);
-		});
-		this.documentEditor.onAppendElement( ({child}) => {
-			_this.addElement(child);
-		});
-		this.documentEditor.onRemoveElement( ({child}) => {
-			_this.removeElement({
-				element: child
-			});
-		});
-		this.documentEditor.onElementDeselected( () => {
-			let treeInstance = _this.$container.jstree(true);
-			treeInstance.deselect_all();
-		})
-
-	}
-	syncWihUserInterface() {
-		let _this = this;
-		this.$container.bind("hover_node.jstree", (e, data) => {
-			let element = _this.idToElementMap.get(data.node.id);
-			IDE.GUID.userInterface.highLightElement(element);
-		});
-		this.$container.bind("dehover_node.jstree", (e, data) => {
-			IDE.GUID.userInterface.clearHighLighting();
-		});
-		this.userInterface.onElementHighLight( ({element}) => {
-			let treeInstance = _this.$container.jstree(true);
-			if (element.tagName.toLowerCase() === 'html') {
-				treeInstance.dehover_node('body');
-			} else {
-				let id = _this.getDomPath(element).join(' > ');
-				// treeInstance.deselect_all();
-				treeInstance.hover_node(id);
-			}
-		});
-		this.userInterface.onClearHighLighting( ({element}) => {
-			let treeInstance = _this.$container.jstree(true);
-			if (element.tagName.toLowerCase() === 'html') {
-				treeInstance.dehover_node('body');
-			} else {
-				let id = _this.getDomPath(element).join(' > ');
-				// treeInstance.deselect_all();
-				treeInstance.dehover_node(id);
-			}
-		});
-
-	}
+    this.userInterface.onClearHighLighting(({element}) => {
+      let jstree = this.$container.jstree();
+      if (element.tagName.toLowerCase() === 'html') {
+        jstree.dehover_node('body');
+      }
+      else {
+        let id = this._getIdFromElement(element);
+        jstree.dehover_node(id);
+      }
+    });
+  }
 }
-
 
 export default Outline;
