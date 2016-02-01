@@ -14,8 +14,10 @@ class StyleSheetManager {
 
   getRules() {
     var ret = [];
-    for (var i = 0; i < this.stylesheet.rules.length; i++) {
-      ret.push(this.stylesheet.rules[i]);
+    if(this.stylesheet.rules){
+      for (var i = 0; i < this.stylesheet.rules.length; i++) {
+        ret.push(this.stylesheet.rules[i]);
+      }
     }
     return ret;
   }
