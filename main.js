@@ -1,3 +1,5 @@
+import "babel-polyfill";
+
 var IDE = window.IDE = {};
 
 require("./styles/common.css");

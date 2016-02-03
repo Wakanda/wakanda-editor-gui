@@ -12,7 +12,7 @@ class UserInterface {
 		this._highLightedElement = null;
 
 		this.canvas.classList.add('user-interface-canvas');
-		this.cloudEditorIDE = documentEditor.cloudEditorIDE;
+		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');;
 		this.cloudEditorIDE.appendChild(this.canvas);
 
 		let fabric = require('../../../../lib/fabric.js');

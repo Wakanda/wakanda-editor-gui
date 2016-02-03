@@ -89,6 +89,7 @@ class ResponsiveClassPicker {
   }
 
   _subscribeToEvents() {
+    // TODO: change this (must not access to documentEditor._events)
     this.documentEditor.events.on('GUID.responsive.change', ({deviceName}) => {
       this._switchToDevice({deviceName});
 
