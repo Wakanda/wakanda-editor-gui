@@ -76,10 +76,11 @@ class Bijection {
 	}
 	getRenderFromSource({element}){
 		let elementDomPath = Bijection.getDomPath({from: this._sourceBody, to: element});
-		return this._sourceMap.get(elementDomPath);
+		return this._renderMap.get(elementDomPath);
 	}
 }
 
+// TODO: decalage tomorrow
 staticVars.hidenIframe = document.createElement('iframe');
 staticVars.shownIframe = document.createElement('iframe');
 staticVars.hidenIframe.classList.add('document-editor-iframe');
@@ -346,6 +347,9 @@ class DocumentEditor {
 		});
 	}
 
+	get selectedElement(){
+		return this._selectedElement || null;
+	}
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
 		let removeCommand = this.commandFactory.removeElement({ element	});
@@ -588,7 +592,7 @@ class DocumentEditor {
 		return this._bijection.getSourceFromRender({element: renderElement});
 	}
 	getSelectedElementComputedStyle() {
-		let selectedElementSource = this._bijection.getSourceFromRender({element: this._selectedElement});
+		let selectedElementSource = this._selectedElement;
 		if(selectedElementSource){
 			return this._renderWindow.getComputedStyle(selectedElementSource);
 		}else{
@@ -596,14 +600,19 @@ class DocumentEditor {
 			return null;
 		}
 	}
+	// TODO: change name of _selectedElement
 	getselectedElementBoundingClientRect() {
-		let selectedElementSource = this._bijection.getSourceFromRender({element: this._selectedElement});
-		if(selectedElementSource){
-			return selectedElementSource.getBoundingClientRect();
+		if(this._selectedElement){
+			return this.getBoundingClientRect({element: this._selectedElement});
 		}else{
 			console.warn('no selected element');
 			return null;
 		}
+	}
+
+	getBoundingClientRect({element}){
+		let renderElement = this._bijection.getRenderFromSource({element});
+		return renderElement.getBoundingClientRect();
 	}
 
 	selectElement({element}) {
