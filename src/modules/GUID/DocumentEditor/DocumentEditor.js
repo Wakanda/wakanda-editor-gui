@@ -4,81 +4,27 @@ import {CommandFactory, Command} from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
+import Bijection from './Bijection';
+import { HttpClient } from "../../../../lib/aurelia-http-client";
 
-
-let staticVars = {};
-
-// TODO: neds a review or rewriting
-// not optimized and not 100% generic (need more ...)
-class Bijection {
-	static getDomPath ({from, to}){
-		let el = to;
-
-		var stack = [];
-		while (el.parentNode !== null) {
-			var sibCount = 0;
-			var sibIndex = 0;
-
-			for (var i = 0; i < el.parentNode.childNodes.length; i++) {
-				var sib = el.parentNode.childNodes[i];
-				if (sib.nodeName == el.nodeName) {
-					if (sib === el) {
-						sibIndex = sibCount;
-					}
-					sibCount++;
-				}
-			}
-
-			if (el.hasAttribute('id') && el.id != '') {
-				stack.unshift(el.nodeName.toLowerCase() + '#' + el.id);
-			} else if (sibCount > 1) {
-				stack.unshift(el.nodeName.toLowerCase() + ':eq(' + sibIndex + ')');
-			} else {
-				stack.unshift(el.nodeName.toLowerCase());
-			}
-
-			el = el.parentNode;
-		}
-
-		//Return ommiting the first element, which is HTML tag
-		return stack.slice(1).join(' > ');
-	}
-
-	constructor({sourceBody, renderBody}){
-		this._renderMap = new Map();
-		this._sourceMap = new Map();
-
-		this._renderBody = renderBody;
-		this._sourceBody = sourceBody;
-
-		this._fillMap({
-			map: this._renderMap,
-			element: renderBody //element is body in the first call
-		});
-		this._fillMap({
-			map: this._sourceMap,
-			element: sourceBody //element is body in the first call
-		});
-	}
-
-	_fillMap({map, element, body}){
-		body = body || element;
-		let elementDomPath = Bijection.getDomPath({from: body, to: element});
-		map.set(elementDomPath, element);
-		for (var i = 0; i < element.childElementCount; i++) {
-			this._fillMap({map, element:element.children[i], body});
-		}
-	}
-
-	getSourceFromRender({element}){
-		let elementDomPath = Bijection.getDomPath({from: this._renderBody, to: element});
-		return this._sourceMap.get(elementDomPath);
-	}
-	getRenderFromSource({element}){
-		let elementDomPath = Bijection.getDomPath({from: this._sourceBody, to: element});
-		return this._renderMap.get(elementDomPath);
+let stringToDomElement = function({documentParent = document, content, inSpan = false}){
+	let span = documentParent.createElement('span');
+	span.innerHTML = content;
+	if(inSpan){
+		return span;
+	}else {
+		return span.children;
 	}
 }
+
+let staticVars = {};
+var helpers = {
+	domElementToString({element}){
+		let span = document.createElement('span');
+		span.appendChild(element);
+		return span.innerHTML;
+	}
+};
 
 // TODO: decalage tomorrow
 staticVars.hidenIframe = document.createElement('iframe');
@@ -91,6 +37,9 @@ staticVars.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
 staticVars.cloudEditorIDE.appendChild(staticVars.hidenIframe);
 staticVars.cloudEditorIDE.appendChild(staticVars.shownIframe);
 
+staticVars.httpClient = new HttpClient().configure(x => {
+	x.withHeader('Content-Type', 'application/json');
+});
 
 let refreshRenderIframe = function(){
 	// TODO: save changes on the server, then refresh tomorrow
@@ -111,13 +60,13 @@ let loadOnIframe = function({path, iframe}){	//returns the document on the ifram
 			res({
 				win: winret,
 				doc: iframeDoc
-			})
-			res(iframeDoc);
+			});
 		};
 		iframe.src = path;
 	});
 }
 let executeOrReturn = ({command, justReturnCommand})=>{
+	// TODO: review
 	refreshRenderIframe();
 	if(justReturnCommand){
 		return command;
@@ -125,60 +74,105 @@ let executeOrReturn = ({command, justReturnCommand})=>{
 		command.exec();
 	}
 };
-
+// FIXME: but me awway
+staticVars.scriptTags = [];
+let removeScriptTags = function({document: doc}){
+	let scriptTags = doc.getElementsByTagName('script');
+	while (scriptTags.length !== 0) {
+		staticVars.scriptTags = [];
+		let scriptTag = scriptTags[0];
+		staticVars.scriptTags.push(scriptTag.cloneNode(true));
+		scriptTag.parentElement.removeChild(scriptTag);
+	}
+}
+let restoreScriptTags = function({document: doc}){
+	for(var ii = 0; ii < staticVars.scriptTags.length; ii++){
+		doc.head.appendChild(staticVars.scriptTags[ii]);
+	}
+}
 
 class DocumentEditor {
 
-	get currentDocumentEditor(){
+	// TODO: review
+	static get currentDocumentEditor(){
 		return staticVars.currentDocumentEditor || null;
 	}
 
 	static async load({projectPath}){
 
-		let sourceCodePath = await DocumentEditor.createDocumentSourceCode({projectPath});
+		let {sourceCodePath, sourceCode} = await DocumentEditor.createDocumentSourceCode({projectPath});
 				// load the source on the hiden iframe instead of the original code
 		let sourceDocOb = await loadOnIframe({path: sourceCodePath, iframe: staticVars.hidenIframe});
 		let sourceDocument = sourceDocOb.doc;
-		// create the render source by adding the scripts
-		//...
-		let renderCodePath = await DocumentEditor.createRendeCodeOnServer({renderSource: ''});
+
+		let {renderCode, renderCodePath} = await DocumentEditor.createRendeCodeOnServer({sourceCode});
 			// show the render document on the iframe
 		let renderDocOb = await loadOnIframe({path: renderCodePath, iframe: staticVars.shownIframe});
 
 			// create the document editor and return it
 
 		staticVars.currentElement = new DocumentEditor({
-			sourceDocument : sourceDocOb.doc,
-			sourceWindow : sourceDocOb.win,
-			renderDocument : renderDocOb.doc,
-			renderWindow: renderDocOb.win
-		})
+			sourceDocument 	: sourceDocOb.doc,
+			sourceWindow 		: sourceDocOb.win,
+			renderDocument 	: renderDocOb.doc,
+			renderWindow		: renderDocOb.win
+		});
 
 		return staticVars.currentElement;
 	}
 
-	static createRendeCodeOnServer({renderSource}){
-		// add the javascript code
+	static async createRendeCodeOnServer({renderSourceCode}){
+			// restore scripts
 
-		// send the request to the server to save the code to render
-
-		// return the renderCodePath
-
-		return Promise.resolve('workspace/bootstrap/render/index.html');
+		let domSpan = stringToDomElement( { content: renderSourceCode } );
+		let heade = domSpan.getElementsByTagName('head')[0];
+		let doc = {
+			head: heade
+		};
+		restoreScriptTags( { doc } );
+		// FIXME: refactor me i am duplicated
+		let renderCode = helpers.domElementToString( { element: domSpan.children[0] } );
+			// send the request to the server to save the code to render
+		let saveRenderCodeResponse = await staticVars.httpClient.post(`http://${location.hostname}:3001/api1`, {
+			projectPath,
+			command: 'saveRender',
+			fileContent: renderCode
+		});
+		if(saveRenderCodeResponse){
+			return {
+				renderCode,
+				renderCodePath: `workspace/bootstrap/render/${projectPath}`
+			};
+		}else{
+			throw "source file not saved";
+		}
 	}
 
-	static createDocumentSourceCode({projectPath}){
 
-		// load document in the hiden iframe
+	// TODO: without "project/"
+	static async createDocumentSourceCode({projectPath}){
 
-		// get rid of javascript on the page
+			// load document in the hiden iframe
+		let originalDocumentOb = await loadOnIframe({path: projectPath, iframe: staticVars.hidenIframe});
 
-		// send the source code to the server
-
-		// return the path to the source code
-
-		// TODO:
-		return Promise.resolve('workspace/bootstrap/src/index.html');
+			// get rid of javascript on the page
+		removeScriptTags({document: originalDocumentOb.doc});
+			// send the source code to the server
+			// FIXME: localhost hostname ...
+		let sourceCode = helpers.domElementToString({element: originalDocumentOb.doc.children[0]});
+		let saveSourceResponse = await staticVars.httpClient.post(`http://${location.hostname}:3001/api1`, {
+			projectPath,
+			command: 'saveSource',
+			fileContent: sourceCode,
+		});
+		if(saveSourceResponse){
+			return {
+				sourceCode,
+				sourceCodePath: `workspace/bootstrap/src/${projectPath}`
+			};
+		}else{
+			throw "source file not saved";
+		}
 	}
 
 	//TODO rev

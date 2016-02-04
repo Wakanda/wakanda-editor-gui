@@ -27,6 +27,7 @@ var Module = {
 			//TODO - URL of the iframe content
 			let projectPath = location.hash.substring(2);
 
+			console.log(projectPath);
 			DocumentEditor.load({projectPath})
 				.then((documentEditor)=>{
 					IDE.GUID.documentEditor = documentEditor;
