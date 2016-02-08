@@ -1,36 +1,57 @@
 import LinkImport from './LinkImport';
-import {Broker, TemporaryBroker} from './Broker';
-import {CommandFactory, Command} from './CommandFactory.js';
+import { Broker, TemporaryBroker } from './Broker';
+import { CommandFactory, Command } from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
 import Bijection from './Bijection';
 import { HttpClient } from "../../../../lib/aurelia-http-client";
 
-let stringToDomElement = function({documentParent = document, content, inSpan = false}){
-	let span = documentParent.createElement('span');
-	span.innerHTML = content;
-	if(inSpan){
-		return span;
-	}else {
-		return span.children;
+let helpers = {
+	postResJson: function(url, args){
+		return staticVars.httpClient.post(url, args)
+			.then(({response})=>{
+				return JSON.parse(response);
+			});
+	},
+	loadOnIframe: function({path, iframe}){	//returns the document on the iframe
+		return new Promise((res, rej) => {
+			iframe.onload = () => {
+				let winret = iframe.contentWindow || iframe.contentDocument || window.WIN;
+				let iframeDoc;
+				if (winret.document) {
+					iframeDoc = winret.document || window.DOCUMENT;
+				}
+				res({
+					win: winret,
+					doc: iframeDoc
+				});
+			};
+			iframe.src = path;
+		});
+	},
+	documentToHtmlString: function({document: doc}){
+		return doc.documentElement.outerHTML;
+	},
+	domElementToString({elements}){
+		let span = document.createElement('span');
+		Array.prototype.forEach.call(elements, (element)=>{
+			span.appendChild(element);
+		})
+		// span.appendChild(element);
+		return span.innerHTML;
 	}
 }
 
 let staticVars = {};
-var helpers = {
-	domElementToString({element}){
-		let span = document.createElement('span');
-		span.appendChild(element);
-		return span.innerHTML;
-	}
-};
 
 // TODO: decalage tomorrow
 staticVars.hidenIframe = document.createElement('iframe');
 staticVars.shownIframe = document.createElement('iframe');
 staticVars.hidenIframe.classList.add('document-editor-iframe');
 staticVars.shownIframe.classList.add('document-editor-iframe');
+staticVars.hidenIframe.classList.add('source');
+staticVars.shownIframe.classList.add('render');
 
 staticVars.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
 
@@ -41,55 +62,15 @@ staticVars.httpClient = new HttpClient().configure(x => {
 	x.withHeader('Content-Type', 'application/json');
 });
 
-let refreshRenderIframe = function(){
-	// TODO: save changes on the server, then refresh tomorrow
-	// TODO: UX review (can be buggy)
-	// staticVars.shownIframe.src = staticVars.shownIframe.src;
-}
-
 staticVars.currentDocumentEditor = null;
 
-let loadOnIframe = function({path, iframe}){	//returns the document on the iframe
-	return new Promise((res, rej) => {
-		iframe.onload = () => {
-			let winret = iframe.contentWindow || iframe.contentDocument || window.WIN;
-			let iframeDoc;
-			if (winret.document) {
-				iframeDoc = winret.document || window.DOCUMENT;
-			}
-			res({
-				win: winret,
-				doc: iframeDoc
-			});
-		};
-		iframe.src = path;
-	});
-}
 let executeOrReturn = ({command, justReturnCommand})=>{
-	// TODO: review
-	refreshRenderIframe();
 	if(justReturnCommand){
 		return command;
 	}else{
 		command.exec();
 	}
 };
-// FIXME: but me awway
-staticVars.scriptTags = [];
-let removeScriptTags = function({document: doc}){
-	let scriptTags = doc.getElementsByTagName('script');
-	while (scriptTags.length !== 0) {
-		staticVars.scriptTags = [];
-		let scriptTag = scriptTags[0];
-		staticVars.scriptTags.push(scriptTag.cloneNode(true));
-		scriptTag.parentElement.removeChild(scriptTag);
-	}
-}
-let restoreScriptTags = function({document: doc}){
-	for(var ii = 0; ii < staticVars.scriptTags.length; ii++){
-		doc.head.appendChild(staticVars.scriptTags[ii]);
-	}
-}
 
 class DocumentEditor {
 
@@ -100,83 +81,81 @@ class DocumentEditor {
 
 	static async load({projectPath}){
 
-		let {sourceCodePath, sourceCode} = await DocumentEditor.createDocumentSourceCode({projectPath});
-				// load the source on the hiden iframe instead of the original code
-		let sourceDocOb = await loadOnIframe({path: sourceCodePath, iframe: staticVars.hidenIframe});
-		let sourceDocument = sourceDocOb.doc;
+		let sourceDocOb = await DocumentEditor.createDocumentSourceCode({projectPath});
 
-		let {renderCode, renderCodePath} = await DocumentEditor.createRendeCodeOnServer({sourceCode});
-			// show the render document on the iframe
-		let renderDocOb = await loadOnIframe({path: renderCodePath, iframe: staticVars.shownIframe});
-
-			// create the document editor and return it
+		let sourceCode = helpers.documentToHtmlString({document: sourceDocOb.doc});
+		console.log(projectPath);
+		let renderDocOb = await DocumentEditor.createDocumentRenderCode({
+			sourceCode,
+			scriptTags: sourceDocOb.headScripts,
+			projectPath
+		});
 
 		staticVars.currentElement = new DocumentEditor({
 			sourceDocument 	: sourceDocOb.doc,
 			sourceWindow 		: sourceDocOb.win,
 			renderDocument 	: renderDocOb.doc,
-			renderWindow		: renderDocOb.win
+			renderWindow		: renderDocOb.win,
+			scriptTags			:	sourceDocOb.headScripts,
+			projectPath
 		});
+
 
 		return staticVars.currentElement;
 	}
-
-	static async createRendeCodeOnServer({renderSourceCode}){
-			// restore scripts
-
-		let domSpan = stringToDomElement( { content: renderSourceCode } );
-		let heade = domSpan.getElementsByTagName('head')[0];
-		let doc = {
-			head: heade
-		};
-		restoreScriptTags( { doc } );
-		// FIXME: refactor me i am duplicated
-		let renderCode = helpers.domElementToString( { element: domSpan.children[0] } );
-			// send the request to the server to save the code to render
-		let saveRenderCodeResponse = await staticVars.httpClient.post(`http://${location.hostname}:3001/api1`, {
-			projectPath,
-			command: 'saveRender',
-			fileContent: renderCode
+	// NOTE: important !
+	async initRenderCode(){
+		let sourceCode = helpers.documentToHtmlString({
+			document: this._sourceDocument
 		});
-		if(saveRenderCodeResponse){
-			return {
-				renderCode,
-				renderCodePath: `workspace/bootstrap/render/${projectPath}`
-			};
-		}else{
-			throw "source file not saved";
-		}
+
+		let {win, doc} = await DocumentEditor.createDocumentRenderCode({
+				sourceCode,
+				scriptTags: this._scriptTags,
+				projectPath: this._scriptTags
+			});
+
+		this._renderWindow = win;
+		this._renderDocument = doc;
+
+		this._initBijection();
+
+		return true;
+	}
+
+	static async createDocumentRenderCode( { sourceCode, scriptTags, projectPath: projectFile } ){
+
+		let {renderUrl} = await helpers.postResJson(`http://${location.hostname}:3001/getRenderCode`, {
+			sourceCode, scriptTags, projectFile
+		});
+		console.log(renderUrl);
+		return await helpers.loadOnIframe({
+			path: renderUrl,
+			iframe: staticVars.shownIframe
+		});
+
 	}
 
 
 	// TODO: without "project/"
 	static async createDocumentSourceCode({projectPath}){
 
-			// load document in the hiden iframe
-		let originalDocumentOb = await loadOnIframe({path: projectPath, iframe: staticVars.hidenIframe});
-
-			// get rid of javascript on the page
-		removeScriptTags({document: originalDocumentOb.doc});
-			// send the source code to the server
-			// FIXME: localhost hostname ...
-		let sourceCode = helpers.domElementToString({element: originalDocumentOb.doc.children[0]});
-		let saveSourceResponse = await staticVars.httpClient.post(`http://${location.hostname}:3001/api1`, {
-			projectPath,
-			command: 'saveSource',
-			fileContent: sourceCode,
+		let {sourceUrl, headScripts} = await helpers.postResJson(`http://${location.hostname}:3001/getSourceCode`, {
+			projectFile: projectPath
 		});
-		if(saveSourceResponse){
-			return {
-				sourceCode,
-				sourceCodePath: `workspace/bootstrap/src/${projectPath}`
-			};
-		}else{
-			throw "source file not saved";
-		}
+
+		console.log('dsffsdf', sourceUrl);
+		let {win, doc} = await helpers.loadOnIframe({
+			path: sourceUrl,
+			iframe: staticVars.hidenIframe
+		});
+
+		return { win, doc, headScripts };
+
 	}
 
 	//TODO rev
-	constructor({broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow}) {
+	constructor({scriptTags, broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow, projectPath}) {
 
 		console.log('source document', sourceDocument);
 		console.log('render document', renderDocument);
@@ -192,6 +171,8 @@ class DocumentEditor {
 		this._renderWindow = renderWindow;
 		this._sourceWindow = sourceWindow;
 
+		this._scriptTags = scriptTags;
+		this._projectPath = projectPath;
 		// this._path = projectPath;
 
 		//FIXME - Ugly fix to force html and body to fill iframe properly
@@ -216,13 +197,6 @@ class DocumentEditor {
 		this._initEvents();
 		this._initCommands();
 
-		// this.documentPromise = this.loadIframe({path})
-		// 	.then((iframeDoc) => {
-		// 		this.document = iframeDoc;
-		//
-		//
-		// 		return iframeDoc;
-		// 	});
 	}
 
 	_initBijection(){
@@ -264,13 +238,6 @@ class DocumentEditor {
 	get renderDocument(){
 		return this._renderDocument;
 	}
-	// set document(doc) {
-	// 	if (this._document) {
-	// 		throw "you've alrady set the attribute document";
-	// 	} else {
-	// 		this._document = doc;
-	// 	}
-	// }
 
 	_initCommands() {
 		this.commandFactory = new CommandFactory({
