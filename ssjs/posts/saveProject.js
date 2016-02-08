@@ -1,5 +1,6 @@
-var helpers     = require('./helpers');
+var helpers     = require('../helpers');
 var cheerio     = require('cheerio');
+var fs          = require('fs');
 
 var getSourceCode = function(req, res){
   var sourceFileContent = req.body.sourceCode;

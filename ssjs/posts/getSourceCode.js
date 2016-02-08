@@ -1,29 +1,31 @@
-var config      = require('./config');
-var helpers     = require('./helpers');
+var helpers     = require('../helpers');
 var cheerio     = require('cheerio');
+var fs          = require('fs');
 
 var getSourceCode = function(req, res){
   var projectFile = req.body.projectFile;
-  var projectFilePath = helpers.getSourcePath(projectFile);
+  var projectFilePath = helpers.getProjectPath(projectFile);
   console.log('geting the source code of ', projectFilePath, 'req: ', req.body.projectFile);
 
   var fileContent = fs.readFileSync(projectFilePath, 'utf8');
 
-  var $ = cheerio.load('fileContent');
+  var $ = cheerio.load(fileContent);
+
+  var headScriptsStr = [];
 
   var headScripts = $('head > script');
   headScripts.each(function () {
     var $this = $(this);
-    headScripts.push($this.html());
+    console.log($this.html());
+    headScriptsStr.push($.html($this));
   });
   headScripts.remove();
 
   var sourcePath = helpers.getSourcePath(projectFile);
-  console.log('saving source code in: ', sourcePath);
-  helpers.saveFile(sourcePath, $.html())
+  helpers.saveFile(sourcePath, $.html());
 
-  res.end({
-    headScripts: headScripts,
+  res.json({
+    headScripts: headScriptsStr,
     sourceUrl:   '/workspace/src/' + projectFile
   });
 }
