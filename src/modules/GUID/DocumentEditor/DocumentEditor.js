@@ -84,7 +84,7 @@ class DocumentEditor {
 		let sourceDocOb = await DocumentEditor.createDocumentSourceCode({projectPath});
 
 		let sourceCode = helpers.documentToHtmlString({document: sourceDocOb.doc});
-		console.log(projectPath);
+
 		let renderDocOb = await DocumentEditor.createDocumentRenderCode({
 			sourceCode,
 			scriptTags: sourceDocOb.headScripts,
@@ -144,7 +144,6 @@ class DocumentEditor {
 			projectFile: projectPath
 		});
 
-		console.log('dsffsdf', sourceUrl);
 		let {win, doc} = await helpers.loadOnIframe({
 			path: sourceUrl,
 			iframe: staticVars.hidenIframe
@@ -156,9 +155,6 @@ class DocumentEditor {
 
 	//TODO rev
 	constructor({scriptTags, broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow, projectPath}) {
-
-		console.log('source document', sourceDocument);
-		console.log('render document', renderDocument);
 
 		this._events = new MultiEvent();
 

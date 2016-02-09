@@ -107,7 +107,7 @@ class UserInterface {
 
 		dragulaManager.onDrop((element, target) => {
 			if (this.mouseOverCanvas) {
-				console.log('position over canvas', this.lastPosition);
+				// console.log('position over canvas', this.lastPosition);
 				let availableElement = this._elementAtPosition(this.lastPosition);
 				if (availableElement) {
 
@@ -159,7 +159,7 @@ class UserInterface {
 			this.mouseDownPosition = {x: options.e.offsetX, y: options.e.offsetY};
 
 			if (element && tagName !== 'html' && tagName !== 'body') {
-				console.log('fabric:mouse:down on element', element);
+				// console.log('fabric:mouse:down on element', element);
 
 				let floatingElement = document.createElement('div');
 				floatingElement.innerHTML = element.tagName.toLowerCase();

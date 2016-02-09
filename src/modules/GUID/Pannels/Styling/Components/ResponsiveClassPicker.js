@@ -52,7 +52,7 @@ class ResponsiveClassPicker {
     for (let opt of this._getOptions({deviceName})) {
       this.select.appendChild(opt);
     }
-    console.log('#select refilled');
+    // console.log('#select refilled');
   }
 
   _determineResponsiveClass({element}) {
