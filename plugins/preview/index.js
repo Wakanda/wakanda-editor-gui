@@ -24,6 +24,12 @@ export default {
 		this.prevIframe.setAttribute('style', 'width: 100%; height: 600;');
 	},
 
+	save(){
+		IDE.GUID.documentEditor.save().then((saved)=>{
+			alert('file saved');
+		})
+	},
+
 	preview(){
 		let cloneHtml = IDE.GUID.documentEditor.htmlClone,
 				pathToFile = IDE.GUID.documentEditor.path;

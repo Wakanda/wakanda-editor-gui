@@ -1,8 +1,8 @@
 
-.page-toolbar-item-preview-enabled  {
-	background-image: url("./images/preview.png");
+.page-toolbar-item-save-enabled  {
+	background-image: url("./images/save.png");
 }
 
-.page-toolbar-item-preview {
-	background-image: url("./images/preview.png");
+.page-toolbar-item-save {
+	background-image: url("./images/save.png");
 }

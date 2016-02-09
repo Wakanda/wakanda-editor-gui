@@ -1,9 +1,9 @@
 export default {
 	"toolbar"   : [
 		{
-			name : "preview",
+			name : "save",
 			type : "button",
-			action : "preview"
+			action : "save"
 		}
 	]
 }
