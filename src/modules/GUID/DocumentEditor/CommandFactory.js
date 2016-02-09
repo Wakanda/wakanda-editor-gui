@@ -25,7 +25,7 @@ class Command {
 			command.execute();
 		}
 		if (this._afterExecute) {
-			this._afterExecute.call(this._thisArg, ret);
+			this._afterExecute.call(this._thisArg);
 		}
 	}
 
@@ -35,7 +35,7 @@ class Command {
 			command.undo();
 		}
 		if (this._afterUndo) {
-			this._afterUndo.call(this._thisArg, ret);
+			this._afterUndo.call(this._thisArg);
 		}
 	}
 
