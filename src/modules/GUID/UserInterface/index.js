@@ -3,28 +3,28 @@ import HighlightManager from './HighlightManager';
 
 class UserInterface {
 	constructor({documentEditor}) {
-		// let _EventEmitter = require('../../../lib/micro-events.js');
-		// this.events = new _EventEmitter();
-		this.events = new MultiEvent();
 
-		this.documentEditor = documentEditor;
-		this.canvas = document.createElement('canvas');
+		this._events = new MultiEvent();
+
+		this._documentEditor = documentEditor;
 		this._highLightedElement = null;
 
-		this.canvas.classList.add('user-interface-canvas');
+		let canvas = document.createElement('canvas');
+		canvas.classList.add('user-interface-canvas');
 		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');;
-		this.cloudEditorIDE.appendChild(this.canvas);
+		this.cloudEditorIDE.appendChild(canvas);
 
 		let fabric = require('../../../../lib/fabric.js');
 
-		this.fabric_canvas = new fabric.Canvas(this.canvas);
+		this._fabric_canvas = new fabric.Canvas(canvas);
+
 		this.highlightManager = new HighlightManager({
-			fabricCanvas: this.fabric_canvas,
-			events: this.events,
-			documentEditor: this.documentEditor
+			fabricCanvas: this._fabric_canvas,
+			events: this._events,
+			documentEditor: this._documentEditor
 		});
 
-		this.resetCanvasDimentions();
+		this._resetCanvasDimentions();
 
 		this.initHighLighting();
 		this.initElementSelection();
@@ -41,45 +41,46 @@ class UserInterface {
 
 		//Deselect the selected element if any
 		keyboardJS.bind('esc', () => {
-			this.documentEditor.deselectElement();
+			this._documentEditor.deselectElement();
 		});
 
 		//Remove the selected element if any
 		keyboardJS.bind('del', () => {
 
-			let element = this.documentEditor.selectedElement;
+			let element = this._documentEditor.selectedElement;
 			if (element) {
 				let tagName = element.tagName.toLowerCase();
 				if (tagName !== 'body' && tagName !== 'html') {
-					this.documentEditor.removeElement({element});
+					this._documentEditor.removeElement({element});
 				}
 			}
 		});
 	}
 
-	resetCanvasDimentions() {
-		let {
-			width, height
-		} = this.documentEditor.dimensions;
-		this.fabric_canvas.setDimensions({
-			width, height
-		});
+	_resetCanvasDimentions() {
+		let {	width, height	} = this._documentEditor.dimensions;
+		this._fabric_canvas.setDimensions({ width, height });
 	}
 
 	clearHighLighting() {
 		this.highlightManager.clearHighLighting();
 	}
 
+	highLightElement(element) {
+		this.highlightManager.highLightElement({element});
+	}
+
 	onClearHighLighting(callBack) {
-		this.events.on('GUID.UI.clearHighLighting', callBack);
+		this._events.on('GUID.UI.clearHighLighting', callBack);
+	}
+
+	onElementHighLight(callBack) {
+		this._events.on('GUID.UI.element.highlight', callBack);
 	}
 
 	_elementAtPosition({x, y}) {
 		if (x >= 0 && y > 0) {
-			return this.documentEditor.getElementFromPoint({
-				x,
-				y
-			});
+			return this._documentEditor.getElementFromPoint({ x,	y	});
 		}
 		else {
 			return null;
@@ -87,7 +88,7 @@ class UserInterface {
 	}
 
 	_subscribeToDragulaEvent() {
-		let dragulaManager = this.documentEditor.dragulaManager;
+		let dragulaManager = this._documentEditor.dragulaManager;
 		this.isDraggingElement = false;
 
 		dragulaManager.onCloned((clone, original) => {
@@ -112,24 +113,24 @@ class UserInterface {
 				if (availableElement) {
 
 					if (availableElement.tagName.toLowerCase() === 'html') {
-						availableElement = this.documentEditor.document.body;
+						availableElement = this._documentEditor.document.body;
 					}
 
 					switch (this.dropPosition) {
 						case 'inside':
-							this.documentEditor.appendElement({
+							this._documentEditor.appendElement({
 								element: element.renderComponent(),
 								parent: availableElement
 							});
 							break;
 						case 'top':
-							this.documentEditor.prependElement({
+							this._documentEditor.prependElement({
 								element: element.renderComponent(),
 								elementRef: availableElement
 							});
 							break;
 						case 'bottom':
-							this.documentEditor.appendAfterElement({
+							this._documentEditor.appendAfterElement({
 								element: element.renderComponent(),
 								elementRef: availableElement
 							});
@@ -140,7 +141,7 @@ class UserInterface {
 				}
 
 				if (this.dragMark) {
-					this.fabric_canvas.remove(this.dragMark);
+					this._fabric_canvas.remove(this.dragMark);
 					this.dragMark = null;
 				}
 			}
@@ -153,7 +154,7 @@ class UserInterface {
 			this.mouseOverCanvas = false;
 		});
 
-		this.fabric_canvas.on('mouse:down', (options) => {
+		this._fabric_canvas.on('mouse:down', (options) => {
 			let element = this._elementAtPosition(this.lastPosition);
 			let tagName = element ? element.tagName.toLowerCase() : null;
 			this.mouseDownPosition = {x: options.e.offsetX, y: options.e.offsetY};
@@ -185,10 +186,10 @@ class UserInterface {
 			}
 		});
 
-		this.fabric_canvas.on('mouse:up', (options) => {
+		this._fabric_canvas.on('mouse:up', (options) => {
 
 			if (this.dragMark) {
-				this.fabric_canvas.remove(this.dragMark);
+				this._fabric_canvas.remove(this.dragMark);
 				this.dragMark = null;
 			}
 
@@ -200,13 +201,13 @@ class UserInterface {
 				if (availableElement && availableElement !== this.existingElementDragged) {
 
 					if (availableElement.tagName.toLowerCase() === 'html') {
-						availableElement = this.documentEditor.document.body;
+						availableElement = this._documentEditor.document.body;
 					}
 
 					switch (this.dropPosition) {
 						case 'inside':
 							if (!this.existingElementDragged.contains(availableElement)) {
-								this.documentEditor.moveInsideElement({
+								this._documentEditor.moveInsideElement({
 									element: this.existingElementDragged,
 									elementRef: availableElement
 								});
@@ -214,7 +215,7 @@ class UserInterface {
 							break;
 						case 'top':
 							if (!this.existingElementDragged.contains(availableElement)) {
-								this.documentEditor.moveBeforeElement({
+								this._documentEditor.moveBeforeElement({
 									element: this.existingElementDragged,
 									elementRef: availableElement
 								});
@@ -222,7 +223,7 @@ class UserInterface {
 							break;
 						case 'bottom':
 							if (!this.existingElementDragged.contains(availableElement)) {
-								this.documentEditor.moveAfterElement({
+								this._documentEditor.moveAfterElement({
 									element: this.existingElementDragged,
 									elementRef: availableElement
 								});
@@ -242,18 +243,18 @@ class UserInterface {
 			let mouseUpPosition = {x: options.e.offsetX, y: options.e.offsetY};
 			if (mouseUpPosition.x === this.mouseDownPosition.x &&
 					mouseUpPosition.y === this.mouseDownPosition.y) {
-				this.documentEditor.selectElementByPoint({
+				this._documentEditor.selectElementByPoint({
 					x: options.e.offsetX,
 					y: options.e.offsetY
 				});
 			}
 		});
 
-		this.fabric_canvas.on('mouse:move', (options) => {
+		this._fabric_canvas.on('mouse:move', (options) => {
 			this.mouseOverCanvas = true;
 
 			if (this.dragMark) {
-				this.fabric_canvas.remove(this.dragMark);
+				this._fabric_canvas.remove(this.dragMark);
 				this.dragMark = null;
 			}
 			this.dropPosition = 'inside';
@@ -332,22 +333,14 @@ class UserInterface {
 			height: coords.height,
 			selectable: false
 		});
-		this.fabric_canvas.add(this.dragMark);
-	}
-
-	highLightElement(element) {
-		this.highlightManager.highLightElement({element});
-	}
-
-	onElementHighLight(callBack) {
-		this.events.on('GUID.UI.element.highlight', callBack);
+		this._fabric_canvas.add(this.dragMark);
 	}
 
 	updateSelectedElementBorder() {
 		this.removeSelectedElementBorder();
 
-		if(this.documentEditor.selectedElement){
-			let style = this.documentEditor.getSelectedElementComputedStyle();
+		if(this._documentEditor.selectedElement){
+			let style = this._documentEditor.getSelectedElementComputedStyle();
 
 			let lineColor,
 				selectable = true;
@@ -370,7 +363,7 @@ class UserInterface {
 					lineColor = 'yellow';
 			}
 
-			let boundingClientRect = this.documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
+			let boundingClientRect = this._documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
 
 			let {
 				left, top, width, height
@@ -387,57 +380,56 @@ class UserInterface {
 				selectable: selectable
 			});
 
-			this.fabric_canvas.add(this.rectSelected);
+			this._fabric_canvas.add(this.rectSelected);
 		}
 	}
 
 	removeSelectedElementBorder() {
 		if (this.rectSelected) {
-			this.fabric_canvas.remove(this.rectSelected);
+			this._fabric_canvas.remove(this.rectSelected);
 		}
 	}
 
 	initElementSelection() {
 
-		this.documentEditor.onElementSelected(() => {
+		this._documentEditor.onElementSelected(() => {
 			this.updateSelectedElementBorder();
 		});
 
-		this.documentEditor.onDocumentScroll(()=>{
+		this._documentEditor.onDocumentScroll(()=>{
 			this.updateSelectedElementBorder();
 		});
 
-		this.documentEditor.onElementDeselected(() => {
+		this._documentEditor.onElementDeselected(() => {
 			this.removeSelectedElementBorder();
 		});
 
-		this.documentEditor.onDocumentSizeChange(() => {
+		this._documentEditor.onDocumentSizeChange(() => {
 			this.updateSelectedElementBorder();
 		});
-		this.documentEditor.onElementTextChange(()=> {
+		this._documentEditor.onElementTextChange(()=> {
 			this.updateSelectedElementBorder();
 		});
 	}
 
 	subscribeToDocumentEditorEvents() {
-		this.documentEditor.onDocumentSizeChange(() => {
-			this.resetCanvasDimentions();
+		this._documentEditor.onDocumentSizeChange(() => {
+			this._resetCanvasDimentions();
 		});
-		this.documentEditor.onAppendElement(() => {
-			this.resetCanvasDimentions();
+		this._documentEditor.onAppendElement(() => {
+			this._resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 			this.clearHighLighting();
 		});
-		this.documentEditor.onRemoveElement(() => {
-			this.resetCanvasDimentions();
+		this._documentEditor.onRemoveElement(() => {
+			this._resetCanvasDimentions();
+		});
+		this._documentEditor.onElementStyleAttributeChange(() => {
+			this._resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
-		this.documentEditor.onElementStyleAttributeChange(() => {
-			this.resetCanvasDimentions();
-			this.updateSelectedElementBorder();
-		});
-		this.documentEditor.onElementClassChange(({element, className}) => {
-			this.resetCanvasDimentions();
+		this._documentEditor.onElementClassChange(({element, className}) => {
+			this._resetCanvasDimentions();
 			this.updateSelectedElementBorder();
 		});
 	}
