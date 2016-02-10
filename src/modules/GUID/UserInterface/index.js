@@ -3,7 +3,7 @@ import HighlightManager from './HighlightManager';
 import DragulaManager from './DragulaManager';
 
 class UserInterface {
-	constructor({documentEditor}) {
+	constructor({documentEditor, dndContainerId}) {
 
 		this._events = new MultiEvent();
 
@@ -27,7 +27,7 @@ class UserInterface {
 
 		this._dragulaManager = new DragulaManager({
 			documentEditor,
-			sourceContainerId: 'components'
+			sourceContainerId: dndContainerId
 		});
 
 		this._resetCanvasDimentions();

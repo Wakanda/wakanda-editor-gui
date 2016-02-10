@@ -10,8 +10,7 @@ var Module = {
 			"./Pannels/Components",
 			"./Pannels/Angular",
 			"./Pannels/Styling",
-			"./Pannels/Attributes",
-			"./UserInterface/DragulaManager"
+			"./Pannels/Attributes"
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
@@ -21,7 +20,6 @@ var Module = {
 			var Styling = require("./Pannels/Styling");
 			var AttributesPanel = require("./Pannels/Attributes");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
-			var DragulaManager = require('./UserInterface/DragulaManager');
 
 
 			//TODO - URL of the iframe content
@@ -32,17 +30,10 @@ var Module = {
 				.then((documentEditor)=>{
 					IDE.GUID.documentEditor = documentEditor;
 
-
-					//NOTE DragulaManager must be initialized *before* UserInterface
-					IDE.GUID.dragulaManager = new DragulaManager({
-						documentEditor,
-						sourceContainerId: 'components'
-					});
-
 					IDE.GUID.userInterface = new UserInterface({
-						documentEditor
+						documentEditor,
+						dndContainerId:	'components'
 					});
-					IDE.GUID.documentEditorBroker = documentEditor.broker;
 
 					// load Pannels
 					IDE.GUID.panels = {};
