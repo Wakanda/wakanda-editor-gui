@@ -5,7 +5,7 @@ require("./style.css");
 export default {
 
 	activate() {
-		this.broker = IDE.GUID.documentEditor.mainBroker;
+		this.broker = IDE.GUID.documentEditor.broker;
 		this.broker.onChange(this.onChange);
 	},
 
