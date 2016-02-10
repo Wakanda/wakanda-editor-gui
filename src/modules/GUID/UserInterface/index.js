@@ -1,5 +1,6 @@
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import HighlightManager from './HighlightManager';
+import DragulaManager from './DragulaManager';
 
 class UserInterface {
 	constructor({documentEditor}) {
@@ -18,10 +19,15 @@ class UserInterface {
 
 		this._fabric_canvas = new fabric.Canvas(canvas);
 
-		this.highlightManager = new HighlightManager({
+		this._highlightManager = new HighlightManager({
 			fabricCanvas: this._fabric_canvas,
 			events: this._events,
 			documentEditor: this._documentEditor
+		});
+
+		this._dragulaManager = new DragulaManager({
+			documentEditor,
+			sourceContainerId: 'components'
 		});
 
 		this._resetCanvasDimentions();
@@ -63,11 +69,11 @@ class UserInterface {
 	}
 
 	clearHighLighting() {
-		this.highlightManager.clearHighLighting();
+		this._highlightManager.clearHighLighting();
 	}
 
 	highLightElement(element) {
-		this.highlightManager.highLightElement({element});
+		this._highlightManager.highLightElement({element});
 	}
 
 	onClearHighLighting(callBack) {
@@ -88,25 +94,24 @@ class UserInterface {
 	}
 
 	_subscribeToDragulaEvent() {
-		let dragulaManager = this._documentEditor.dragulaManager;
 		this.isDraggingElement = false;
 
-		dragulaManager.onCloned((clone, original) => {
+		this._dragulaManager.onCloned((clone, original) => {
 			clone.renderComponent = original.renderComponent;
 
 			//FIXME
       clone.style.border = '1px solid red';
 		});
 
-		dragulaManager.onDragStart(() => {
+		this._dragulaManager.onDragStart(() => {
 			this.isDraggingElement = true;
 		})
 
-		dragulaManager.onDragEnd(() => {
+		this._dragulaManager.onDragEnd(() => {
 			this.isDraggingElement = false;
 		});
 
-		dragulaManager.onDrop((element, target) => {
+		this._dragulaManager.onDrop((element, target) => {
 			if (this.mouseOverCanvas) {
 				// console.log('position over canvas', this.lastPosition);
 				let availableElement = this._elementAtPosition(this.lastPosition);

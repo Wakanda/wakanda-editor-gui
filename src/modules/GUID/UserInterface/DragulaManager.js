@@ -1,7 +1,5 @@
 class DragulaManager {
-  constructor({documentEditor, sourceContainerId}) {
-    this.documentEditor = documentEditor;
-    this.documentEditor.dragulaManager = this;
+  constructor({sourceContainerId}) {
     this.drake = null;
 
     this._init({sourceContainerId});
