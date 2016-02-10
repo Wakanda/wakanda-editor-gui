@@ -2,9 +2,9 @@ var helpers     = require('../helpers');
 var cheerio     = require('cheerio');
 var fs          = require('fs');
 
-var getSourceCode = function(req, res){
+var saveProject = function(req, res){
   var sourceFileContent = req.body.sourceCode;
-  var headScripts       = req.body.headScripts;
+  var headScripts       = req.body.scriptTags;
   var projectFile       = req.body.projectFile;
 
   var $ = cheerio.load(sourceFileContent);
@@ -12,14 +12,14 @@ var getSourceCode = function(req, res){
     $('head').append(scriptTagAsString);
   });
 
-  var renderPath = helpers.getProjectPath(projectFile);
-  helpers.saveFile(renderPath, $.html());
+  var projectPath = helpers.getProjectPath(projectFile);
+  helpers.saveFile(projectPath, $.html());
 
-  res.end({
-    url: '/workspace/render/' + projectFile
+  res.json({
+    saved: 'yes'
   });
 
 }
 
 
-module.exports = getSourceCode;
+module.exports = saveProject;
