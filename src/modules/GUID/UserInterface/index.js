@@ -12,7 +12,7 @@ class UserInterface {
 
 		let canvas = document.createElement('canvas');
 		canvas.classList.add('user-interface-canvas');
-		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');;
+		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
 		this.cloudEditorIDE.appendChild(canvas);
 
 		let fabric = require('../../../../lib/fabric.js');
@@ -32,18 +32,18 @@ class UserInterface {
 
 		this._resetCanvasDimentions();
 
-		this.initHighLighting();
-		this.initElementSelection();
-		this.subscribeToDocumentEditorEvents();
+		this._initHighLighting();
+		this._initElementSelection();
+		this._subscribeToDocumentEditorEvents();
 
 		let keyboardJS = require('../../../../lib/keyboardjs');
-		this.initKeyboardWatchers(keyboardJS);
+		this._initKeyboardWatchers(keyboardJS);
 		this.lastPosition = null;
 		this.mouseOverCanvas = false;
 		this._subscribeToDragulaEvent();
 	}
 
-	initKeyboardWatchers(keyboardJS) {
+	_initKeyboardWatchers(keyboardJS) {
 
 		//Deselect the selected element if any
 		keyboardJS.bind('esc', () => {
@@ -97,6 +97,7 @@ class UserInterface {
 		this.isDraggingElement = false;
 
 		this._dragulaManager.onCloned((clone, original) => {
+    console.log('Dragula event : onCloned', clone, original);
 			clone.renderComponent = original.renderComponent;
 
 			//FIXME
@@ -104,14 +105,17 @@ class UserInterface {
 		});
 
 		this._dragulaManager.onDragStart(() => {
+    console.log('this.isDraggingElement set to true');
 			this.isDraggingElement = true;
 		})
 
 		this._dragulaManager.onDragEnd(() => {
+    console.log('this.isDraggingElement set to false');
 			this.isDraggingElement = false;
 		});
 
 		this._dragulaManager.onDrop((element, target) => {
+    console.log('Dragula event : onDrop');
 			if (this.mouseOverCanvas) {
 				// console.log('position over canvas', this.lastPosition);
 				let availableElement = this._elementAtPosition(this.lastPosition);
@@ -153,7 +157,7 @@ class UserInterface {
 		});
 	}
 
-	initHighLighting() {
+	_initHighLighting() {
 		this.cloudEditorIDE.addEventListener('mouseleave', () => {
 			this.clearHighLighting();
 			this.mouseOverCanvas = false;
@@ -343,50 +347,52 @@ class UserInterface {
 
 	updateSelectedElementBorder() {
 		this.removeSelectedElementBorder();
+		this._documentEditor.afterRender(()=>{
+			if(this._documentEditor.selectedElement){
+				let style = this._documentEditor.getSelectedElementComputedStyle();
 
-		if(this._documentEditor.selectedElement){
-			let style = this._documentEditor.getSelectedElementComputedStyle();
+				let lineColor,
+					selectable = true;
+				switch (style.position) {
+					case 'absolute':
+						lineColor = 'green';
+						break;
+					case 'relative':
+						lineColor = 'blue';
+						break;
+					case 'fixed':
+						lineColor = 'orange';
+						//selectable = false;
+						break;
+					case 'static':
+						lineColor = 'brown';
+						selectable = false;
+						break;
+					default:
+						lineColor = 'yellow';
+				}
 
-			let lineColor,
-				selectable = true;
-			switch (style.position) {
-				case 'absolute':
-					lineColor = 'green';
-					break;
-				case 'relative':
-					lineColor = 'blue';
-					break;
-				case 'fixed':
-					lineColor = 'orange';
-					//selectable = false;
-					break;
-				case 'static':
-					lineColor = 'brown';
-					selectable = false;
-					break;
-				default:
-					lineColor = 'yellow';
+				let boundingClientRect = this._documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
+
+				let {
+					left, top, width, height
+				} = boundingClientRect;
+
+				this.rectSelected = new fabric.Rect({
+					left: left,
+					top: top,
+					fill: '',
+					stroke: lineColor,
+					strokeWidth: 1,
+					width: width,
+					height: height,
+					selectable: selectable
+				});
+
+				this._fabric_canvas.add(this.rectSelected);
 			}
 
-			let boundingClientRect = this._documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
-
-			let {
-				left, top, width, height
-			} = boundingClientRect;
-
-			this.rectSelected = new fabric.Rect({
-				left: left,
-				top: top,
-				fill: '',
-				stroke: lineColor,
-				strokeWidth: 1,
-				width: width,
-				height: height,
-				selectable: selectable
-			});
-
-			this._fabric_canvas.add(this.rectSelected);
-		}
+		});
 	}
 
 	removeSelectedElementBorder() {
@@ -395,7 +401,7 @@ class UserInterface {
 		}
 	}
 
-	initElementSelection() {
+	_initElementSelection() {
 
 		this._documentEditor.onElementSelected(() => {
 			this.updateSelectedElementBorder();
@@ -417,7 +423,7 @@ class UserInterface {
 		});
 	}
 
-	subscribeToDocumentEditorEvents() {
+	_subscribeToDocumentEditorEvents() {
 		this._documentEditor.onDocumentSizeChange(() => {
 			this._resetCanvasDimentions();
 		});

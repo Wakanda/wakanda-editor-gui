@@ -7,6 +7,9 @@ import StyleManager from './Styling/StyleManager';
 import Bijection from './Bijection';
 import { HttpClient } from "../../../../lib/aurelia-http-client";
 
+// TODO: important: script management
+// TODO: important: import management
+
 const API_PORT = 3001;
 
 let helpers = {
@@ -47,7 +50,6 @@ let helpers = {
 
 let staticVars = {};
 
-// TODO: decalage tomorrow
 staticVars.hidenIframe = document.createElement('iframe');
 staticVars.shownIframe = document.createElement('iframe');
 staticVars.hidenIframe.classList.add('document-editor-iframe');
@@ -69,7 +71,6 @@ staticVars.currentDocumentEditor = null;
 
 class DocumentEditor {
 
-	// TODO: review
 	static get currentDocumentEditor(){
 		return staticVars.currentDocumentEditor || null;
 	}
@@ -111,7 +112,6 @@ class DocumentEditor {
 
 	}
 
-	// TODO: without "project/"
 	static async createDocumentSourceCode({projectPath}){
 
 		let {sourceUrl, headScripts} = await helpers.postResJson(`http://${location.hostname}:${API_PORT}/getSourceCode`, {
@@ -151,7 +151,6 @@ class DocumentEditor {
 
 		this._selectedElement = null;
 
-		// TODO: load thos components
 		this.styleManager = new StyleManager({
 			document: this._renderDocument
 		});
@@ -247,22 +246,15 @@ class DocumentEditor {
 	get selectedElement(){
 		return this._selectedElement || null;
 	}
-	// TODO: replace this
+	// NOTE: old scripts management
 	get scripts(){
 		return this.scriptManager.scripts;
 	}
 
-	// TODO: replace this
-	get htmlClone(){
-		this._temporaryBroker.setToinitialState();
-		let html = this._sourceDocument.children[0];
-		let cloneHtml = html.cloneNode(true);
-		this._temporaryBroker.setToFinalState();
-
-		return cloneHtml;
+	get scriptTags(){
+		return this._scriptTags;
 	}
 
-	// TODO: remove me please
 	get events(){
 		return this._events;
 	}
@@ -316,7 +308,7 @@ class DocumentEditor {
 		this._events.on('GUID.document.scroll', callBack);
 	}
 
-	removeElement({element, justReturnCommand = false}) {
+	removeElement({element = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.removeElement({element});
 		command.afterExecute = ()=>{
 			this.deselectElement();
@@ -326,15 +318,6 @@ class DocumentEditor {
 
 	onRemoveElement(callBack) {
 		this._events.on('GUID.dom.element.remove', callBack);
-	}
-
-	removeSelectedElement(justReturnCommand = false) {
-		let parent = element.parentElement;
-		let ret = this.removeElement({
-			element: this._selectedElement
-		});
-		this.selectedElement({element: parent});
-		return ret;
 	}
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
@@ -374,7 +357,7 @@ class DocumentEditor {
 			child: element
 		});
 
-		appendElement.afterUndo = ()=>{
+		appendCommand.afterUndo = ()=>{
 			this.deselectElement();
 		};
 
@@ -495,7 +478,6 @@ class DocumentEditor {
 	}
 
 	onElementChange(callBack){
-		// TODO: subscribe here to refresh render page tomorrow
 		this._events.on('GUID.dom.element.*', function({element, child, parent}){
 			let eventName = this.eventName;
 			let changeType = eventName.split('.').pop(); //		append, remove, changeText
@@ -592,7 +574,6 @@ class DocumentEditor {
 		}
 	}
 
-	// TODO: change name of _selectedElement
 	getselectedElementBoundingClientRect() {
 		if(this._selectedElement){
 			return this.getBoundingClientRect({element: this._selectedElement});
@@ -715,7 +696,7 @@ class DocumentEditor {
 		return this.executeOrReturn({command, justReturnCommand});
 	}
 
-	// TODO: replace script management
+	// NOTE: old script management
 	addScript({script, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleScript({
 			script,
@@ -726,7 +707,7 @@ class DocumentEditor {
 	}
 
 	onAddScript(callBack) {
-		this._events.on('GUID.script.add', callBack);
+		this._events.on('GUID.dom.script.add', callBack);
 	}
 
 	removeScript({script, justReturnCommand = false}) {
@@ -739,11 +720,11 @@ class DocumentEditor {
 	}
 
 	onRemoveScript(callBack) {
-		this._events.on('GUID.script.remove', callBack);
+		this._events.on('GUID.dom.script.remove', callBack);
 	}
 
 	onChangeScript(callBack){
-		this._events.on('GUID.script.*', function({script}){
+		this._events.on('GUID.dom.script.*', function({script}){
 			let eventName = this.eventName;
 			let changeType = eventName.split('.').pop();
 			callBack({changeType, script});

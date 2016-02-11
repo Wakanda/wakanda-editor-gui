@@ -71,31 +71,6 @@ var Module = {
 						containerId: 'attributes'
 					});
 
-					//undoRedoManagement
-					let plugin = 'GuidHistoryManager',
-						type = 'button';
-					let items = [{
-						action: 'undo',
-						name: 'undo',
-						plugin,
-						type
-					}, {
-						action: 'redo',
-						name: 'redo',
-						plugin,
-						type
-					}];
-					IDE.toolbar.addItems(items);
-					// console.log(items);
-
-					//debug infos
-					// documentEditor.onElementSelected(function(arg) {
-					// 	console.log(arg.element);
-					// });
-
-					// documentEditor.onDocumentSizeChange(function(a) {
-					// 	console.log(a);
-					// });
 
 					//to use it on devtool
 					window.d = documentEditor;
