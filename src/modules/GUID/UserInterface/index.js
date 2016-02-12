@@ -43,35 +43,11 @@ class UserInterface {
 		this._subscribeToDragulaEvent();
 	}
 
-	_initKeyboardWatchers(keyboardJS) {
-
-		//Deselect the selected element if any
-		keyboardJS.bind('esc', () => {
-			this._documentEditor.deselectElement();
-		});
-
-		//Remove the selected element if any
-		keyboardJS.bind('del', () => {
-
-			let element = this._documentEditor.selectedElement;
-			if (element) {
-				let tagName = element.tagName.toLowerCase();
-				if (tagName !== 'body' && tagName !== 'html') {
-					this._documentEditor.removeElement({element});
-				}
-			}
-		});
-	}
-
-	_resetCanvasDimentions() {
-		let {	width, height	} = this._documentEditor.dimensions;
-		this._fabric_canvas.setDimensions({ width, height });
-	}
-
 	clearHighLighting() {
 		this._highlightManager.clearHighLighting();
 	}
 
+	// TODO: with outline
 	highLightElement(element) {
 		this._highlightManager.highLightElement({element});
 	}
@@ -82,6 +58,146 @@ class UserInterface {
 
 	onElementHighLight(callBack) {
 		this._events.on('GUID.UI.element.highlight', callBack);
+	}
+
+	addDragMark({position, elementRect}) {
+		let coords = {x: null, y: null, width: null, height: null};
+
+		switch (position) {
+			case 'left':
+
+				break;
+			case 'rigth':
+
+				break;
+			case 'top':
+				coords = {
+					x: elementRect.left,
+					y: elementRect.top - 1,
+					width: elementRect.width,
+					height: 1
+				};
+				break;
+			case 'bottom':
+				coords = {
+					x: elementRect.left,
+					y: elementRect.bottom + 1,
+					width: elementRect.width,
+					height: 1
+				};
+				break;
+			default:
+				console.error('addDragMark, position not valid');
+		}
+
+		this.dragMark = new fabric.Rect({
+			left: coords.x,
+			top: coords.y,
+			fill: 'blue',
+			opacity: 1,
+			width: coords.width,
+			height: coords.height,
+			selectable: false
+		});
+		this._fabric_canvas.add(this.dragMark);
+	}
+
+	updateSelectedElementBorder() {
+		this.removeSelectedElementBorder();
+
+		if(this._documentEditor.selectedElement){
+			let style = this._documentEditor.getSelectedElementComputedStyle();
+
+			let lineColor,
+				selectable = true;
+			switch (style.position) {
+				case 'absolute':
+					lineColor = 'green';
+					break;
+				case 'relative':
+					lineColor = 'blue';
+					break;
+				case 'fixed':
+					lineColor = 'orange';
+					//selectable = false;
+					break;
+				case 'static':
+					lineColor = 'brown';
+					selectable = false;
+					break;
+				default:
+					lineColor = 'yellow';
+			}
+
+			let boundingClientRect = this._documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
+
+			let {
+				left, top, width, height
+			} = boundingClientRect;
+
+			this.rectSelected = new fabric.Rect({
+				left: left,
+				top: top,
+				fill: '',
+				stroke: lineColor,
+				strokeWidth: 1,
+				width: width,
+				height: height,
+				selectable: selectable
+			});
+
+			this._fabric_canvas.add(this.rectSelected);
+		}
+	}
+
+	removeSelectedElementBorder() {
+		if (this.rectSelected) {
+			this._fabric_canvas.remove(this.rectSelected);
+		}
+	}
+
+	_initElementSelection() {
+
+		this._documentEditor.onElementSelected(() => {
+			this.updateSelectedElementBorder();
+		});
+
+		this._documentEditor.onDocumentScroll(()=>{
+			this.updateSelectedElementBorder();
+		});
+
+		this._documentEditor.onElementDeselected(() => {
+			this.removeSelectedElementBorder();
+		});
+
+		this._documentEditor.onDocumentSizeChange(() => {
+			this.updateSelectedElementBorder();
+		});
+		this._documentEditor.onElementTextChange(()=> {
+			this.updateSelectedElementBorder();
+		});
+	}
+
+	_subscribeToDocumentEditorEvents() {
+		this._documentEditor.onDocumentSizeChange(() => {
+			this._resetCanvasDimentions();
+		});
+		this._documentEditor.onAppendElement(() => {
+			this._resetCanvasDimentions();
+			this.updateSelectedElementBorder();
+			this.clearHighLighting();
+		});
+		this._documentEditor.onRemoveElement(() => {
+			this._resetCanvasDimentions();
+		});
+		this._documentEditor.onElementStyleAttributeChange(() => {
+			this._resetCanvasDimentions();
+			this.updateSelectedElementBorder();
+		});
+		this._documentEditor.onElementClassChange(({element, className}) => {
+			this._resetCanvasDimentions();
+			this.updateSelectedElementBorder();
+		});
 	}
 
 	_elementAtPosition({x, y}) {
@@ -303,147 +419,31 @@ class UserInterface {
 		});
 	}
 
-	addDragMark({position, elementRect}) {
-		let coords = {x: null, y: null, width: null, height: null};
+	_initKeyboardWatchers(keyboardJS) {
 
-		switch (position) {
-			case 'left':
-
-				break;
-			case 'rigth':
-
-				break;
-			case 'top':
-				coords = {
-					x: elementRect.left,
-					y: elementRect.top - 1,
-					width: elementRect.width,
-					height: 1
-				};
-				break;
-			case 'bottom':
-				coords = {
-					x: elementRect.left,
-					y: elementRect.bottom + 1,
-					width: elementRect.width,
-					height: 1
-				};
-				break;
-			default:
-				console.error('addDragMark, position not valid');
-		}
-
-		this.dragMark = new fabric.Rect({
-			left: coords.x,
-			top: coords.y,
-			fill: 'blue',
-			opacity: 1,
-			width: coords.width,
-			height: coords.height,
-			selectable: false
+		//Deselect the selected element if any
+		keyboardJS.bind('esc', () => {
+			this._documentEditor.deselectElement();
 		});
-		this._fabric_canvas.add(this.dragMark);
-	}
 
-	updateSelectedElementBorder() {
-		this.removeSelectedElementBorder();
-		this._documentEditor.afterRender(()=>{
-			if(this._documentEditor.selectedElement){
-				let style = this._documentEditor.getSelectedElementComputedStyle();
+		//Remove the selected element if any
+		keyboardJS.bind('del', () => {
 
-				let lineColor,
-					selectable = true;
-				switch (style.position) {
-					case 'absolute':
-						lineColor = 'green';
-						break;
-					case 'relative':
-						lineColor = 'blue';
-						break;
-					case 'fixed':
-						lineColor = 'orange';
-						//selectable = false;
-						break;
-					case 'static':
-						lineColor = 'brown';
-						selectable = false;
-						break;
-					default:
-						lineColor = 'yellow';
+			let element = this._documentEditor.selectedElement;
+			if (element) {
+				let tagName = element.tagName.toLowerCase();
+				if (tagName !== 'body' && tagName !== 'html') {
+					this._documentEditor.removeElement({element});
 				}
-
-				let boundingClientRect = this._documentEditor.getselectedElementBoundingClientRect(); // element.getBoundingClientRect();
-
-				let {
-					left, top, width, height
-				} = boundingClientRect;
-
-				this.rectSelected = new fabric.Rect({
-					left: left,
-					top: top,
-					fill: '',
-					stroke: lineColor,
-					strokeWidth: 1,
-					width: width,
-					height: height,
-					selectable: selectable
-				});
-
-				this._fabric_canvas.add(this.rectSelected);
 			}
-
 		});
 	}
 
-	removeSelectedElementBorder() {
-		if (this.rectSelected) {
-			this._fabric_canvas.remove(this.rectSelected);
-		}
+	_resetCanvasDimentions() {
+		let {	width, height	} = this._documentEditor.dimensions;
+		this._fabric_canvas.setDimensions({ width, height });
 	}
 
-	_initElementSelection() {
-
-		this._documentEditor.onElementSelected(() => {
-			this.updateSelectedElementBorder();
-		});
-
-		this._documentEditor.onDocumentScroll(()=>{
-			this.updateSelectedElementBorder();
-		});
-
-		this._documentEditor.onElementDeselected(() => {
-			this.removeSelectedElementBorder();
-		});
-
-		this._documentEditor.onDocumentSizeChange(() => {
-			this.updateSelectedElementBorder();
-		});
-		this._documentEditor.onElementTextChange(()=> {
-			this.updateSelectedElementBorder();
-		});
-	}
-
-	_subscribeToDocumentEditorEvents() {
-		this._documentEditor.onDocumentSizeChange(() => {
-			this._resetCanvasDimentions();
-		});
-		this._documentEditor.onAppendElement(() => {
-			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
-			this.clearHighLighting();
-		});
-		this._documentEditor.onRemoveElement(() => {
-			this._resetCanvasDimentions();
-		});
-		this._documentEditor.onElementStyleAttributeChange(() => {
-			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
-		});
-		this._documentEditor.onElementClassChange(({element, className}) => {
-			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
-		});
-	}
 }
 
 export default UserInterface;

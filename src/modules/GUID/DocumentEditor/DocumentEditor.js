@@ -322,9 +322,6 @@ class DocumentEditor {
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
 		let removeCommand = this.commandFactory.removeElement({ element	});
-		removeCommand.afterExecute = ()=>{
-			this.deselectElement();
-		};
 		let appendCommand = this.commandFactory.prependElement({
 			element,
 			elementRef
@@ -349,17 +346,10 @@ class DocumentEditor {
 
 	moveInsideElement({element, elementRef, justReturnCommand = false}) {
 		let removeCommand = this.commandFactory.removeElement({ element	});
-		removeCommand.afterExecute = ()=>{
-			this.deselectElement();
-		};
 		let appendCommand = this.commandFactory.appendElement({
 			parent: elementRef,
 			child: element
 		});
-
-		appendCommand.afterUndo = ()=>{
-			this.deselectElement();
-		};
 
 		let finalCommand = this.commandFactory.regroupCommands({
 			commands: [removeCommand, appendCommand]
@@ -591,11 +581,19 @@ class DocumentEditor {
 	selectElement({element}) {
 		if (element) {
 			this._selectedElement = element;
-
-			this._events.emit('GUID.dom.select', {
-				element: this._selectedElement
-			});
+			this._emitSelectElement();//after rendering
 		}
+	}
+
+	_emitSelectElement(){
+		this.renderedPromise
+			.then(()=>{
+				if(this.selectedElement){
+					this._events.emit('GUID.dom.select', {
+						element: this.selectedElement
+					});
+				}
+			});
 	}
 
 	onElementSelected(callBack) {
@@ -731,18 +729,10 @@ class DocumentEditor {
 		});
 	}
 
-	afterRender(callBack){
-		this._renderedPromise = this.renderedPromise
-			.then((ok)=>{
-				return callBack(ok);
-			});
-	}
-
 	executeOrReturn({command, justReturnCommand}){
 		let renderingFunc = () => {
-			this._renderedPromise = this.renderedPromise.then(()=>{
-				return this.initRenderCode();
-			});
+			this._renderedPromise = this.initRenderCode();
+			this._emitSelectElement();
 		};
 		command.afterExecute = command.afterUndo = renderingFunc;
 		if(justReturnCommand){

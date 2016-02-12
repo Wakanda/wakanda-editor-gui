@@ -16,7 +16,6 @@ var getSourceCode = function(req, res){
   var headScripts = $('head > script');
   headScripts.each(function () {
     var $this = $(this);
-    console.log($this.html());
     headScriptsStr.push($.html($this));
   });
   headScripts.remove();
