@@ -1,10 +1,10 @@
 class HighlightManager {
   constructor({fabricCanvas, events, documentEditor}) {
-    this.fabricCanvas = fabricCanvas;
-    this.events = events;
-    this.documentEditor = documentEditor;
+    this._fabricCanvas = fabricCanvas;
+    this._events = events;
+    this._documentEditor = documentEditor;
 
-    this.highlitedElement = null;
+    this._highlitedElement = null;
     this.HIGHLIGHT = null;
 
     //This object contains all highlight rects
@@ -27,21 +27,22 @@ class HighlightManager {
 
   highLightElement({element}) {
 
-    if (this.highlitedElement !== element) {
+    if (this._highlitedElement !== element) {
       if (!element) {
         return;
       }
 
       this.clearHighLighting();
 
-      let boundingRect = element.getBoundingClientRect();
-      this.highlitedElement = element;
+      // let boundingRect = element.getBoundingClientRect();
+      let boundingRect = this._documentEditor.getBoundingClientRect({element})
+      this._highlitedElement = element;
 
       this._highlightMargins({element, boundingRect});
       let paddingPositions = this._highlightPaddings({element, boundingRect});
       this._highlightElement({element, boundingRect, paddingPositions});
 
-      this.events.emit('GUID.UI.element.highlight', {
+      this._events.emit('GUID.UI.element.highlight', {
         element
       });
     }
@@ -66,7 +67,7 @@ class HighlightManager {
     let paddingPositions = {};
     let getPaddingValue = (position) => {
       if (!(typeof paddingPositions[position] === 'number')) {
-        let value = this.documentEditor.getElementStyleAttribute({
+        let value = this._documentEditor.getElementStyleAttribute({
           element,
           attribute: 'padding-' + position
         });
@@ -132,7 +133,7 @@ class HighlightManager {
     let marginPositions = {};
     let getMarginValue = (position) => {
       if (!(typeof marginPositions[position] === 'number')) {
-        let value = this.documentEditor.getElementStyleAttribute({
+        let value = this._documentEditor.getElementStyleAttribute({
           element,
           attribute: 'margin-' + position
         });
@@ -210,15 +211,15 @@ class HighlightManager {
       selectable: false
     });
 
-    this.fabricCanvas.add(rect);
-    this.fabricCanvas.sendToBack(rect);
+    this._fabricCanvas.add(rect);
+    this._fabricCanvas.sendToBack(rect);
     return rect;
   }
 
   clearHighLighting() {
 
-    if (this.highlitedElement) {
-      let element = this.highlitedElement;
+    if (this._highlitedElement) {
+      let element = this._highlitedElement;
 
       let elRect = this.currentHighlights.element;
       let {top: mtop, bottom: mbottom, left: mleft, right: mright} = this.currentHighlights.margin;
@@ -226,12 +227,12 @@ class HighlightManager {
 
       for (let rect of [elRect, mtop, mbottom, mleft, mright, rtop, rbottom, rleft, rright]) {
         if (rect) {
-          this.fabricCanvas.remove(rect);
+          this._fabricCanvas.remove(rect);
         }
       }
 
-      this.highlitedElement = null;
-      this.events.emit('GUID.UI.clearHighLighting', {
+      this._highlitedElement = null;
+      this._events.emit('GUID.UI.clearHighLighting', {
         element
       });
     }

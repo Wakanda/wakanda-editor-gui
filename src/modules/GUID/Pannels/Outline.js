@@ -43,14 +43,12 @@ class Outline {
       }
     });
 
-    this.documentEditor.documentPromise.then((iframeDoc) => {
-      this._refreshAll();
-    });
+    this._refreshAll();
   }
 
   _refreshAll() {
     this._processBodyToTree({
-      bodyElement: this.documentEditor.document.body
+      bodyElement: this.documentEditor.sourceDocument.body
     });
   }
 
