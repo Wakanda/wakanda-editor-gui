@@ -7,8 +7,14 @@ class Command {
 
 		//optional
 		this._thisArg = thisArg;
-		this._afterExecute = afterExecute;
-		this._afterUndo = afterUndo;
+		this._afterExecute = [];
+		if(afterExecute){
+			this._afterExecute.push(afterExecute);
+		}
+		this._afterUndo = [];
+		if(afterUndo){
+			this._afterUndo.push(afterUndo);
+		}
 	}
 
 	get broker(){
@@ -24,9 +30,7 @@ class Command {
 		for(let command of this._commands) {
 			command.execute();
 		}
-		if (this._afterExecute) {
-			this._afterExecute.call(this._thisArg, ret);
-		}
+		this._callAfterExec();
 	}
 
 	undo() {
@@ -34,16 +38,26 @@ class Command {
 			let command = this._commands[i];
 			command.undo();
 		}
-		if (this._afterUndo) {
-			this._afterUndo.call(this._thisArg, ret);
-		}
+		this._callAfterUndo();
+	}
+
+	_callAfterExec(){
+		this._afterExecute.forEach((clbck)=>{
+			clbck.call(this._thisArg);
+		});
+	}
+
+	_callAfterUndo(){
+		this._afterUndo.forEach((clbck)=>{
+			clbck.call(this._thisArg);
+		});
 	}
 
 	set afterExecute(afterExecute) {
-		this._afterExecute = afterExecute;
+		this._afterExecute.push(afterExecute);
 	}
 	set afterUndo(afterUndo) {
-		this._afterUndo = afterUndo;
+		this._afterUndo.push(afterUndo);
 	}
 
 	appendCommand({command}){
@@ -65,17 +79,13 @@ class AtomicCommand extends Command {
 	}
 
 	execute() {
-		let ret = this._execute.call(this._thisArg);
-		if (this._afterExecute) {
-			this._afterExecute.call(this._thisArg, ret);
-		}
+		this._execute.call(this._thisArg);
+		this._callAfterExec();
 	}
 
 	undo() {
-		let ret = this._undo.call(this._thisArg);
-		if (this._afterUndo) {
-			this._afterUndo.call(this._thisArg, ret);
-		}
+		this._undo.call(this._thisArg);
+		this._callAfterUndo();
 	}
 
 	// NOTE: this method retruns a new command that contains 'this' and the command (this) is not changed
@@ -344,18 +354,18 @@ class CommandFactory {
 	}
 
 	toggleScript({script, forceAddRem}){
-				let scriptManager = this.scriptManager;
+		let scriptManager = this.scriptManager;
 
 		let addScript = ()=>{
 			let ok = scriptManager.addScript({script});
 			if(ok){
-				this.events.emit('GUID.script.add', { script });
+				this.events.emit('GUID.dom.script.add', { script });
 			}
 		};
 		let removeScript = ()=>{
 			let ok = scriptManager.removeScript({script});
 			if(ok){
-				this.events.emit('GUID.script.remove', { script });
+				this.events.emit('GUID.dom.script.remove', { script });
 			}
 		};
 

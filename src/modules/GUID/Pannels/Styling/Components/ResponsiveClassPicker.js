@@ -52,7 +52,7 @@ class ResponsiveClassPicker {
     for (let opt of this._getOptions({deviceName})) {
       this.select.appendChild(opt);
     }
-    console.log('#select refilled');
+    // console.log('#select refilled');
   }
 
   _determineResponsiveClass({element}) {
@@ -89,6 +89,7 @@ class ResponsiveClassPicker {
   }
 
   _subscribeToEvents() {
+    // TODO: change this (must not access to documentEditor._events)
     this.documentEditor.events.on('GUID.responsive.change', ({deviceName}) => {
       this._switchToDevice({deviceName});
 

@@ -88,9 +88,10 @@ class Styling {
       });
     });
 
-    let flexboxgridManager = new FlexboxgridManager({
-      documentEditor: this.documentEditor
-    });
+    // TODO: review this
+    // let flexboxgridManager = new FlexboxgridManager({
+    //   documentEditor: this.documentEditor
+    // });
 
     let boxManager = new BoxManager({
       documentEditor: this.documentEditor

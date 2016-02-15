@@ -1,3 +1,5 @@
+import "babel-polyfill";
+
 var IDE = window.IDE = {};
 
 require("./styles/common.css");
@@ -17,13 +19,11 @@ IDE.Core = new Core([
 
 IDE.Core.onReady(function(){
 	IDE.plugins.onPluginsLoaded(function(){
-		IDE.plugins.activate("GuidHistoryManager");
-		IDE.plugins.activate("preview");
+		IDE.plugins.activate("toolbar_plugin");
 		IDE.plugins.events.emit("all_activated");
 	});
 
 	IDE.plugins.loadMultiple([
-		"GuidHistoryManager",
-		"preview"
+		"toolbar_plugin"
 	]);
 });

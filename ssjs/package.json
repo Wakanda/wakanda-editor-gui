@@ -1,0 +1,17 @@
+{
+  "name": "ssjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "worker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "cheerio": "^0.20.0",
+    "express": "^4.13.4",
+    "mkdirp": "^0.5.1"
+  }
+}

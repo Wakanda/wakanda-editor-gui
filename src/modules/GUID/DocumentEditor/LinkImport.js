@@ -49,11 +49,6 @@ class LinkImport {
 		}
 	}
 
-	//TODO: this function is not yet used
-	removePolymerWidget(polymerWidget) {
-		let importHref = polymerWidget['import'];
-		this.removeImport(importHref);
-	}
 
 }
 

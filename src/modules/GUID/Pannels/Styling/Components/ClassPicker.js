@@ -116,7 +116,7 @@ class ClassPicker {
     }
 
     this.availableClasses = Array.from(ruleSet);
-    console.log('availables classes ', this.availableClasses);
+    // console.log('availables classes ', this.availableClasses);
   }
 
   _subscribeToDocumentEditorEvents() {
