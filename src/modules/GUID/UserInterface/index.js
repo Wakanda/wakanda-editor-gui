@@ -184,7 +184,7 @@ class UserInterface {
 		});
 		this._documentEditor.onAppendElement(() => {
 			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
+			// this.updateSelectedElementBorder();
 			this.clearHighLighting();
 		});
 		this._documentEditor.onRemoveElement(() => {
