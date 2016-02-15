@@ -79,6 +79,9 @@ class Outline {
           elementRef: parentElement
         });
       }
+    }).bind('refresh.jstree', ()=>{
+      this._updateSelectedElement();
+      this.$container.jstree('open_all');
     });
 
     this._refreshAll();
@@ -188,6 +191,18 @@ class Outline {
     }
   }
 
+  _updateSelectedElement(){
+    let element = this.documentEditor.selectedElement;
+    if(element){
+      let id = this._getIdFromElement(element);
+      if (id) {
+        let jstree = this.$container.jstree();
+        jstree.deselect_all();
+        jstree.select_node(id);
+      }
+    }
+  }
+
   _syncWithDocumentEditor() {
     this.$container.on('changed.jstree', (_, data) => {
       if (data.action === 'select_node') {
@@ -199,12 +214,7 @@ class Outline {
     });
 
     this.documentEditor.onElementSelected( ({element}) => {
-      let id = this._getIdFromElement(element);
-      if (id) {
-        let jstree = this.$container.jstree();
-        jstree.deselect_all();
-        jstree.select_node(id);
-      }
+      this._updateSelectedElement();
     });
 
     this.documentEditor.onAppendElement(({child}) => {
