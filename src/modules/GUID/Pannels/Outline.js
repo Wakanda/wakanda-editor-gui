@@ -19,7 +19,7 @@ class Outline {
 
     this.$container = $(this.container);
     this.$container.jstree({
-      plugins: ["contextmenu"],
+      plugins: ["contextmenu", "dnd"],
       contextmenu: {
         items: ($node) => {
           return {
@@ -36,10 +36,48 @@ class Outline {
           };
         }
       },
+      dnd : {
+        "is_draggable" : (data) => {
+          let node = data[0];
+          return node.id.toLowerCase() !== 'body';
+        },
+        "check_while_dragging": true
+      },
       core: {
         data: (_, callback) => {
           callback(this.jstreeData);
+        },
+        check_callback: function (operation, node, node_parent, node_position, more) {
+          if(node_parent.id === '#'){
+            return false;
+          }
         }
+      }
+    }).bind("move_node.jstree", (e, data) => {
+      let nodeId = data.node.id;
+      let newParent = data.parent;
+      let newPosition = data.position;
+
+      let parentNode = this.$container.jstree(true).get_node(newParent);
+      let brothers = parentNode.children;
+
+
+      let theNodeAfterId = brothers[newPosition + 1];
+
+      let element = this._getElementFromId(nodeId);
+
+      if(theNodeAfterId){
+        let theElementAfter = this._getElementFromId(theNodeAfterId);
+        this.documentEditor.moveBeforeElement({
+          element,
+          elementRef: theElementAfter
+        });
+      }else{
+        let parentElement = this._getElementFromId(newParent);
+        this.documentEditor.moveInsideElement({
+          element,
+          elementRef: parentElement
+        });
       }
     });
 
