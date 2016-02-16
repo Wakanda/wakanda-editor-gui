@@ -49,7 +49,9 @@ class UserInterface {
 
 	// TODO: with outline
 	highLightElement(element) {
-		this._highlightManager.highLightElement({element});
+		if(!this._documentEditor.rendering){
+			this._highlightManager.highLightElement({element});
+		}
 	}
 
 	onClearHighLighting(callBack) {
