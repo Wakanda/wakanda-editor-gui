@@ -168,7 +168,9 @@ class DocumentEditor {
 
 	}
 	// NOTE: important !
-	async initRenderCode(){
+	async _initRenderCode(){
+		this.rendering = true;
+
 		let sourceCode = helpers.documentToHtmlString({
 			document: this._sourceDocument
 		});
@@ -184,6 +186,8 @@ class DocumentEditor {
 
 		this._initBijection();
 
+		this.rendering = false;
+
 		return true;
 	}
 
@@ -192,6 +196,13 @@ class DocumentEditor {
 			sourceBody: this._sourceDocument.body,
 			renderBody: this._renderDocument.body
 		});
+	}
+	set rendering(rendering){
+		this._rendering = rendering;
+	}
+
+	get rendering(){
+		return this._rendering;
 	}
 
 	_initCommands() {
@@ -588,7 +599,7 @@ class DocumentEditor {
 	_emitSelectElement(){
 		this.renderedPromise
 			.then(()=>{
-				if(this.selectedElement){
+				if(! this.rendering && this.selectedElement){
 					this._events.emit('GUID.dom.select', {
 						element: this.selectedElement
 					});
@@ -731,7 +742,7 @@ class DocumentEditor {
 
 	executeOrReturn({command, justReturnCommand}){
 		let renderingFunc = () => {
-			this._renderedPromise = this.initRenderCode();
+			this._renderedPromise = this._initRenderCode();
 			this._emitSelectElement();
 		};
 		command.afterExecute = command.afterUndo = renderingFunc;
