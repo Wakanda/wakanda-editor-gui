@@ -169,16 +169,18 @@ class DocumentEditor {
 	}
 	// NOTE: important !
 	async _initRenderCode(){
-		this.rendering = true;
+		this.rendering ++;
 
 		let sourceCode = helpers.documentToHtmlString({
 			document: this._sourceDocument
 		});
+		// FIXME: find better way to do it
+		this._prenventAsync = ((this._prenventAsync || 0) + 1) % 5;
 
 		let {win, doc} = await DocumentEditor.createDocumentRenderCode({
 				sourceCode,
 				scriptTags: this._scriptTags,
-				projectPath: this.path
+				projectPath: this.path + `_${this._prenventAsync}.html`
 			});
 
 		this._renderWindow = win;
@@ -186,7 +188,7 @@ class DocumentEditor {
 
 		this._initBijection();
 
-		this.rendering = false;
+		this.rendering --;
 
 		return true;
 	}
@@ -198,11 +200,12 @@ class DocumentEditor {
 		});
 	}
 	set rendering(rendering){
+		// console.log(rendering);
 		this._rendering = rendering;
 	}
 
 	get rendering(){
-		return this._rendering;
+		return this._rendering || 0;
 	}
 
 	_initCommands() {
@@ -599,7 +602,7 @@ class DocumentEditor {
 	_emitSelectElement(){
 		this.renderedPromise
 			.then(()=>{
-				if(! this.rendering && this.selectedElement){
+				if(( ! this.rendering ) && this.selectedElement){
 					this._events.emit('GUID.dom.select', {
 						element: this.selectedElement
 					});
@@ -742,7 +745,9 @@ class DocumentEditor {
 
 	executeOrReturn({command, justReturnCommand}){
 		let renderingFunc = () => {
-			this._renderedPromise = this._initRenderCode();
+			this._renderedPromise = this.renderedPromise.then(()=>{
+				return this._initRenderCode();
+			});
 			this._emitSelectElement();
 		};
 		command.afterExecute = command.afterUndo = renderingFunc;

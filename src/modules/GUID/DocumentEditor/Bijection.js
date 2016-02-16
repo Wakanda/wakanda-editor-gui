@@ -82,6 +82,9 @@ class Bijection {
 	}
 	getRenderFromSource({element}){
 		let elementDomPath = Bijection.getDomPath({from: this._sourceBody, to: element});
+		if(! this._renderMap.has(elementDomPath)){
+			console.log(window.d._rendering);
+		}
 		return this._renderMap.get(elementDomPath);
 	}
 }
