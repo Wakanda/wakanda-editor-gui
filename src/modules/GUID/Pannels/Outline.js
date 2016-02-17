@@ -19,7 +19,7 @@ class Outline {
 
     this.$container = $(this.container);
     this.$container.jstree({
-      plugins: ["contextmenu"],
+      plugins: ["contextmenu", "dnd"],
       contextmenu: {
         items: ($node) => {
           return {
@@ -36,21 +36,60 @@ class Outline {
           };
         }
       },
+      dnd : {
+        "is_draggable" : (data) => {
+          let node = data[0];
+          return node.id.toLowerCase() !== 'body';
+        },
+        "check_while_dragging": true
+      },
       core: {
         data: (_, callback) => {
           callback(this.jstreeData);
+        },
+        check_callback: function (operation, node, node_parent, node_position, more) {
+          if(node_parent.id === '#'){
+            return false;
+          }
         }
       }
+    }).bind("move_node.jstree", (e, data) => {
+      let nodeId = data.node.id;
+      let newParent = data.parent;
+      let newPosition = data.position;
+
+      let parentNode = this.$container.jstree(true).get_node(newParent);
+      let brothers = parentNode.children;
+
+
+      let theNodeAfterId = brothers[newPosition + 1];
+
+      let element = this._getElementFromId(nodeId);
+
+      if(theNodeAfterId){
+        let theElementAfter = this._getElementFromId(theNodeAfterId);
+        this.documentEditor.moveBeforeElement({
+          element,
+          elementRef: theElementAfter
+        });
+      }else{
+        let parentElement = this._getElementFromId(newParent);
+        this.documentEditor.moveInsideElement({
+          element,
+          elementRef: parentElement
+        });
+      }
+    }).bind('refresh.jstree', ()=>{
+      this._updateSelectedElement();
+      this.$container.jstree('open_all');
     });
 
-    this.documentEditor.documentPromise.then((iframeDoc) => {
-      this._refreshAll();
-    });
+    this._refreshAll();
   }
 
   _refreshAll() {
     this._processBodyToTree({
-      bodyElement: this.documentEditor.document.body
+      bodyElement: this.documentEditor.sourceDocument.body
     });
   }
 
@@ -152,6 +191,18 @@ class Outline {
     }
   }
 
+  _updateSelectedElement(){
+    let element = this.documentEditor.selectedElement;
+    if(element){
+      let id = this._getIdFromElement(element);
+      if (id) {
+        let jstree = this.$container.jstree();
+        jstree.deselect_all();
+        jstree.select_node(id);
+      }
+    }
+  }
+
   _syncWithDocumentEditor() {
     this.$container.on('changed.jstree', (_, data) => {
       if (data.action === 'select_node') {
@@ -163,12 +214,7 @@ class Outline {
     });
 
     this.documentEditor.onElementSelected( ({element}) => {
-      let id = this._getIdFromElement(element);
-      if (id) {
-        let jstree = this.$container.jstree();
-        jstree.deselect_all();
-        jstree.select_node(id);
-      }
+      this._updateSelectedElement();
     });
 
     this.documentEditor.onAppendElement(({child}) => {

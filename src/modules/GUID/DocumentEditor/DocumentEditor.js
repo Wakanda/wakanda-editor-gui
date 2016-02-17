@@ -1,194 +1,338 @@
 import LinkImport from './LinkImport';
-import {Broker, TemporaryBroker} from './Broker';
-import {CommandFactory, Command} from './CommandFactory.js';
+import { Broker, TemporaryBroker } from './Broker';
+import { CommandFactory, Command } from './CommandFactory.js';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
+import Bijection from './Bijection';
+import { HttpClient } from "../../../../lib/aurelia-http-client";
 
-let executeOrReturn = ({command, justReturnCommand})=>{
-	if(justReturnCommand){
-		return command;
-	}else{
-		command.exec();
+// TODO: important: script management
+// TODO: important: import management
+
+const API_PORT = 3001;
+
+let helpers = {
+	postResJson: function(url, args){
+		return staticVars.httpClient.post(url, args)
+			.then(({response})=>{
+				return JSON.parse(response);
+			});
+	},
+	loadOnIframe: function({path, iframe}){	//returns the document on the iframe
+		return new Promise((res, rej) => {
+			iframe.onload = () => {
+				let winret = iframe.contentWindow || iframe.contentDocument || window.WIN;
+				let iframeDoc;
+				if (winret.document) {
+					iframeDoc = winret.document || window.DOCUMENT;
+				}
+				res({
+					win: winret,
+					doc: iframeDoc
+				});
+			};
+			iframe.src = path;
+		});
+	},
+	documentToHtmlString: function({document: doc}){
+		return doc.documentElement.outerHTML;
+	},
+	domElementToString({elements}){
+		let span = document.createElement('span');
+		Array.prototype.forEach.call(elements, (element)=>{
+			span.appendChild(element);
+		})
+		// span.appendChild(element);
+		return span.innerHTML;
 	}
-};
+}
 
-//TODO !important loaded ///./../.
+let staticVars = {};
+
+staticVars.hidenIframe = document.createElement('iframe');
+staticVars.shownIframe = document.createElement('iframe');
+staticVars.hidenIframe.classList.add('document-editor-iframe');
+staticVars.shownIframe.classList.add('document-editor-iframe');
+staticVars.hidenIframe.classList.add('source');
+staticVars.shownIframe.classList.add('render');
+
+staticVars.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
+
+staticVars.cloudEditorIDE.appendChild(staticVars.hidenIframe);
+staticVars.cloudEditorIDE.appendChild(staticVars.shownIframe);
+
+staticVars.httpClient = new HttpClient().configure(x => {
+	x.withHeader('Content-Type', 'application/json');
+});
+
+staticVars.currentDocumentEditor = null;
+
 
 class DocumentEditor {
 
+	static get currentDocumentEditor(){
+		return staticVars.currentDocumentEditor || null;
+	}
+
+	static async load({projectPath}){
+
+		let sourceDocOb = await DocumentEditor.createDocumentSourceCode({projectPath});
+
+		let sourceCode = helpers.documentToHtmlString({document: sourceDocOb.doc});
+
+		let renderDocOb = await DocumentEditor.createDocumentRenderCode({
+			sourceCode,
+			scriptTags: sourceDocOb.headScripts,
+			projectPath
+		});
+
+		staticVars.currentElement = new DocumentEditor({
+			sourceDocument 	: sourceDocOb.doc,
+			sourceWindow 		: sourceDocOb.win,
+			renderDocument 	: renderDocOb.doc,
+			renderWindow		: renderDocOb.win,
+			scriptTags			:	sourceDocOb.headScripts,
+			projectPath
+		});
+
+
+		return staticVars.currentElement;
+	}
+
+	static async createDocumentRenderCode( { sourceCode, scriptTags, projectPath: projectFile } ){
+
+		let {renderUrl} = await helpers.postResJson(`http://${location.hostname}:${API_PORT}/getRenderCode`, {
+			sourceCode, scriptTags, projectFile
+		});
+		return await helpers.loadOnIframe({
+			path: renderUrl,
+			iframe: staticVars.shownIframe
+		});
+
+	}
+
+	static async createDocumentSourceCode({projectPath}){
+
+		let {sourceUrl, headScripts} = await helpers.postResJson(`http://${location.hostname}:${API_PORT}/getSourceCode`, {
+			projectFile: projectPath
+		});
+
+		let {win, doc} = await helpers.loadOnIframe({
+			path: sourceUrl,
+			iframe: staticVars.hidenIframe
+		});
+
+		return { win, doc, headScripts };
+
+	}
+
 	//TODO rev
-	constructor({broker = new Broker(), path}) {
-		// let _EventEmitter = require('../../../../lib/micro-events.js');
-		// this.events = new _EventEmitter();
+	constructor({scriptTags, broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow, projectPath}) {
 
-		this.events = new MultiEvent();
+		this._events = new MultiEvent();
 
-		this.mainBroker = broker;
-		this.temporaryBroker = new TemporaryBroker();
-		this.iframe = document.createElement('iframe');
-		this.iframe.classList.add('document-editor-iframe');
-		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
-		this.cloudEditorIDE.appendChild(this.iframe);
+		this._mainBroker = broker;
+		this._temporaryBroker = new TemporaryBroker();
 
-		console.log(path);
-		this._path = path;
-		this.documentPromise = this.loadIframe({path})
-			.then((iframeDoc) => {
-				this.document = iframeDoc;
+		this._renderDocument = renderDocument;
+		this._sourceDocument = sourceDocument;
 
-				//FIXME - Ugly fix to force html and body to fill iframe properly
-				this.document.documentElement.style.height = '100%';
-				this.document.body.style.margin = '0';
+		this._renderWindow = renderWindow;
+		this._sourceWindow = sourceWindow;
 
-				this.styleManager = new StyleManager({
-					document: iframeDoc
-				});
+		this._scriptTags = scriptTags;
+		this._projectPath = projectPath;
+		// this._path = projectPath;
 
-				this.linkImport = new LinkImport({
-					document: iframeDoc
-				});
+		//FIXME - Ugly fix to force html and body to fill iframe properly
+		renderDocument.documentElement.style.height = '100%';
+		renderDocument.body.style.margin = '0';
 
-				this.scriptManager = new ScriptManager({
-					document: iframeDoc
-				});
+		this._selectedElement = null;
 
-				this.selectedElement = /*iframeDoc.body || */ null;
-				this.initEvents();
-				this.initCommands();
+		this.styleManager = new StyleManager({
+			document: this._renderDocument
+		});
 
-				return iframeDoc;
+		// this.linkImport = new LinkImport({
+		// 	document: iframeDoc
+		// });
+
+		// this.scriptManager = new ScriptManager({
+		// 	document: iframeDoc
+		// });
+		this._initBijection();
+		this._initEvents();
+		this._initCommands();
+
+	}
+	// NOTE: important !
+	async _initRenderCode(){
+		this.rendering ++;
+
+		let sourceCode = helpers.documentToHtmlString({
+			document: this._sourceDocument
+		});
+		// FIXME: find better way to do it
+		this._prenventAsync = ((this._prenventAsync || 0) + 1) % 5;
+
+		let {win, doc} = await DocumentEditor.createDocumentRenderCode({
+				sourceCode,
+				scriptTags: this._scriptTags,
+				projectPath: this.path + `_${this._prenventAsync}.html`
 			});
+
+		this._renderWindow = win;
+		this._renderDocument = doc;
+
+		this._initBijection();
+
+		this.rendering --;
+
+		return true;
 	}
 
-	get path(){
-		return this._path;
-	}
-
-	loadIframe({path}) {
-
-		return new Promise((res, rej) => {
-			if (!path) {
-				rej('invalid path');
-			} else {
-				this.iframe.onload = () => {
-					this.window = this.iframe.contentWindow || this.iframe.contentDocument || window.WIN;
-					let iframeDoc;
-					if (this.window.document) {
-						iframeDoc = this.window.document || window.DOCUMENT;
-					}
-					res(iframeDoc);
-				};
-				this.iframe.src = path;
-			}
+	_initBijection(){
+		this._bijection = new Bijection({
+			sourceBody: this._sourceDocument.body,
+			renderBody: this._renderDocument.body
 		});
 	}
-
-	deselectElement() {
-
-		if (this.selectedElement) {
-			this.events.emit('GUID.dom.deselect' , {
-				element: this.selectedElement
-			});
-			this.selectedElement = null;
-		}
+	set rendering(rendering){
+		// console.log(rendering);
+		this._rendering = rendering;
 	}
 
-	onElementDeselected(callBack) {
-		this.events.on('GUID.dom.deselect', callBack);
+	get rendering(){
+		return this._rendering || 0;
 	}
 
-	onReady(callBack) {
-		this.documentPromise.then(() => {
-			callBack(this);
-		});
-		return this;
-	}
-
-	get document() {
-		if (this._document) {
-			return this._document;
-		} else {
-			throw "trying to access to ducument before loading done";
-		}
-	}
-	set document(doc) {
-		if (this._document) {
-			throw "you've alrady set the attribute document";
-		} else {
-			this._document = doc;
-		}
-	}
-
-	initCommands() {
+	_initCommands() {
 		this.commandFactory = new CommandFactory({
-			broker: this.mainBroker,
+			broker: this._mainBroker,
 
-			events: this.events,
+			events: this._events,
 			linkImport: this.linkImport,
 			scriptManager: this.scriptManager,
 			styleManager: this.styleManager
 		});
 	}
 
-	initEvents() {
+	_initEvents() {
 		// GUID.document.resize
 		window.onresize = (event) => {
 			let {width, height} = this.dimensions
 
-			this.events.emit('GUID.document.resize', {
+			this._events.emit('GUID.document.resize', {
 				width, height, event
 			});
 		};
-		this.window.onscroll = () => {
-			this.events.emit('GUID.document.scroll', this.dimensions);
+		this._renderWindow.onscroll = () => {
+			this._events.emit('GUID.document.scroll', this.dimensions);
 		}
 	}
+
+	get path(){
+		return this._projectPath;
+	}
+
+	get broker(){
+		return this._mainBroker
+	}
+
+	get sourceDocument() {
+		return this._sourceDocument;
+	}
+
+	get renderDocument(){
+		return this._renderDocument;
+	}
+
+	get dimensions(){
+		let WINSize = this._renderDocument.documentElement.getBoundingClientRect();
+		let width = (this._renderDocument.documentElement.scrollHeight > this._renderDocument.documentElement.clientHeight) ? WINSize.width : this._renderWindow.innerWidth;
+		let height = (this._renderDocument.documentElement.scrollWidth > this._renderDocument.documentElement.clientWidth) ? WINSize.height : this._renderWindow.innerHeight;
+
+		return {height, width};
+	}
+
+	get selectedElement(){
+		return this._selectedElement || null;
+	}
+	// NOTE: old scripts management
+	get scripts(){
+		return this.scriptManager.scripts;
+	}
+
+	get scriptTags(){
+		return this._scriptTags;
+	}
+
+	get events(){
+		return this._events;
+	}
+
+	get renderedPromise(){
+		if(this._renderedPromise){
+			return this._renderedPromise.then(()=>true);
+		}
+		else{
+			return Promise.resolve(true);
+		}
+	}
+
+	deselectElement() {
+		if (this._selectedElement) {
+			this._events.emit('GUID.dom.deselect' , {
+				element: this._selectedElement
+			});
+			this._selectedElement = null;
+		}
+	}
+
+	onElementDeselected(callBack) {
+		this._events.on('GUID.dom.deselect', callBack);
+	}
+
 	changeDocumentSize({height:h, width:w, minWidth:mw}){
 		if(w){
 			//Fix for desktop width on responsiveSelector
 			w = w === "100%" ? null : w;
 
-			this.cloudEditorIDE.style.width = w;
+			staticVars.cloudEditorIDE.style.width = w;
 		}
 		if(h){
-			this.cloudEditorIDE.style.height = h;
+			staticVars.cloudEditorIDE.style.height = h;
 		}
 
 		//Min width has to be removed if not passed to method as parameter
-		this.cloudEditorIDE.style['min-width'] = mw ? mw : null;
+		staticVars.cloudEditorIDE.style['min-width'] = mw ? mw : null;
 
 		let {height, width} = this.dimensions;
 
-		this.events.emit('GUID.document.resize', {width, height});
+		this._events.emit('GUID.document.resize', {width, height});
 	}
+
 	onDocumentSizeChange(callBack) {
-		this.events.on('GUID.document.resize', callBack);
+		this._events.on('GUID.document.resize', callBack);
 	}
+
 	onDocumentScroll(callBack) {
-		this.events.on('GUID.document.scroll', callBack);
-	}
-	get dimensions(){
-		let WINSize = this.document.documentElement.getBoundingClientRect();
-		let width = (this.document.documentElement.scrollHeight > this.document.documentElement.clientHeight) ? WINSize.width : this.window.innerWidth;
-		let height = (this.document.documentElement.scrollWidth > this.document.documentElement.clientWidth) ? WINSize.height : this.window.innerHeight;
-
-		return {height, width};
+		this._events.on('GUID.document.scroll', callBack);
 	}
 
-	removeElement({element, justReturnCommand = false}) {
+	removeElement({element = this.selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.removeElement({element});
-		let parent = element.parentElement;
-
-		return executeOrReturn({command, justReturnCommand});
+		command.afterExecute = ()=>{
+			this.deselectElement();
+		};
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
-	removeSelectedElement(justReturnCommand = false) {
-		this.removeElement({
-			element: this.selectedElement
-		});
+	onRemoveElement(callBack) {
+		this._events.on('GUID.dom.element.remove', callBack);
 	}
-
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
 		let removeCommand = this.commandFactory.removeElement({ element	});
@@ -201,7 +345,7 @@ class DocumentEditor {
 			commands: [removeCommand, appendCommand]
 		});
 
-		return executeOrReturn({command: finalCommand, justReturnCommand});
+		return this.executeOrReturn({command: finalCommand, justReturnCommand});
 	}
 
 	moveAfterElement({element, elementRef, justReturnCommand = false}) {
@@ -225,49 +369,40 @@ class DocumentEditor {
 			commands: [removeCommand, appendCommand]
 		});
 
-		return executeOrReturn({command: finalCommand, justReturnCommand});
+		return this.executeOrReturn({command: finalCommand, justReturnCommand});
 	}
 
-	prependElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
+	prependElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
 			element, elementRef
 		});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
-	appendAfterElement({element, elementRef = this.selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
+	appendAfterElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
 		let command = this.commandFactory.prependElement({
 			element,
 			elementRef: elementRef.nextSibling
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-	}
-
-	temporaryAppendElement({element, parent = this.selectedElement}){
-		let command = this.commandFactory.appendElement({
-			parent,
-			child: element
-		});
-		this.temporaryBroker.exec({command});
-	}
-
-	appendElement({element, parent = this.selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.appendElement({
-			parent,
-			child: element
-		});
-
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
 	onAppendElement(callBack) {
-		this.events.on('GUID.dom.element.append', callBack);
+		this._events.on('GUID.dom.element.append', callBack);
 	}
 
-	onRemoveElement(callBack) {
-		this.events.on('GUID.dom.element.remove', callBack);
+	appendElement({element, parent = this._selectedElement, justReturnCommand = false}) {
+		let command = this.commandFactory.appendElement({
+			parent,
+			child: element
+		});
+		command.afterUndo = ()=>{
+			this.deselectElement();
+		};
+
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
 	getElementStyleAttribute({element, attribute}) {
@@ -279,29 +414,29 @@ class DocumentEditor {
 
 	getSelectedElementStyleAttribute({attribute}){
 		return this.styleManager.getInlineStyleAttribute({
-			element: this.selectedElement,
+			element: this._selectedElement,
 			attribute
 		});
 	}
 
 	changeSelectedElementStyleAttribute({attribute, value, justReturnCommand = false}) {
-		if (this.selectedElement) {
+		if (this._selectedElement) {
 			let command = this.commandFactory.changeStyleAttribute({
-				element: this.selectedElement,
+				element: this._selectedElement,
 				attribute,
 				value
 			});
 
-			return executeOrReturn({command, justReturnCommand});
+			return this.executeOrReturn({command, justReturnCommand});
 		}
 	}
 
 	onElementStyleAttributeChange(callBack) {
-		this.events.on('GUID.dom.style.change', callBack);
+		this._events.on('GUID.dom.style.change', callBack);
 	}
 
 	//to remove attribute set value to null
-	changeElementAttribute({element = this.selectedElement, attribute, value, justReturnCommand = false}) {
+	changeElementAttribute({element = this._selectedElement, attribute, value, justReturnCommand = false}) {
 		if(attribute === 'class'){
 			console.error('to chnage class attribute use class methods');
 			return false;
@@ -316,10 +451,10 @@ class DocumentEditor {
 			value
 		});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
 
 	}
-	changeElementAttributes({element = this.selectedElement, elements = [], attributes, values, justReturnCommand = false}){
+	changeElementAttributes({element = this._selectedElement, elements = [], attributes, values, justReturnCommand = false}){
 		let len = attributes.length;
 		if(len === 0 || len !== values.length || (elements && len !== elements.length)){
 			console.error("somth' goew wrong here");
@@ -339,13 +474,15 @@ class DocumentEditor {
 		}
 		let finalCommand = this.commandFactory.regroupCommands({commands});
 
-		return executeOrReturn({command: finalCommand, justReturnCommand});
+		return this.executeOrReturn({command: finalCommand, justReturnCommand});
 	}
+
 	onElementAttributeChange(callBack) {
-		this.events.on('GUID.dom.element.changeAttribute', callBack);
+		this._events.on('GUID.dom.element.changeAttribute', callBack);
 	}
+
 	onElementChange(callBack){
-		this.events.on('GUID.dom.element.*', function({element, child, parent}){
+		this._events.on('GUID.dom.element.*', function({element, child, parent}){
 			let eventName = this.eventName;
 			let changeType = eventName.split('.').pop(); //		append, remove, changeText
 			if(changeType === 'append' || changeType === 'remove'){
@@ -357,7 +494,7 @@ class DocumentEditor {
 		});
 	}
 
-	addRemoveClasses({classesToAdd, classesToRemove, element = this.selectedElement, justReturnCommand = false}){
+	addRemoveClasses({classesToAdd, classesToRemove, element = this._selectedElement, justReturnCommand = false}){
 		let addCommands = classesToAdd.map((classToadd)=>{
 			return this.commandFactory.toggleClass({
 				element,
@@ -376,46 +513,49 @@ class DocumentEditor {
 
 		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
-	toggleClass({className, element = this.selectedElement, justReturnCommand = false}) {
+	toggleClass({className, element = this._selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className
 		});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
 
 	}
-	addClass({className, element = this.selectedElement, justReturnCommand = false}) {
+
+	addClass({className, element = this._selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: true
 		});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
+	}
 
-	}
 	onElementClassadd(callBack) {
-		this.events.on('GUID.dom.class.add', callBack);
+		this._events.on('GUID.dom.class.add', callBack);
 	}
-	removeClass({className, element = this.selectedElement, justReturnCommand = false}) {
+
+	removeClass({className, element = this._selectedElement, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: false
 		});
 
-		return executeOrReturn({command, justReturnCommand});
+		return this.executeOrReturn({command, justReturnCommand});
+	}
 
-	}
 	onElementClassRemove(callBack) {
-		this.events.on('GUID.dom.class.remove', callBack);
+		this._events.on('GUID.dom.class.remove', callBack);
 	}
+
 	onElementClassChange(callBack){
-		this.events.on('GUID.dom.class.*', function({element, className}){
+		this._events.on('GUID.dom.class.*', function({element, className}){
 			let eventName = this.eventName; // GUID.dom.class.remove or GUID.dom.class.add
 			let changeType = eventName.split('.').pop(); //		add/remove
 			callBack({changeType, element, className});
@@ -423,36 +563,55 @@ class DocumentEditor {
 	}
 
 	getElementFromPoint(coords) {
-		let {
-			x, y
-		} = coords;
-		return this.document.elementFromPoint(x, y);
+		let {	x, y } = coords;
+		let renderElement = this._renderDocument.elementFromPoint(x, y);
+		return this._bijection.getSourceFromRender({element: renderElement});
 	}
+
 	getSelectedElementComputedStyle() {
-		if(this.selectedElement){
-			return this.window.getComputedStyle(this.selectedElement);
+		let selectedElementSource = this._selectedElement;
+		if(selectedElementSource){
+			return this._renderWindow.getComputedStyle(selectedElementSource);
 		}else{
 			console.warn('no selected element');
 			return null;
 		}
 	}
+
 	getselectedElementBoundingClientRect() {
-		if(this.selectedElement){
-			return this.selectedElement.getBoundingClientRect();
+		if(this._selectedElement){
+			return this.getBoundingClientRect({element: this._selectedElement});
 		}else{
 			console.warn('no selected element');
 			return null;
 		}
+	}
+
+	getBoundingClientRect({element}){
+		let renderElement = this._bijection.getRenderFromSource({element});
+		return renderElement.getBoundingClientRect();
 	}
 
 	selectElement({element}) {
 		if (element) {
-			this.selectedElement = element;
-
-			this.events.emit('GUID.dom.select', {
-				element: this.selectedElement
-			});
+			this._selectedElement = element;
+			this._emitSelectElement();//after rendering
 		}
+	}
+
+	_emitSelectElement(){
+		this.renderedPromise
+			.then(()=>{
+				if(( ! this.rendering ) && this.selectedElement){
+					this._events.emit('GUID.dom.select', {
+						element: this.selectedElement
+					});
+				}
+			});
+	}
+
+	onElementSelected(callBack) {
+		this._events.on('GUID.dom.select', callBack);
 	}
 
 	selectElementByPoint(coords) {
@@ -463,17 +622,13 @@ class DocumentEditor {
 	}
 
 	selectParentOfSelected() {
-		let parent = this.selectedElement.parentElement;
+		let parent = this._selectedElement.parentElement;
 		if (parent) {
-			this.selectedElement = parent;
-			this.events.emit('GUID.dom.select', {
+			this._selectedElement = parent;
+			this._events.emit('GUID.dom.select', {
 				element: parent
 			});
 		}
-	}
-
-	onElementSelected(callBack) {
-		this.events.on('GUID.dom.select', callBack);
 	}
 
 	toggleImportHtml({href, justReturnCommand = false}){
@@ -481,20 +636,20 @@ class DocumentEditor {
 			href
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
+
 	addImportHtml({href, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleImport({
 			href,
 			forceAddRem: true
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
+
 	onAddImport(callBack) {
-		this.events.on('GUID.dom.import.add', callBack);
+		this._events.on('GUID.dom.import.add', callBack);
 	}
 
 	removeImportHtml({href, justReturnCommand = false}) {
@@ -503,15 +658,15 @@ class DocumentEditor {
 			forceAddRem: false
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
+
 	onRemoveImport(callBack) {
-		this.events.on('GUID.dom.import.remove', callBack);
+		this._events.on('GUID.dom.import.remove', callBack);
 	}
 
 	// FIXME:
-	getElementText({element = this.selectedElement}){
+	getElementText({element = this._selectedElement}){
 		let childNodes = element.childNodes;
 		// NOTE: tested only on chrome
 		if(childNodes.length === 1 && childNodes[0].nodeType ===3 ){
@@ -520,21 +675,20 @@ class DocumentEditor {
 			return null;
 		}
 	}
-	changeElementText({element = this.selectedElement, text, justReturnCommand = false}){
+
+	changeElementText({element = this._selectedElement, text, justReturnCommand = false}){
 		let command = this.commandFactory.changeElementText({
 			element,
 			text
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-	}
-	onElementTextChange(callBack){
-		this.events.on('GUID.dom.element.changeText', callBack);
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
-	get scripts(){
-		return this.scriptManager.scripts;
+	onElementTextChange(callBack){
+		this._events.on('GUID.dom.element.changeText', callBack);
 	}
+
 	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({
@@ -551,21 +705,21 @@ class DocumentEditor {
 
 		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
 
+	// NOTE: old script management
 	addScript({script, justReturnCommand = false}) {
 		let command = this.commandFactory.toggleScript({
 			script,
 			forceAddRem: true
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
+
 	onAddScript(callBack) {
-		this.events.on('GUID.script.add', callBack);
+		this._events.on('GUID.dom.script.add', callBack);
 	}
 
 	removeScript({script, justReturnCommand = false}) {
@@ -574,29 +728,57 @@ class DocumentEditor {
 			forceAddRem: false
 		});
 
-		return executeOrReturn({command, justReturnCommand});
-
+		return this.executeOrReturn({command, justReturnCommand});
 	}
+
 	onRemoveScript(callBack) {
-		this.events.on('GUID.script.remove', callBack);
+		this._events.on('GUID.dom.script.remove', callBack);
 	}
 
 	onChangeScript(callBack){
-		this.events.on('GUID.script.*', function({script}){
+		this._events.on('GUID.dom.script.*', function({script}){
 			let eventName = this.eventName;
 			let changeType = eventName.split('.').pop();
 			callBack({changeType, script});
 		});
 	}
 
-	// TODO: improve me
-	get htmlClone(){
-		this.temporaryBroker.setToinitialState();
-		let html = this.document.children[0];
-		let cloneHtml = html.cloneNode(true);
-		this.temporaryBroker.setToFinalState();
+	executeOrReturn({command, justReturnCommand}){
+		let renderingFunc = () => {
+			this._renderedPromise = this.renderedPromise.then(()=>{
+				return this._initRenderCode();
+			});
+			this._emitSelectElement();
+		};
+		command.afterExecute = command.afterUndo = renderingFunc;
+		if(justReturnCommand){
+			return command;
+		}else{
+			command.exec();
+		}
+	}
 
-		return cloneHtml;
+	async save(){
+		return await this.saveAs({projectPath: this.path});
+	}
+
+	async saveAs({projectPath}){
+		let sourceCode = this._sourceDocument.documentElement.outerHTML;
+		let scriptTags = this._scriptTags;
+		return await helpers.postResJson(`http://${location.hostname}:${API_PORT}/saveProject`,{
+			sourceCode, scriptTags, projectFile: projectPath
+		});
+	}
+
+	temporaryAppendElement({element, parent = this._selectedElement}){
+		let command = this.commandFactory.appendElement({
+			parent,
+			child: element
+		});
+		command.afterUndo = ()=>{
+			this.deselectElement();
+		};
+		this._temporaryBroker.exec({command});
 	}
 
 }

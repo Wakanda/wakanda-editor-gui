@@ -14,3 +14,11 @@
 .page-toolbar-item-redo{
 	background-image: url("./images/redo_disabled.png");
 }
+
+.page-toolbar-item-save-enabled  {
+	background-image: url("./images/save.png");
+}
+
+.page-toolbar-item-save {
+	background-image: url("./images/save.png");
+}
