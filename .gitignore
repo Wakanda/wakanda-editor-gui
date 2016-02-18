@@ -34,4 +34,5 @@ build/
 workspace/*
 index.html
 
-projects/
+projects/*
+!projects/.gitkeep
