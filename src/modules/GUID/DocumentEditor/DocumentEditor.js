@@ -388,10 +388,18 @@ class DocumentEditor {
 	}
 
 	appendAfterElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
-		let command = this.commandFactory.prependElement({
-			element,
-			elementRef: elementRef.nextSibling
-		});
+		let command;
+		if(elementRef.nextSibling){
+			command = this.commandFactory.prependElement({
+				element,
+				elementRef: elementRef.nextSibling
+			});
+		}else{
+			command = this.commandFactory.appendElement({
+				parent: elementRef.parentElement,
+				child: element
+			});
+		}
 
 		return this.executeOrReturn({command, justReturnCommand});
 	}
