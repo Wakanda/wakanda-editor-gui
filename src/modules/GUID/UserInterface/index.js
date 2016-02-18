@@ -398,7 +398,7 @@ class UserInterface {
 
 			let tagName = element ? element.tagName.toLowerCase() : null;
 			if(this.isDraggingElement && element && tagName != 'body' && tagName != 'html') {
-				let elRect = element.getBoundingClientRect();
+				let elRect = this._documentEditor.getBoundingClientRect({element});
 				let coef = 0.2;
 
 				if (y >= Math.floor(elRect.top) && y <= Math.ceil(elRect.top + coef * elRect.height)) {
