@@ -165,6 +165,7 @@ class UserInterface {
 		});
 
 		this._documentEditor.onDocumentScroll(()=>{
+			this.clearHighLighting();
 			this.updateSelectedElementBorder();
 		});
 

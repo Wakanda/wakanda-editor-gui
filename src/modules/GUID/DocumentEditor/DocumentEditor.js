@@ -188,6 +188,8 @@ class DocumentEditor {
 
 		this._initBijection();
 
+		this._initRenderIframeEvents();
+
 		this.rendering --;
 
 		return true;
@@ -228,6 +230,11 @@ class DocumentEditor {
 				width, height, event
 			});
 		};
+
+		this._initRenderIframeEvents();
+	}
+
+	_initRenderIframeEvents(){
 		this._renderWindow.onscroll = () => {
 			this._events.emit('GUID.document.scroll', this.dimensions);
 		}
