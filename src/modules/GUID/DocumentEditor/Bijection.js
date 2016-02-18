@@ -79,7 +79,7 @@ class Bijection {
 	getSourceFromRender({element: renderElement}){
 		// NOTE: temporarty (for angular directives, not nested, and that not replace tag name)
 		let sourceElement = null;
-		while ( ( !sourceElement ) && (renderElement.tagName.toLowerCase() !== 'html') ) {
+		while ( ( !sourceElement ) && (renderElement !== null) && (renderElement.tagName.toLowerCase() !== 'html') ) {
 			let elementDomPath = Bijection.getDomPath({from: this._renderBody, to: renderElement});
 			sourceElement = this._sourceMap.get(elementDomPath) || null;
 			renderElement = renderElement.parentElement;
