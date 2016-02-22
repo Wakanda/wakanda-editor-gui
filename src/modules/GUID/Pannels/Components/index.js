@@ -25,8 +25,8 @@ class ComponentPanel {
       let div = document.createElement('div');
       div.innerHTML = c.name;
 
-      div.renderComponent = () => {
-        return c.createElement();
+      div.getComponent = () => {
+        return c;
       };
 
       this.container.appendChild(div);

@@ -1,5 +1,8 @@
 import Broker from './Broker';
 
+
+// TODO: !important : change afterUndo when appending commands
+
 class Command {
 	constructor({commands, afterExecute, afterUndo, thisArg, broker}) {
 		this._commands = commands;

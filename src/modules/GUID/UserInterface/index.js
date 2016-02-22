@@ -217,7 +217,7 @@ class UserInterface {
 
 		this._dragulaManager.onCloned((clone, original) => {
     console.log('Dragula event : onCloned', clone, original);
-			clone.renderComponent = original.renderComponent;
+			clone.getComponent = original.getComponent;
 
 			//FIXME
       clone.style.border = '1px solid red';
@@ -244,27 +244,60 @@ class UserInterface {
 						availableElement = this._documentEditor.document.body;
 					}
 
+					let componentToInsert = element.getComponent();
+					let insertCommand = null;
+
 					switch (this.dropPosition) {
 						case 'inside':
-							this._documentEditor.appendElement({
-								element: element.renderComponent(),
-								parent: availableElement
+							insertCommand = this._documentEditor.appendElement({
+								element: componentToInsert.createElement(),
+								parent: availableElement,
+								justReturnCommand : true
 							});
 							break;
 						case 'top':
-							this._documentEditor.prependElement({
-								element: element.renderComponent(),
-								elementRef: availableElement
+							insertCommand = this._documentEditor.prependElement({
+								element: componentToInsert.createElement(),
+								elementRef: availableElement,
+								justReturnCommand : true
 							});
 							break;
 						case 'bottom':
-							this._documentEditor.appendAfterElement({
-								element: element.renderComponent(),
-								elementRef: availableElement
+							insertCommand = this._documentEditor.appendAfterElement({
+								element: componentToInsert.createElement(),
+								elementRef: availableElement,
+								justReturnCommand : true
 							});
 							break;
 						default:
 							console.error('Invalid drop position');
+					}
+
+					if(insertCommand){
+						// TODO: temporary before adding script manager
+						componentToInsert.jsDependencies
+							.map((scriptUrl)=>{
+								return `<script src="${scriptUrl}"></script>`;
+							})
+							.forEach((scriptTag)=>{
+								// NOTE: tempo
+								if(this._documentEditor._scriptTags.indexOf(scriptTag) === -1){
+									this._documentEditor._scriptTags.push(scriptTag);
+								}
+							});
+
+						if(componentToInsert._angularApplicationName){
+							let angularAppDeclaration = `angular.module('app', ['${componentToInsert._angularApplicationName}']);`;
+							let angularApplicationScript = `<script type="text/javascript">${angularAppDeclaration}</script>`;
+
+							// NOTE: tempo
+							if(this._documentEditor._scriptTags.indexOf(angularApplicationScript) === -1){
+								this._documentEditor._scriptTags.push(angularApplicationScript);
+							}
+						}
+
+						insertCommand.exec();
+
 					}
 				}
 

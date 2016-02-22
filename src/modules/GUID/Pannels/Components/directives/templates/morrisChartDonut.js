@@ -3,7 +3,18 @@ let componentJson = {
   manifest: {
     name: 'Morris Chart Donut',
     properties:[],
-    methodes: []
+    methodes: [],
+    bowerDependencies : {
+      "angular-morris-chart": "~1.2.0"
+    },
+    jsDependencies : [
+      "/projects/bower_components/angular/angular.min.js",
+      "/projects/bower_components/jquery/dist/jquery.js",
+      "/projects/bower_components/raphael/raphael.js",
+      "/projects/bower_components/morris.js/morris.js",
+      "/projects/bower_components/angular-morris-chart/src/angular-morris-chart.min.js"
+    ],
+    angularApplicationName : "angular.morris-chart",
   },
   template: `<div donut-chart="" donut-data="[
   {label: &quot;Download Sales&quot;, value: 12},

@@ -704,6 +704,7 @@ class DocumentEditor {
 		this._events.on('GUID.dom.element.changeText', callBack);
 	}
 
+	// TODO: review duplications
 	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({

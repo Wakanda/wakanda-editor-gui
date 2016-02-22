@@ -23,13 +23,20 @@ class Component {
 
     manifest.properties.forEach((propertyAsJson)=>{
       this._propertiesMap.set(propertyAsJson.name, new Property({propertyAsJson}));
-    })
+    });
+
+    this._jsDependencies = manifest.jsDependencies;
+    this._angularApplicationName = manifest.angularApplicationName;
   }
 
   get name(){
     return this._name;
   }
 
+  get jsDependencies(){
+    return this._jsDependencies || [];
+  }
+  
   get importHref(){
     return importHref || null;
   }

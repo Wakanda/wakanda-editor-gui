@@ -3,7 +3,18 @@ let componentJson = {
   manifest: {
     name: 'Morris Chart Line',
     properties:[],
-    methodes: []
+    methodes: [],
+    bowerDependencies : {
+      "angular-morris-chart": "~1.2.0"
+    },
+    jsDependencies : [
+      "/projects/bower_components/angular/angular.min.js",
+      "/projects/bower_components/jquery/dist/jquery.js",
+      "/projects/bower_components/raphael/raphael.js",
+      "/projects/bower_components/morris.js/morris.js",
+      "/projects/bower_components/angular-morris-chart/src/angular-morris-chart.min.js"
+    ],
+    angularApplicationName : "angular.morris-chart",
   },
   template: `<div line-chart="" line-data="[
       { y: &quot;2006&quot;, a: 100, b: 90 },
