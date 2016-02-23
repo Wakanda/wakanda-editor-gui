@@ -11,9 +11,11 @@ import { HttpClient } from "../../../../lib/aurelia-http-client";
 // TODO: important: import management
 
 const API_PORT = 3001;
+const API_BASE = `http://${location.hostname}:${API_PORT}/`;
 
 let helpers = {
-	postResJson: function(url, args){
+	postResJson: function(req, args){
+		let url = API_BASE + req;
 		return staticVars.httpClient.post(url, args)
 			.then(({response})=>{
 				return JSON.parse(response);
@@ -102,7 +104,7 @@ class DocumentEditor {
 
 	static async createDocumentRenderCode( { sourceCode, scriptTags, projectPath: projectFile } ){
 
-		let {renderUrl} = await helpers.postResJson(`http://${location.hostname}:${API_PORT}/getRenderCode`, {
+		let {renderUrl} = await helpers.postResJson('getRenderCode', {
 			sourceCode, scriptTags, projectFile
 		});
 		return await helpers.loadOnIframe({
@@ -114,7 +116,7 @@ class DocumentEditor {
 
 	static async createDocumentSourceCode({projectPath}){
 
-		let {sourceUrl, headScripts} = await helpers.postResJson(`http://${location.hostname}:${API_PORT}/getSourceCode`, {
+		let {sourceUrl, headScripts} = await helpers.postResJson('getSourceCode', {
 			projectFile: projectPath
 		});
 
@@ -563,9 +565,13 @@ class DocumentEditor {
 	}
 
 	getElementFromPoint(coords) {
-		let {	x, y } = coords;
-		let renderElement = this._renderDocument.elementFromPoint(x, y);
-		return this._bijection.getSourceFromRender({element: renderElement});
+		if(this.rendering){
+			return null;
+		}else{
+			let {	x, y } = coords;
+			let renderElement = this._renderDocument.elementFromPoint(x, y);
+			return this._bijection.getSourceFromRender({element: renderElement});
+		}
 	}
 
 	getSelectedElementComputedStyle() {
@@ -765,7 +771,7 @@ class DocumentEditor {
 	async saveAs({projectPath}){
 		let sourceCode = this._sourceDocument.documentElement.outerHTML;
 		let scriptTags = this._scriptTags;
-		return await helpers.postResJson(`http://${location.hostname}:${API_PORT}/saveProject`,{
+		return await helpers.postResJson('saveProject',{
 			sourceCode, scriptTags, projectFile: projectPath
 		});
 	}
