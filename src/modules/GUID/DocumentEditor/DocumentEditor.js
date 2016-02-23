@@ -352,12 +352,18 @@ class DocumentEditor {
 
 	moveAfterElement({element, elementRef, justReturnCommand = false}) {
 		let nextSiblingNode = elementRef.nextSibling;
-
-		return this.moveBeforeElement({
-			element,
-			elementRef: nextSiblingNode,
-			justReturnCommand
-		});
+		if(nextSibling === null){
+			return this.moveInsideElement({
+				element,
+				elementRef
+			})
+		}else{
+			return this.moveBeforeElement({
+				element,
+				elementRef: nextSiblingNode,
+				justReturnCommand
+			});
+		}
 	}
 
 	moveInsideElement({element, elementRef, justReturnCommand = false}) {
