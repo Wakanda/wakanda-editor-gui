@@ -355,7 +355,7 @@ class DocumentEditor {
 		if(nextSiblingNode === null){
 			return this.moveInsideElement({
 				element,
-				elementRef
+				elementRef.parentElement
 			})
 		}else{
 			return this.moveBeforeElement({
