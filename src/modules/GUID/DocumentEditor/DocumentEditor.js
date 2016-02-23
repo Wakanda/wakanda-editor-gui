@@ -359,7 +359,7 @@ class DocumentEditor {
 
 	moveAfterElement({element, elementRef, justReturnCommand = false}) {
 		let nextSiblingNode = elementRef.nextSibling;
-		if(nextSibling === null){
+		if(nextSiblingNode === null){
 			return this.moveInsideElement({
 				element,
 				elementRef
