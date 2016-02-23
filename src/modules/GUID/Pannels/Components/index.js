@@ -1,6 +1,6 @@
 import htmlComponentsAsJson from './HtmlComponents'; // components
 import bootstrapComponentsAsJson from './BootstrapComponents'; // components
-import directivesAsJson from './directives'; // components
+import directivesAsJson from './Directives'; // components
 import Component from './Component' //class
 
 

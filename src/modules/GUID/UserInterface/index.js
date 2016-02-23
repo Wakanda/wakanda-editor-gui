@@ -286,13 +286,27 @@ class UserInterface {
 								}
 							});
 
-						if(componentToInsert._angularApplicationName){
-							let angularAppDeclaration = `angular.module('app', ['${componentToInsert._angularApplicationName}']);`;
+						if(componentToInsert._angularApplicationName || componentToInsert._directiveBody){
+							let appDependencies = '';
+							if(componentToInsert._angularApplicationName){
+								appDependencies = `'${componentToInsert._angularApplicationName}'`;
+							}
+							let angularAppDeclaration = `angular.module('app', [${appDependencies}]);`;
 							let angularApplicationScript = `<script type="text/javascript">${angularAppDeclaration}</script>`;
 
 							// NOTE: tempo
 							if(this._documentEditor._scriptTags.indexOf(angularApplicationScript) === -1){
-								this._documentEditor._scriptTags.push(angularApplicationScript);
+								this._documentEditor._scriptTags.splice(2, 0, angularApplicationScript);
+							}
+
+							if(componentToInsert._directiveBody){
+								let directiveScript = `angular.module('app')
+								.directive('${componentToInsert._directiveName}', ${componentToInsert._directiveBody});`;
+								let directiveScriptTag = `<script type="text/javascript">${directiveScript}</script>`;
+								// NOTE: tempo
+								if(this._documentEditor._scriptTags.indexOf(directiveScriptTag) === -1){
+									this._documentEditor._scriptTags.push(directiveScriptTag);
+								}
 							}
 						}
 

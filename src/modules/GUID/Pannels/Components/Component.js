@@ -27,6 +27,8 @@ class Component {
 
     this._jsDependencies = manifest.jsDependencies;
     this._angularApplicationName = manifest.angularApplicationName;
+    this._directiveName = manifest.directiveName;
+    this._directiveBody = manifest.directiveBody;
   }
 
   get name(){
@@ -36,7 +38,7 @@ class Component {
   get jsDependencies(){
     return this._jsDependencies || [];
   }
-  
+
   get importHref(){
     return importHref || null;
   }
