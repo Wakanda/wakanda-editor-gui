@@ -5,6 +5,7 @@ iframe.source{
 .cloud-ide-editor {
   margin: auto;
   margin-bottom: 10px;
+  overflow: hidden;
 }
 
 .document-editor-iframe {

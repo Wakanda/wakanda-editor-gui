@@ -33,6 +33,3 @@ node_modules
 build/
 workspace/*
 index.html
-
-projects/*
-!projects/.gitkeep

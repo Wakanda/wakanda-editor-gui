@@ -190,6 +190,8 @@ class DocumentEditor {
 
 		this._initBijection();
 
+		this._initRenderIframeEvents();
+
 		this.rendering --;
 
 		return true;
@@ -230,6 +232,11 @@ class DocumentEditor {
 				width, height, event
 			});
 		};
+
+		this._initRenderIframeEvents();
+	}
+
+	_initRenderIframeEvents(){
 		this._renderWindow.onscroll = () => {
 			this._events.emit('GUID.document.scroll', this.dimensions);
 		}
@@ -389,10 +396,18 @@ class DocumentEditor {
 	}
 
 	appendAfterElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
-		let command = this.commandFactory.prependElement({
-			element,
-			elementRef: elementRef.nextSibling
-		});
+		let command;
+		if(elementRef.nextSibling){
+			command = this.commandFactory.prependElement({
+				element,
+				elementRef: elementRef.nextSibling
+			});
+		}else{
+			command = this.commandFactory.appendElement({
+				parent: elementRef.parentElement,
+				child: element
+			});
+		}
 
 		return this.executeOrReturn({command, justReturnCommand});
 	}
@@ -701,6 +716,7 @@ class DocumentEditor {
 		this._events.on('GUID.dom.element.changeText', callBack);
 	}
 
+	// TODO: review duplications
 	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({

@@ -1,0 +1,21 @@
+{
+  "name": "gui-projects",
+  "authors": [
+    "Saad Yousfi <yousfi.saad@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-morris-chart": "~1.2.0"
+  }
+}
