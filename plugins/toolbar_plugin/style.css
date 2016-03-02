@@ -22,3 +22,17 @@
 .page-toolbar-item-save {
 	background-image: url("./images/save.png");
 }
+
+.page-toolbar-item-save {
+	background-image: url("./images/save.png");
+}
+
+.page-toolbar-item-prevEdit-prev {
+	background-image: url("./images/preview.png");
+}
+.page-toolbar-item-prevEdit-edit {
+	background-image: url("./images/edit.png");
+}
+.page-toolbar-item-prevEdit {
+	background-image: url("./images/edit.png");
+}

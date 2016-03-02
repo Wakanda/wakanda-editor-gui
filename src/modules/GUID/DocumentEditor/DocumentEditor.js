@@ -808,6 +808,15 @@ class DocumentEditor {
 		};
 		this._temporaryBroker.exec({command});
 	}
+		// TODO: change when refactoring userInterface
+	setUIToEdit(editBoolean){
+		if(editBoolean){
+			staticVars.shownIframe.style.zIndex = 0;
+		}else{
+			staticVars.shownIframe.style.zIndex = 1;
+		}
+		return editBoolean;
+	}
 
 }
 

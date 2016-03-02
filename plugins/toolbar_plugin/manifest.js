@@ -17,6 +17,14 @@ export default {
 	    name: "redo",
 	    type: "button",
 	    action: "redo"
+	  },
+		{
+	    type: "separator"
+	  },
+		{
+	    name: "prevEdit",
+	    type: "button",
+	    action: "prevEdit"
 	  }
 	]
 }
