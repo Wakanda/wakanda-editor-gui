@@ -23,7 +23,7 @@ class ScriptsRenderer{
 	}
 
   addScript({script}){
-    let liCheckBox = ScriptsRenderer.createCheckBox({text: script.text});
+    let liCheckBox = ScriptsRenderer.createCheckBox({text: script.src});
     let input = liCheckBox.querySelector('input');
     if(script.type === 'embded'){
       let editButton = document.createElement('button');

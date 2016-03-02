@@ -143,7 +143,6 @@ class DocumentEditor {
 		this._renderWindow = renderWindow;
 		this._sourceWindow = sourceWindow;
 
-		this._scriptTags = scriptTags;
 		this._projectPath = projectPath;
 		// this._path = projectPath;
 
@@ -157,13 +156,14 @@ class DocumentEditor {
 			document: this._renderDocument
 		});
 
+		this.scriptManager = new ScriptManager({
+			headerScripts: scriptTags
+		});
+
 		// this.linkImport = new LinkImport({
 		// 	document: iframeDoc
 		// });
 
-		// this.scriptManager = new ScriptManager({
-		// 	document: iframeDoc
-		// });
 		this._initBijection();
 		this._initEvents();
 		this._initCommands();
@@ -181,7 +181,7 @@ class DocumentEditor {
 
 		let {win, doc} = await DocumentEditor.createDocumentRenderCode({
 				sourceCode,
-				scriptTags: this._scriptTags,
+				scriptTags: this.scriptManager.scriptsAsStringArray,
 				projectPath: this.path + `_${this._prenventAsync}.html`
 			});
 
@@ -272,10 +272,6 @@ class DocumentEditor {
 	// NOTE: old scripts management
 	get scripts(){
 		return this.scriptManager.scripts;
-	}
-
-	get scriptTags(){
-		return this._scriptTags;
 	}
 
 	get events(){
@@ -716,7 +712,6 @@ class DocumentEditor {
 		this._events.on('GUID.dom.element.changeText', callBack);
 	}
 
-	// TODO: review duplications
 	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
 			return this.commandFactory.toggleScript({
@@ -792,7 +787,7 @@ class DocumentEditor {
 
 	async saveAs({projectPath}){
 		let sourceCode = this._sourceDocument.documentElement.outerHTML;
-		let scriptTags = this._scriptTags;
+		let scriptTags = this.scriptManager.scriptsAsStringArray;
 		return await helpers.postResJson('saveProject',{
 			sourceCode, scriptTags, projectFile: projectPath
 		});

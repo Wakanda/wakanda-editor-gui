@@ -1,189 +1,99 @@
 import { HttpClient } from "../../../../lib/aurelia-http-client";
 
-class Script {
-	constructor({htmlTag, document:d}){
-		this.document = d;
-		this.htmlTag = htmlTag;
-
-		// TODO: positions
-		this._parentTag = this.htmlTag.parentElement
-											|| this.document.head;
+class Script{
+	constructor({scriptTag}){
+		this._scriptTag = scriptTag;
+		this._dependencies = new Set();
 	}
-
-	get codePromise(){
-		return this._codePromise;
+	get src(){
+		return this._scriptTag.getAttribute('src');
 	}
-
-	save(){
-		console.error('Not yet implemented');
-	}
-
-	// NOTE: do not use those methods directly
-	removeFromDocument(){
-		let parent = this.htmlTag.parentElement
-		parent.removeChild(this.htmlTag);
-		return this;
-	}
-
-	// NOTE: do not use those methods directly
-	addToDocument(){
-		this._parentTag.appendChild(this.htmlTag);
-		return this;
-	}
-
 	get text(){
-		if(this._text){
-			return this._text;
-		}else if(this.src){
-			return this.src.split('/').pop();
-		}
+		return (!this.src) && this._scriptTag.text;
 	}
-}
-
-class ScriptEmbded extends Script {
-	constructor({htmlTag, document:d, text}){
-		super({ htmlTag, document:d });
-		this._codePromise = this.loadCode();
-		this._text = text || "Embded script";
-	}
-
 	get type(){
-		return 'embded';
-	}
-
-	loadCode(){
-		let promise;
-		if(this.htmlTag.innerText){
-			promise = Promise.resolve(this.htmlTag.innerText);
+		if(this.src){
+			return Script.SCRIPT_TYPE_FILE;
 		}else{
-			promise = Promise.reject({
-				error : 'No tontent',
-				tag: this.htmlTag
-			});
+			return Script.SCRIPT_TYPE_EMBD;
 		}
-
-		return promise;
 	}
-
-	save({content}){
-		// TODO: innerText/innerHTML
-		this.innerHTML.content;
+	addDependency({script}){
+		this._dependencies.add(script);
 	}
-
+	get dependencies(){
+		return [...this._dependencies.values()];
+	}
+	get tag(){
+		return this._scriptTag;
+	}
+	equalsTo({script}){
+		return this._scriptTag.outerHTML === script._scriptTag.outerHTML;
+	}
 }
 
-class SctriptFile extends Script {
-	constructor({htmlTag, document:d}){
-		super({ htmlTag, document:d });
-		this.http = new HttpClient();
+Script.SCRIPT_TYPE_FILE = "File Script";
+Script.SCRIPT_TYPE_EMBD = "Embeded Script";
 
-		this.src = this.toAbsoluteUrl({
-			src: this.htmlTag.getAttribute('src')
-		});
-
-		this._codePromise = this.loadCode();
-	}
-
-	toAbsoluteUrl({src}){
-		// TODO: !important rewrite this methode
-		if(src.indexOf('http') === 0){
-			console.log('not yet ' + src);
-			return null;
-		}
-		return `${this.document.location.origin}/workspace/${src}`;
-	}
-
-	get type(){
-		return 'file';
-	}
-
-	loadCode(){
-		this.src = this.toAbsoluteUrl({
-			src: this.htmlTag.getAttribute('src')
-		});
-		if (this.src){
-			return this.http.get(this.src)
-											.then( (res) => res.response );
-		}	else {
-			return Promise.resolve("");
-		}
-	}
-}
 
 class ScriptManager{
-	constructor({document:d}){
-		this.document = d;
+	constructor({headerScripts}){
+		this._template = document.createElement('template');
+		this._template.innerHTML = headerScripts.join('');
+		this._docFrag = this._template.content;
 
-		this._scripts = this.initScripts();
+		this._scriptTagToScriptObj = new Map();
+		[...this._docFrag.children].forEach(this.__initScriptTagFunction);
 	}
-	// TODO: order
-	addScript({script}){
-		if(! this.exists(script)){
-			this._scripts.push(script);
-			script.addToDocument();
-			return true;
-		}else{
-			return false;
+	get __initScriptTagFunction(){
+		return (scriptTag)=>{
+			let scriptObj = new Script({scriptTag});
+			this._scriptTagToScriptObj.set(scriptTag, scriptObj);
 		}
-	}
-// TODO: optimise script search and add ...
-	removeScript({script}){
-		if(this.exists({script})){
-			let idx = this.getScriptIndex({script});
-			script.removeFromDocument();
-			this._scripts.splice(idx, 1);
-			return true;
-		}else{
-			return false;
-		}
-	}
-
-	getScriptIndex({script}){
-		return this._scripts.indexOf(script);
-	}
-
-	exists({script}){
-		let idx = this.getScriptIndex({script});
-		return idx !== -1;
 	}
 
 	get scripts(){
-		return this._scripts;
+		let scriptsSet = new Set();
+		let addScript = (script)=>{
+			let dependencies = script.dependencies;
+			dependencies.forEach(addScript);
+
+			if(! scriptsSet.has(script)){
+				scriptsSet.add(script);
+			}
+		};
+
+		[...this._scriptTagToScriptObj.values()].forEach(addScript);
+
+		return [...scriptsSet.values()];
 	}
 
-	// TODO: static
-	createEmbdedScript({content, text}){
-		let scriptTag = this.document.createElement('script');
-
-		scriptTag.setAttribute('type','text/javascript');
-		scriptTag.innerHTML = content;
-
-		return new ScriptEmbded({
-			document: this.document,
-			htmlTag: scriptTag,
-			text
-		});
+	get scriptsAsStringArray(){
+		return this.scripts
+			.map((script)=>{
+				return script.tag.outerHTML;
+			});
 	}
 
-	initScripts(){
-		let tags = this.document.querySelectorAll('script');
-		return Array
-			.from(tags)
-			.map((htmlTag)=>{
-				let src = htmlTag.getAttribute('src'),
-						content = htmlTag.innerText;
-				let constructorArgs = { htmlTag, document: this.document };
-				if (src) {
-					return new SctriptFile(constructorArgs);
-				} else if (content) {
-					return new ScriptEmbded(constructorArgs)
-				} else {
-					console.error('Something is going wrong around here');
-				}
-			})
-			.filter( (script) => script !== undefined && script.text );// TODO: review
+	addScript ({script}){
+		let scriptTag = script.tag;
+		this._scriptTagToScriptObj.set(scriptTag, script);
+		this._docFrag.appendChild(scriptTag);
 	}
+
+	addStringScript ({scriptAsString}){
+		if(-1 === this.scriptsAsStringArray.indexOf(scriptAsString)){
+			this.template.innerHTML += scriptAsString;
+			this.__initScriptTagFunction(this._docFrag.lastElementChild);
+		}
+	}
+
+	removeScript({script}){
+		let scriptTag = script.tag;
+		this._scriptTagToScriptObj.delete(scriptTag);
+		this._docFrag.removeChild(scriptTag);
+	}
+
 }
-
 
 export default ScriptManager;
