@@ -7,9 +7,9 @@ export default {
   activate() {
       this._documentEditor = IDE.GUID.documentEditor;
       this._broker = this._documentEditor.broker;
+      this._broker.onChange(this._onChange);
       this._uiStateIsEdit = this._documentEditor.setUIToEdit(true);
       this._updatePrevEditIcon();
-      this._broker.onChange(this._onChange);
     },
 
     redo() {
