@@ -12,6 +12,7 @@ var getSourceCode = function(req, res){
   var $ = cheerio.load(fileContent);
 
   var headScriptsStr = [];
+  var importTagAsStr = [];
 
   var headScripts = $('head > script');
   headScripts.each(function () {
@@ -20,11 +21,19 @@ var getSourceCode = function(req, res){
   });
   headScripts.remove();
 
+  var headImports = $('head > link[rel="import"]');
+  headImports.each(function() {
+    var $this = $(this);
+    importTagAsStr.push($.html($this));
+  });
+  headImports.remove();
+
   var sourcePath = helpers.getSourcePath(projectFile);
   helpers.saveFile(sourcePath, $.html());
 
   res.json({
     headScripts: headScriptsStr,
+    importTags : importTagAsStr,
     sourceUrl:   '/workspace/src/' + projectFile
   });
 }

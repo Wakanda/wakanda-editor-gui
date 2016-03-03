@@ -2,11 +2,11 @@ import Command from './Command';
 import AtomicCommand from './AtomicCommand';
 
 class CommandFactory {
-	constructor({events, linkImport, scriptManager, styleManager, broker}) {
+	constructor({events, htmlImportManager, scriptManager, styleManager, broker}) {
 		this.broker = broker;
 
 		this.events = events;
-		this.linkImport = linkImport;
+		this.htmlImportManager = htmlImportManager;
 		this.scriptManager = scriptManager;
 		this.styleManager = styleManager;
 	}
@@ -288,23 +288,21 @@ class CommandFactory {
 	}
 
 	toggleImport({href, forceAddRem}) {
-				let linkImport = this.linkImport;
-
 		let addImport = ()=>{
-			linkImport.addImport(href);
+			this.htmlImportManager.addImport({href});
 			this.events.emit('GUID.dom.import.add', {
 				href
 			});
 		};
 		let removeImport = ()=>{
-			linkImport.removeImport(href);
+			this.htmlImportManager.removeImport({href});
 			this.events.emit('GUID.dom.import.remove', {
 				href
 			});
 		};
 
 		let execute, undo;
-		let exists = linkImport.exists(href);
+		let exists = this.htmlImportManager.exists({href});
 
 		if (forceAddRem === true) { // add
 			[execute, undo] = [addImport, removeImport];

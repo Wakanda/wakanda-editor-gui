@@ -1,4 +1,4 @@
-import LinkImport from './LinkImport';
+import HtmlImportManager from './HtmlImportManager';
 import { Broker, TemporaryBroker } from './Broker';
 import { CommandFactory, Command } from './CommandFactory';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
@@ -27,6 +27,7 @@ class DocumentEditor {
 		let renderDocOb = await DocumentEditor.createDocumentRenderCode({
 			sourceCode,
 			scriptTags: sourceDocOb.headScripts,
+			importTags: sourceDocOb.importTags,
 			projectPath
 		});
 
@@ -36,6 +37,7 @@ class DocumentEditor {
 			renderDocument 	: renderDocOb.doc,
 			renderWindow		: renderDocOb.win,
 			scriptTags			:	sourceDocOb.headScripts,
+			importTags			: sourceDocOb.importTags,
 			projectPath
 		});
 
@@ -43,10 +45,10 @@ class DocumentEditor {
 		return DocumentEditor.currentElement;
 	}
 
-	static async createDocumentRenderCode( { sourceCode, scriptTags, projectPath: projectFile } ){
+	static async createDocumentRenderCode( { sourceCode, scriptTags, importTags, projectPath: projectFile } ){
 
 		let {renderUrl} = await DocumentEditor._postResJson('getRenderCode', {
-			sourceCode, scriptTags, projectFile
+			sourceCode, scriptTags, projectFile, importTags
 		});
 		return await DocumentEditor._loadOnIframe({
 			path: renderUrl,
@@ -57,7 +59,7 @@ class DocumentEditor {
 
 	static async createDocumentSourceCode({projectPath}){
 
-		let {sourceUrl, headScripts} = await DocumentEditor._postResJson('getSourceCode', {
+		let {sourceUrl, headScripts, importTags} = await DocumentEditor._postResJson('getSourceCode', {
 			projectFile: projectPath
 		});
 
@@ -66,12 +68,12 @@ class DocumentEditor {
 			iframe: DocumentEditor.hidenIframe
 		});
 
-		return { win, doc, headScripts };
+		return { win, doc, headScripts, importTags };
 
 	}
 
 	//TODO rev
-	constructor({scriptTags, broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow, projectPath}) {
+	constructor({scriptTags, importTags, broker = new Broker(), sourceDocument, sourceWindow, renderDocument, renderWindow, projectPath}) {
 
 		this._events = new MultiEvent();
 
@@ -101,9 +103,9 @@ class DocumentEditor {
 			headerScripts: scriptTags
 		});
 
-		// this.linkImport = new LinkImport({
-		// 	document: iframeDoc
-		// });
+		this.htmlImportManager = new HtmlImportManager({
+			importTagsAsStringArray: importTags
+		});
 
 		this._initBijection();
 		this._initEvents();
@@ -112,7 +114,7 @@ class DocumentEditor {
 			broker: this._mainBroker,
 
 			events: this._events,
-			linkImport: this.linkImport,
+			htmlImportManager: this.htmlImportManager,
 			scriptManager: this.scriptManager,
 			styleManager: this.styleManager
 		});
@@ -129,6 +131,7 @@ class DocumentEditor {
 		let {win, doc} = await DocumentEditor.createDocumentRenderCode({
 				sourceCode,
 				scriptTags: this.scriptManager.scriptsAsStringArray,
+				importTags: this.htmlImportManager.htmlImportTagsAsStringArray,
 				projectPath: this.path + `_${this._prenventAsync}.html`
 			});
 
@@ -208,6 +211,10 @@ class DocumentEditor {
 	// NOTE: old scripts management
 	get scripts(){
 		return this.scriptManager.scripts;
+	}
+
+	get importHrefs(){
+		return this.htmlImportManager.hrefs;
 	}
 
 	get events(){
@@ -724,8 +731,9 @@ class DocumentEditor {
 	async saveAs({projectPath}){
 		let sourceCode = this._sourceDocument.documentElement.outerHTML;
 		let scriptTags = this.scriptManager.scriptsAsStringArray;
+		let importTags = this.htmlImportManager.htmlImportTagsAsStringArray;
 		return await DocumentEditor._postResJson('saveProject',{
-			sourceCode, scriptTags, projectFile: projectPath
+			sourceCode, scriptTags, projectFile: projectPath, importTags
 		});
 	}
 
