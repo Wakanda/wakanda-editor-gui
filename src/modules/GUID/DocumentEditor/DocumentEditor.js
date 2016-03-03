@@ -1,87 +1,28 @@
 import LinkImport from './LinkImport';
 import { Broker, TemporaryBroker } from './Broker';
-import { CommandFactory, Command } from './CommandFactory.js';
+import { CommandFactory, Command } from './CommandFactory';
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import ScriptManager from './ScriptManager';
 import StyleManager from './Styling/StyleManager';
 import Bijection from './Bijection';
 import { HttpClient } from "../../../../lib/aurelia-http-client";
 
-// TODO: important: script management
 // TODO: important: import management
 
 const API_PORT = 3001;
 const API_BASE = `http://${location.hostname}:${API_PORT}/`;
 
-let helpers = {
-	postResJson: function(req, args){
-		let url = API_BASE + req;
-		return staticVars.httpClient.post(url, args)
-			.then(({response})=>{
-				return JSON.parse(response);
-			});
-	},
-	loadOnIframe: function({path, iframe}){	//returns the document on the iframe
-		return new Promise((res, rej) => {
-			iframe.onload = () => {
-				let winret = iframe.contentWindow || iframe.contentDocument || window.WIN;
-				let iframeDoc;
-				if (winret.document) {
-					iframeDoc = winret.document || window.DOCUMENT;
-				}
-				res({
-					win: winret,
-					doc: iframeDoc
-				});
-			};
-			iframe.src = path;
-		});
-	},
-	documentToHtmlString: function({document: doc}){
-		return doc.documentElement.outerHTML;
-	},
-	domElementToString({elements}){
-		let span = document.createElement('span');
-		Array.prototype.forEach.call(elements, (element)=>{
-			span.appendChild(element);
-		})
-		// span.appendChild(element);
-		return span.innerHTML;
-	}
-}
-
-let staticVars = {};
-
-staticVars.hidenIframe = document.createElement('iframe');
-staticVars.shownIframe = document.createElement('iframe');
-staticVars.hidenIframe.classList.add('document-editor-iframe');
-staticVars.shownIframe.classList.add('document-editor-iframe');
-staticVars.hidenIframe.classList.add('source');
-staticVars.shownIframe.classList.add('render');
-
-staticVars.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
-
-staticVars.cloudEditorIDE.appendChild(staticVars.hidenIframe);
-staticVars.cloudEditorIDE.appendChild(staticVars.shownIframe);
-
-staticVars.httpClient = new HttpClient().configure(x => {
-	x.withHeader('Content-Type', 'application/json');
-});
-
-staticVars.currentDocumentEditor = null;
-
-
 class DocumentEditor {
 
 	static get currentDocumentEditor(){
-		return staticVars.currentDocumentEditor || null;
+		return DocumentEditor._currentDocumentEditor || null;
 	}
 
 	static async load({projectPath}){
 
 		let sourceDocOb = await DocumentEditor.createDocumentSourceCode({projectPath});
 
-		let sourceCode = helpers.documentToHtmlString({document: sourceDocOb.doc});
+		let sourceCode = sourceDocOb.doc.documentElement.outerHTML;
 
 		let renderDocOb = await DocumentEditor.createDocumentRenderCode({
 			sourceCode,
@@ -89,7 +30,7 @@ class DocumentEditor {
 			projectPath
 		});
 
-		staticVars.currentElement = new DocumentEditor({
+		DocumentEditor.currentElement = new DocumentEditor({
 			sourceDocument 	: sourceDocOb.doc,
 			sourceWindow 		: sourceDocOb.win,
 			renderDocument 	: renderDocOb.doc,
@@ -99,30 +40,30 @@ class DocumentEditor {
 		});
 
 
-		return staticVars.currentElement;
+		return DocumentEditor.currentElement;
 	}
 
 	static async createDocumentRenderCode( { sourceCode, scriptTags, projectPath: projectFile } ){
 
-		let {renderUrl} = await helpers.postResJson('getRenderCode', {
+		let {renderUrl} = await DocumentEditor._postResJson('getRenderCode', {
 			sourceCode, scriptTags, projectFile
 		});
-		return await helpers.loadOnIframe({
+		return await DocumentEditor._loadOnIframe({
 			path: renderUrl,
-			iframe: staticVars.shownIframe
+			iframe: DocumentEditor.shownIframe
 		});
 
 	}
 
 	static async createDocumentSourceCode({projectPath}){
 
-		let {sourceUrl, headScripts} = await helpers.postResJson('getSourceCode', {
+		let {sourceUrl, headScripts} = await DocumentEditor._postResJson('getSourceCode', {
 			projectFile: projectPath
 		});
 
-		let {win, doc} = await helpers.loadOnIframe({
+		let {win, doc} = await DocumentEditor._loadOnIframe({
 			path: sourceUrl,
-			iframe: staticVars.hidenIframe
+			iframe: DocumentEditor.hidenIframe
 		});
 
 		return { win, doc, headScripts };
@@ -166,16 +107,22 @@ class DocumentEditor {
 
 		this._initBijection();
 		this._initEvents();
-		this._initCommands();
+
+		this._commandFactory = new CommandFactory({
+			broker: this._mainBroker,
+
+			events: this._events,
+			linkImport: this.linkImport,
+			scriptManager: this.scriptManager,
+			styleManager: this.styleManager
+		});
 
 	}
 	// NOTE: important !
 	async _initRenderCode(){
 		this.rendering ++;
 
-		let sourceCode = helpers.documentToHtmlString({
-			document: this._sourceDocument
-		});
+		let sourceCode = this._sourceDocument.documentElement.outerHTML;
 		// FIXME: find better way to do it
 		this._prenventAsync = ((this._prenventAsync || 0) + 1) % 5;
 
@@ -210,17 +157,6 @@ class DocumentEditor {
 
 	get rendering(){
 		return this._rendering || 0;
-	}
-
-	_initCommands() {
-		this.commandFactory = new CommandFactory({
-			broker: this._mainBroker,
-
-			events: this._events,
-			linkImport: this.linkImport,
-			scriptManager: this.scriptManager,
-			styleManager: this.styleManager
-		});
 	}
 
 	_initEvents() {
@@ -305,14 +241,14 @@ class DocumentEditor {
 			//Fix for desktop width on responsiveSelector
 			w = w === "100%" ? null : w;
 
-			staticVars.cloudEditorIDE.style.width = w;
+			DocumentEditor.cloudEditorIDE.style.width = w;
 		}
 		if(h){
-			staticVars.cloudEditorIDE.style.height = h;
+			DocumentEditor.cloudEditorIDE.style.height = h;
 		}
 
 		//Min width has to be removed if not passed to method as parameter
-		staticVars.cloudEditorIDE.style['min-width'] = mw ? mw : null;
+		DocumentEditor.cloudEditorIDE.style['min-width'] = mw ? mw : null;
 
 		let {height, width} = this.dimensions;
 
@@ -328,7 +264,7 @@ class DocumentEditor {
 	}
 
 	removeElement({element = this.selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.removeElement({element});
+		let command = this._commandFactory.removeElement({element});
 		command.afterExecute = ()=>{
 			this.deselectElement();
 		};
@@ -340,13 +276,13 @@ class DocumentEditor {
 	}
 
 	moveBeforeElement({element, elementRef, justReturnCommand = false}) {
-		let removeCommand = this.commandFactory.removeElement({ element	});
-		let appendCommand = this.commandFactory.prependElement({
+		let removeCommand = this._commandFactory.removeElement({ element	});
+		let appendCommand = this._commandFactory.prependElement({
 			element,
 			elementRef
 		});
 
-		let finalCommand = this.commandFactory.regroupCommands({
+		let finalCommand = this._commandFactory.regroupCommands({
 			commands: [removeCommand, appendCommand]
 		});
 
@@ -370,13 +306,13 @@ class DocumentEditor {
 	}
 
 	moveInsideElement({element, elementRef, justReturnCommand = false}) {
-		let removeCommand = this.commandFactory.removeElement({ element	});
-		let appendCommand = this.commandFactory.appendElement({
+		let removeCommand = this._commandFactory.removeElement({ element	});
+		let appendCommand = this._commandFactory.appendElement({
 			parent: elementRef,
 			child: element
 		});
 
-		let finalCommand = this.commandFactory.regroupCommands({
+		let finalCommand = this._commandFactory.regroupCommands({
 			commands: [removeCommand, appendCommand]
 		});
 
@@ -384,7 +320,7 @@ class DocumentEditor {
 	}
 
 	prependElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element before selected element if elementRef is undefined
-		let command = this.commandFactory.prependElement({
+		let command = this._commandFactory.prependElement({
 			element, elementRef
 		});
 
@@ -394,12 +330,12 @@ class DocumentEditor {
 	appendAfterElement({element, elementRef = this._selectedElement, justReturnCommand = false}) { // append element after selected element if elementRef is undefined
 		let command;
 		if(elementRef.nextSibling){
-			command = this.commandFactory.prependElement({
+			command = this._commandFactory.prependElement({
 				element,
 				elementRef: elementRef.nextSibling
 			});
 		}else{
-			command = this.commandFactory.appendElement({
+			command = this._commandFactory.appendElement({
 				parent: elementRef.parentElement,
 				child: element
 			});
@@ -413,7 +349,7 @@ class DocumentEditor {
 	}
 
 	appendElement({element, parent = this._selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.appendElement({
+		let command = this._commandFactory.appendElement({
 			parent,
 			child: element
 		});
@@ -440,7 +376,7 @@ class DocumentEditor {
 
 	changeSelectedElementStyleAttribute({attribute, value, justReturnCommand = false}) {
 		if (this._selectedElement) {
-			let command = this.commandFactory.changeStyleAttribute({
+			let command = this._commandFactory.changeStyleAttribute({
 				element: this._selectedElement,
 				attribute,
 				value
@@ -464,7 +400,7 @@ class DocumentEditor {
 			console.error('to change styles use style methods');
 			return false;
 		}
-		let command = this.commandFactory.changeAttribute({
+		let command = this._commandFactory.changeAttribute({
 			element,
 			attribute,
 			value
@@ -484,14 +420,14 @@ class DocumentEditor {
 			let attribute = attributes[ii],
 					value = values[ii],
 					currentElement = elements[ii] || element;
-			let command = this.commandFactory.changeAttribute({
+			let command = this._commandFactory.changeAttribute({
 				element: currentElement,
 				attribute,
 				value
 			});
 			commands.push(command);
 		}
-		let finalCommand = this.commandFactory.regroupCommands({commands});
+		let finalCommand = this._commandFactory.regroupCommands({commands});
 
 		return this.executeOrReturn({command: finalCommand, justReturnCommand});
 	}
@@ -515,7 +451,7 @@ class DocumentEditor {
 
 	addRemoveClasses({classesToAdd, classesToRemove, element = this._selectedElement, justReturnCommand = false}){
 		let addCommands = classesToAdd.map((classToadd)=>{
-			return this.commandFactory.toggleClass({
+			return this._commandFactory.toggleClass({
 				element,
 				className: classToadd,
 				forceAddRem: true
@@ -523,20 +459,20 @@ class DocumentEditor {
 		});
 
 		let removeCommands = classesToRemove.map((classToRemove)=>{
-			return this.commandFactory.toggleClass({
+			return this._commandFactory.toggleClass({
 				element,
 				className: classToRemove,
 				forceAddRem: false
 			});
 		});
 
-		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
+		let command = this._commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
 		return this.executeOrReturn({command, justReturnCommand});
 	}
 
 	toggleClass({className, element = this._selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleClass({
+		let command = this._commandFactory.toggleClass({
 			element,
 			className
 		});
@@ -546,7 +482,7 @@ class DocumentEditor {
 	}
 
 	addClass({className, element = this._selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleClass({
+		let command = this._commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: true
@@ -560,7 +496,7 @@ class DocumentEditor {
 	}
 
 	removeClass({className, element = this._selectedElement, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleClass({
+		let command = this._commandFactory.toggleClass({
 			element,
 			className,
 			forceAddRem: false
@@ -655,7 +591,7 @@ class DocumentEditor {
 	}
 
 	toggleImportHtml({href, justReturnCommand = false}){
-		let command = this.commandFactory.toggleImport({
+		let command = this._commandFactory.toggleImport({
 			href
 		});
 
@@ -663,7 +599,7 @@ class DocumentEditor {
 	}
 
 	addImportHtml({href, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleImport({
+		let command = this._commandFactory.toggleImport({
 			href,
 			forceAddRem: true
 		});
@@ -676,7 +612,7 @@ class DocumentEditor {
 	}
 
 	removeImportHtml({href, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleImport({
+		let command = this._commandFactory.toggleImport({
 			href,
 			forceAddRem: false
 		});
@@ -700,7 +636,7 @@ class DocumentEditor {
 	}
 
 	changeElementText({element = this._selectedElement, text, justReturnCommand = false}){
-		let command = this.commandFactory.changeElementText({
+		let command = this._commandFactory.changeElementText({
 			element,
 			text
 		});
@@ -714,26 +650,26 @@ class DocumentEditor {
 
 	addRemoveScripts({scriptsToAdd, scriptsToRemove, justReturnCommand = false}){
 		let removeCommands = scriptsToRemove.map((script)=>{
-			return this.commandFactory.toggleScript({
+			return this._commandFactory.toggleScript({
 				script,
 				forceAddRem: false
 			});
 		});
 		let addCommands = scriptsToAdd.map((script)=>{
-			return this.commandFactory.toggleScript({
+			return this._commandFactory.toggleScript({
 				script,
 				forceAddRem: true
 			});
 		});
 
-		let command = this.commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
+		let command = this._commandFactory.regroupCommands({commands: [...removeCommands, ...addCommands]});
 
 		return this.executeOrReturn({command, justReturnCommand});
 	}
 
 	// NOTE: old script management
 	addScript({script, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleScript({
+		let command = this._commandFactory.toggleScript({
 			script,
 			forceAddRem: true
 		});
@@ -746,7 +682,7 @@ class DocumentEditor {
 	}
 
 	removeScript({script, justReturnCommand = false}) {
-		let command = this.commandFactory.toggleScript({
+		let command = this._commandFactory.toggleScript({
 			script,
 			forceAddRem: false
 		});
@@ -788,13 +724,13 @@ class DocumentEditor {
 	async saveAs({projectPath}){
 		let sourceCode = this._sourceDocument.documentElement.outerHTML;
 		let scriptTags = this.scriptManager.scriptsAsStringArray;
-		return await helpers.postResJson('saveProject',{
+		return await DocumentEditor._postResJson('saveProject',{
 			sourceCode, scriptTags, projectFile: projectPath
 		});
 	}
 
 	temporaryAppendElement({element, parent = this._selectedElement}){
-		let command = this.commandFactory.appendElement({
+		let command = this._commandFactory.appendElement({
 			parent,
 			child: element
 		});
@@ -806,13 +742,56 @@ class DocumentEditor {
 		// TODO: change when refactoring userInterface
 	setUIToEdit(editBoolean){
 		if(editBoolean){
-			staticVars.shownIframe.style.zIndex = 0;
+			DocumentEditor.shownIframe.style.zIndex = 0;
 		}else{
-			staticVars.shownIframe.style.zIndex = 1;
+			DocumentEditor.shownIframe.style.zIndex = 1;
 		}
 		return editBoolean;
 	}
 
+	static _loadOnIframe ({path, iframe}){	//returns the document on the iframe
+		return new Promise((res, rej) => {
+			iframe.onload = () => {
+				let winret = iframe.contentWindow || iframe.contentDocument || window.WIN;
+				let iframeDoc;
+				if (winret.document) {
+					iframeDoc = winret.document || window.DOCUMENT;
+				}
+				res({
+					win: winret,
+					doc: iframeDoc
+				});
+			};
+			iframe.src = path;
+		});
+	}
+
+	static _postResJson (req, args){
+		let url = API_BASE + req;
+		return DocumentEditor._httpClient.post(url, args)
+			.then(({response})=>{
+				return JSON.parse(response);
+			});
+	}
+
 }
+
+DocumentEditor.hidenIframe = document.createElement('iframe');
+DocumentEditor.shownIframe = document.createElement('iframe');
+DocumentEditor.hidenIframe.classList.add('document-editor-iframe');
+DocumentEditor.shownIframe.classList.add('document-editor-iframe');
+DocumentEditor.hidenIframe.classList.add('source');
+DocumentEditor.shownIframe.classList.add('render');
+
+DocumentEditor.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
+
+DocumentEditor.cloudEditorIDE.appendChild(DocumentEditor.hidenIframe);
+DocumentEditor.cloudEditorIDE.appendChild(DocumentEditor.shownIframe);
+
+DocumentEditor._httpClient = new HttpClient().configure(x => {
+	x.withHeader('Content-Type', 'application/json');
+});
+
+DocumentEditor._currentDocumentEditor = null;
 
 export default DocumentEditor;
