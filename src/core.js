@@ -5,48 +5,42 @@ var IDE = window.IDE || {};
 class Core {
 	constructor(coreModules){
 		var that = this;
-		
+
 		if( IDE.Core ) {
 			throw "Only one instance of core is allowed.";
 		}
-		
+
 		this.activatedPlugins = [];
-		this.plugins          = {};
-		
+		this._modules          = {};
+
 		var _EventEmitter   = require('../lib/micro-events.js');
 		this.events = new _EventEmitter();
-		
+
 		coreModules.forEach(function(moduleName){
 			console.log(moduleName);
 			var module = require(`./modules/${moduleName}/index.js`);
-			
+
 			module.activate(function(){
 				that.activatedPlugins.push(moduleName);
-				
+
 				if(that.activatedPlugins.length === coreModules.length){
 					that.events.emit("ready");
 				}
 			});
-		});		
-	}
- 
-	get(pluginName) {
-		return this.plugins[pluginName]
+		});
 	}
 
-	load(pluginName) {
-		this.plugins[pluginName]          = {};
-		this.plugins[pluginName].code     = require(`../plugins/${pluginName}/index.js`);
-		this.plugins[pluginName].manifest = require(`../plugins/${pluginName}/manifest.js`);
+	get(moduleName) {
+		return this._modules[moduleName];
 	}
 
-	activate(pluginName) {
-		if (!this.plugins[pluginName]) {
-			throw "Plugin \"" + pluginName + "\" doesn't exist.";
+	_activateModule(moduleName) {
+		if (!this._modules[moduleName]) {
+			throw "Plugin \"" + moduleName + "\" doesn't exist.";
 		}
-		this.plugins[pluginName].isActivated = true;
+		this._modules[moduleName].isActivated = true;
 	}
-	
+
 	onReady(callback) {
 		this.events.on("ready", callback);
 	}
