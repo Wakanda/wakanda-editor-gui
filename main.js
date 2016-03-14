@@ -14,16 +14,19 @@ import Core from "./src/core";
 IDE.Core = new Core([
 	"plugins",
 	"toolbar",
+	"panels",
 	"GUID"
 ]);
 
 IDE.Core.onReady(function(){
 	IDE.plugins.onPluginsLoaded(function(){
 		IDE.plugins.activate("toolbar_plugin");
+		IDE.plugins.activate("outline");
 		IDE.plugins.events.emit("all_activated");
 	});
 
 	IDE.plugins.loadMultiple([
-		"toolbar_plugin"
+		"toolbar_plugin",
+		"outline"
 	]);
 });

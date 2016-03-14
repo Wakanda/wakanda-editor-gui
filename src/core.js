@@ -21,7 +21,7 @@ class Core {
 						// TODO: make activate asynchrone
 						moduleContent.activate((currentModuleInstance) => {
 							console.log(`Core module ${currentModuleName} loaded`);
-							this._modulesInstances[currentModuleName] = currentModuleInstance
+							this._modulesInstances[currentModuleName] = currentModuleInstance;
 							resolve();
 						});
 					});

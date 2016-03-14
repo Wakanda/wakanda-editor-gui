@@ -6,7 +6,6 @@ var Module = {
 		require.ensure([
 			"./DocumentEditor",
 			"./UserInterface",
-			"./Pannels/Outline",
 			"./Pannels/Components",
 			"./Pannels/Angular",
 			"./Pannels/Styling",
@@ -14,7 +13,6 @@ var Module = {
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
-			var Outline = require("./Pannels/Outline");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
@@ -37,12 +35,6 @@ var Module = {
 
 					// load Pannels
 					IDE.GUID.panels = {};
-					// Outline
-					IDE.GUID.panels.outline = new Outline({
-						containerId: 'outline',
-						documentEditor,
-						userInterface: IDE.GUID.userInterface
-					});
 					// Components
 					IDE.GUID.panels.components = new Components({
 						documentEditor,
@@ -84,11 +76,6 @@ var Module = {
 				}, (err)=>{
 					console.error(err);
 				});
-
-			//TODO remove this
-			let tree = document.getElementById('tree');
-			tree.hidden = true;
-			console.log('explorer');
 
 		});
 

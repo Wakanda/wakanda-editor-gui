@@ -1,8 +1,8 @@
 class Outline {
-  constructor({containerId, documentEditor, userInterface}) {
+  constructor({panelContainer, containerId, documentEditor, userInterface}) {
     this.documentEditor = documentEditor;
     this.userInterface = userInterface;
-    this.container = document.getElementById(containerId);
+    this.container = panelContainer || document.getElementById(containerId);
 
     this.jstreeData = [];
     this.idToElementMap = new Map();
@@ -14,8 +14,9 @@ class Outline {
   }
 
   _initJstree() {
-    var jstree = require("../../../../lib/jstree/jstree.js");
-		var $ = require("../../../../lib/jquery-2.1.3.min.js");
+    // TODO: use dependencies injection
+    var jstree = require("../../lib/jstree/jstree.js");
+		var $ = require("../../lib/jquery-2.1.3.min.js");
 
     this.$container = $(this.container);
     this.$container.jstree({
@@ -133,7 +134,7 @@ class Outline {
     domPath.splice(-1, 1);
     let parent = domPath.length ? domPath.join(' > ') : '#';
 
-    let icon = require('./html.png');
+    let icon = require('./images/html.png');
     let name = element.tagName.toLowerCase();
     if (element.id.length > 0) {
       name += '#' + element.id;
