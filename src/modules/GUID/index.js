@@ -77,7 +77,9 @@ var Module = {
 					window.o = IDE.GUID.panels.outline;
 
 					// activate
-					loaded();
+					loaded({
+						GUID : documentEditor
+					});
 
 				}, (err)=>{
 					console.error(err);

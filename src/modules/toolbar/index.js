@@ -6,16 +6,16 @@ var Module =  {
 			className : "page_toolbar"
 		});
 		IDE.toolbar = toolbar;
-		
+
 		IDE.plugins.onPluginsLoaded(function(){
 			//alert("Plugins Loaded");
 		});
-		
+
 		IDE.plugins.onPluginsActivated(function(){
 			//alert("Plugins Activated");
 		});
-		
-		loaded();
+
+		loaded(toolbar);
 	}
 }
 
