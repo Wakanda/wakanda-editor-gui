@@ -22,11 +22,13 @@ IDE.Core.onReady(function(){
 	IDE.plugins.onPluginsLoaded(function(){
 		IDE.plugins.activate("toolbar_plugin");
 		IDE.plugins.activate("outline");
+		IDE.plugins.activate("attributes");
 		IDE.plugins.events.emit("all_activated");
 	});
 
 	IDE.plugins.loadMultiple([
 		"toolbar_plugin",
-		"outline"
+		"outline",
+		"attributes"
 	]);
 });

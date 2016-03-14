@@ -8,15 +8,13 @@ var Module = {
 			"./UserInterface",
 			"./Pannels/Components",
 			"./Pannels/Angular",
-			"./Pannels/Styling",
-			"./Pannels/Attributes"
+			"./Pannels/Styling"
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
 			var Styling = require("./Pannels/Styling");
-			var AttributesPanel = require("./Pannels/Attributes");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
 
@@ -58,15 +56,8 @@ var Module = {
 						containerId: 'responsiveButtonsList'
 					});
 
-					IDE.GUID.panels.attributesPanel = new AttributesPanel({
-						documentEditor,
-						containerId: 'attributes'
-					});
-
-
 					//to use it on devtool
 					window.d = documentEditor;
-					window.o = IDE.GUID.panels.outline;
 
 					// activate
 					loaded({

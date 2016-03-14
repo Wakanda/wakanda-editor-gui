@@ -19,6 +19,21 @@ class PanelsManager {
     return this._responsiveButtonsListContainer;
   }
 
+	get activePanelName(){
+		this._tabsList.querySelector('.active').innerText.trim();
+	}
+
+	setActive({panelName}){
+		let currentActive = this.activePanelName;
+		let {li, content} = this._panelsMap.get(currentActive);
+		li.classList.remove('active');
+		content.classList.remove('active');
+
+		let newActive = this._panelsMap.get(panelName);
+		newActive.li.classList.add('active');
+		newActive.content.classList.add('active');
+	}
+
 	addPanel({panelName}){
 		if(! this._panelsMap.has(panelName)){
 			this._panelsMap.set(panelName, this._addPanel({panelName}));

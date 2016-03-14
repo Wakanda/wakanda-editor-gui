@@ -1,5 +1,4 @@
-import helpers from '../helpers';
-import Renderer from '../Renderer';
+import helpers from './helpers';
 
 class ContentRenderer{
   constructor({container}){

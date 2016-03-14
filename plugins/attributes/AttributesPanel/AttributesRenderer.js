@@ -1,15 +1,25 @@
-import helpers from '../helpers';
-import Renderer from '../Renderer';
-
+import helpers from './helpers';
 let noop = ()=>{};
 
-class AttributesRenderer extends Renderer{
-  constructor({container, angularPage}){
-    super({ title: 'Attributes :', container });
+
+class AttributesRenderer{
+  constructor({container}){
+    this.container = container;
+    this.container.appendChild(helpers.createTitle({
+      text: 'Attributes'
+    }));
+    this._ul = document.createElement('ul');
+    this.container.appendChild(this._ul);
 
     let {attributeInput, valueInput} = this.initAddAttribute();
     this._addAttributeInput = attributeInput;
     this._addValueInput = valueInput;
+  }
+  get ul(){
+    return this._ul;
+  }
+  appendElement({element}){
+    this.container.appendChild(element);
   }
   initAddAttribute(){
     let addTitle = helpers.createTitle({text: 'Add Attributes', h: 'h4'});

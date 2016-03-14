@@ -1,11 +1,10 @@
-import helpers from '../helpers';
 import ContentRenderer from './ContentRenderer';
 import AttributesRenderer from './AttributesRenderer';
 
-class AttributesPannel{
-  constructor({documentEditor, containerId}){
+class AttributesPanel{
+  constructor({documentEditor,panelContainer, containerId}){
     this._documentEditor = documentEditor;
-    this._panelContainer = document.getElementById(containerId);
+    this._panelContainer = panelContainer || document.getElementById(containerId);
 
     this._documentEditor.onElementSelected(({element})=>{
       this._selectedElement = element;
@@ -89,4 +88,4 @@ class AttributesPannel{
 }
 
 
-export default AttributesPannel;
+export default AttributesPanel;
