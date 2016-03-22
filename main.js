@@ -23,12 +23,15 @@ IDE.Core.onReady(function(){
 		IDE.plugins.activate("toolbar_plugin");
 		IDE.plugins.activate("outline");
 		IDE.plugins.activate("attributes");
+		// TODO: needs dome changes before activating
+		// IDE.plugins.activate("styling");
 		IDE.plugins.events.emit("all_activated");
 	});
 
 	IDE.plugins.loadMultiple([
 		"toolbar_plugin",
 		"outline",
-		"attributes"
+		"attributes",
+		"stying"
 	]);
 });

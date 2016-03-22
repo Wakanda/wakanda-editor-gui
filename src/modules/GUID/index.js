@@ -7,14 +7,12 @@ var Module = {
 			"./DocumentEditor",
 			"./UserInterface",
 			"./Pannels/Components",
-			"./Pannels/Angular",
-			"./Pannels/Styling"
+			"./Pannels/Angular"
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
-			var Styling = require("./Pannels/Styling");
 			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
 
@@ -45,11 +43,6 @@ var Module = {
 					// 	containerId: 'angular',
 					// 	userInterface: IDE.GUID.userInterface
 					// });
-
-					IDE.GUID.panels.styling = new Styling({
-						containerId: 'styling',
-						documentEditor
-					});
 
 					IDE.GUID.panels.responsive = new ResponsiveSelector({
 						documentEditor,

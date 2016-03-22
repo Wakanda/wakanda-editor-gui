@@ -1,4 +1,4 @@
-import Awesomplete from '../../../../../../lib/awesomplete/awesomplete.js';
+import Awesomplete from '../../../../lib/awesomplete/awesomplete.js';
 
 class ClassPicker {
   constructor({documentEditor}) {
