@@ -19,7 +19,7 @@ class PluginsManager {
 		this.plugins[pluginName].code     = require(`../../../plugins/${pluginName}/index.js`);
 		this.plugins[pluginName].manifest = require(`../../../plugins/${pluginName}/manifest.js`);
 	}
-
+	// TODO: private ?
 	loadMultiple(plugins) {
 		plugins.forEach((plugin)=>this.load(plugin));
 		/*
@@ -39,7 +39,10 @@ class PluginsManager {
 		 */
 		this.registerPluginToolbarElements(pluginName);
 		try{
-			this.plugins[pluginName].code.activate();
+			// NOTE: just the coreModules dependencies
+			let dependencies = this._getDependenciesOfPlugin(pluginName);
+			// NOTE: return value is not used now
+			this.plugins[pluginName].code.activate(dependencies);
 		}catch(e){
 			console.warn(e);
 		}
@@ -70,6 +73,25 @@ class PluginsManager {
 
 	onPluginsActivated(callback){
 		this.events.on("all_activated", callback );
+	}
+
+	_getDependenciesOfPlugin(pluginName){
+		let dependenciesManifest = this.plugins[pluginName].manifest.dependencies;
+		let coreModuleDependenciesManifest = dependenciesManifest.coreModules;
+		let dependencies = {};
+		dependencies.coreModules = coreModuleDependenciesManifest
+			.reduce((retObj, coreModuleName)=>{
+				// NOTE: get the module with internal dependenci injection or IoC
+				let coreModule = IDE.Core.get(coreModuleName);
+				if(coreModule){
+					retObj[coreModuleName] = coreModule;
+				}else {
+					console.warn(`${pluginName} plugin tries to use an undefined coreModule: ${coreModuleName}`);
+				}
+				return retObj;
+			},{});
+
+			return dependencies;
 	}
 }
 

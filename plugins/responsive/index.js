@@ -1,12 +1,10 @@
 import ResponsiveSelector from "./ResponsiveSelector";
 
-var IDE = window.IDE;
-
 export default {
 
-  activate() {
-    let GUID = IDE.GUID;
-    let pannelsManager = IDE.panels;
+  activate({coreModules}) {
+    let GUID = coreModules.GUID;
+    let pannelsManager = coreModules.panels;
     let documentEditor = GUID.documentEditor;
 
     let panelContainer = pannelsManager.responsiveButtonsList;

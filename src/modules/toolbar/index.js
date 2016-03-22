@@ -5,7 +5,6 @@ var Module =  {
 		var toolbar = new Toolbar({
 			className : "page_toolbar"
 		});
-		IDE.toolbar = toolbar;
 
 		IDE.plugins.onPluginsLoaded(function(){
 			//alert("Plugins Loaded");

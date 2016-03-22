@@ -1,7 +1,4 @@
-var IDE = window.IDE;
-
-// TODO: use depInjection
-// TODO: use piping events
+// TODO: use piping events (or observables)
 
 import Outline from './Outline';
 
@@ -9,9 +6,9 @@ import Outline from './Outline';
 
 export default {
 
-  activate() {
-    let GUID = IDE.GUID;
-    let pannelsManager = IDE.panels;
+  activate({coreModules}) {
+    let GUID = coreModules.GUID;
+    let pannelsManager = coreModules.panels;
 
     let panelContainer = pannelsManager.addPanel({panelName: 'Outline'});
 

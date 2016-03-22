@@ -4,10 +4,11 @@ require("./style.css");
 
 export default {
 
-  activate() {
-    this._documentEditor = IDE.GUID.documentEditor;
+  activate({coreModules}) {
+    this._documentEditor = coreModules.GUID.documentEditor;
+    this._toolbar = coreModules.toolbar;
     this._broker = this._documentEditor.broker;
-    this._broker.onChange(this._onChange);
+    this._broker.onChange(this._onChange.bind(this));
     this._uiStateIsEdit = this._documentEditor.setUIToEdit(true);
     this._updatePrevEditIcon();
   },
@@ -21,7 +22,7 @@ export default {
   },
 
   save() {
-    IDE.GUID.documentEditor.save().then((saved) => {
+    this._documentEditor.save().then((saved) => {
       alert('file saved');
     })
   },
@@ -30,14 +31,14 @@ export default {
     let { canUndo, canRedo } = args;
 
     if (canUndo) {
-      IDE.toolbar.swapItemClass("undo", "undo", "undo-enabled");
+      this._toolbar.swapItemClass("undo", "undo", "undo-enabled");
     } else {
-      IDE.toolbar.swapItemClass("undo", "undo-enabled", "undo");
+      this._toolbar.swapItemClass("undo", "undo-enabled", "undo");
     }
     if (canRedo) {
-      IDE.toolbar.swapItemClass("redo", "redo", "redo-enabled");
+      this._toolbar.swapItemClass("redo", "redo", "redo-enabled");
     } else {
-      IDE.toolbar.swapItemClass("redo", "redo-enabled", "redo");
+      this._toolbar.swapItemClass("redo", "redo-enabled", "redo");
     }
   },
 
@@ -49,13 +50,13 @@ export default {
   _updatePrevEditIcon() {
     let itemName = "prevEdit";
     let [defClass, prevClass, editClass] = ["prevEdit", "prevEdit-prev", "prevEdit-edit"];
-    IDE.toolbar.removeClassToItem(itemName, defClass);
+    this._toolbar.removeClassToItem(itemName, defClass);
     if(this._uiStateIsEdit){
-      IDE.toolbar.removeClassToItem(itemName, prevClass);
-      IDE.toolbar.addClassToItem(itemName, editClass);
+      this._toolbar.removeClassToItem(itemName, prevClass);
+      this._toolbar.addClassToItem(itemName, editClass);
     }else{
-      IDE.toolbar.removeClassToItem(itemName, editClass);
-      IDE.toolbar.addClassToItem(itemName, prevClass);
+      this._toolbar.removeClassToItem(itemName, editClass);
+      this._toolbar.addClassToItem(itemName, prevClass);
     }
   }
 

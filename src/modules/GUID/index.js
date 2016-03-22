@@ -1,7 +1,5 @@
 var Module = {
 	activate(loaded) {
-		//Core Plugin Editor
-		IDE.GUID = {};
 
 		require.ensure([
 			"./DocumentEditor",
@@ -21,17 +19,18 @@ var Module = {
 			console.log(projectPath);
 			DocumentEditor.load({projectPath})
 				.then((documentEditor)=>{
-					IDE.GUID.documentEditor = documentEditor;
+					let GUID = {};
+					GUID.documentEditor = documentEditor;
 
-					IDE.GUID.userInterface = new UserInterface({
+					GUID.userInterface = new UserInterface({
 						documentEditor,
 						dndContainerId:	'components'
 					});
 
 					// load Pannels
-					IDE.GUID.panels = {};
+					GUID.panels = {};
 					// Components
-					IDE.GUID.panels.components = new Components({
+					GUID.panels.components = new Components({
 						documentEditor,
 						containerId: 'components'
 					});
@@ -47,9 +46,7 @@ var Module = {
 					window.d = documentEditor;
 
 					// activate
-					loaded({
-						GUID : documentEditor
-					});
+					loaded(GUID);
 
 				}, (err)=>{
 					console.error(err);

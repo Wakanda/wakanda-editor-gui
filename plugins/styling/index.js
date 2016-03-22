@@ -1,14 +1,12 @@
-var IDE = window.IDE;
-
 import Styling from './Styling';
 
 // TODO:Daba put css here
 
 export default {
 
-  activate() {
-    let GUID = IDE.GUID;
-    let pannelsManager = IDE.panels;
+  activate({coreModules}) {
+    let GUID = coreModules.GUID;
+    let pannelsManager = coreModules.panels;
 
     let panelContainer = pannelsManager.addPanel({panelName: 'Styling'});
 
