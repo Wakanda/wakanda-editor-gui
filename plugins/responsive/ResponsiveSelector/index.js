@@ -1,13 +1,13 @@
 import ResponsiveDevices from './ResponsiveDevices';
 
 class ResponsiveSelector {
-  constructor({documentEditor, containerId}) {
+  constructor({documentEditor, containerId, container}) {
 
-    this.documentEditor = documentEditor;
-    this.container = document.getElementById(containerId);
+    this._documentEditor = documentEditor;
+    this._container = container || document.getElementById(containerId);
 
-    this.buttons = new Map();
-    this.iconBackgrounds = new Map();
+    this._buttons = new Map();
+    this._iconBackgrounds = new Map();
 
     this._initHtmlElement();
   }
@@ -22,7 +22,7 @@ class ResponsiveSelector {
 
       for (let active of [true, false]) {
         let activeStr = active ? 'on' : 'off';
-        this.iconBackgrounds.set(device.name + '_' + activeStr, this._iconBackground({
+        this._iconBackgrounds.set(device.name + '_' + activeStr, this._iconBackground({
           deviceName: device.name,
           active: active
         }));
@@ -38,15 +38,15 @@ class ResponsiveSelector {
       });
 
       li.appendChild(b);
-      this.buttons.set(b, {
+      this._buttons.set(b, {
         on: () => {
-          b.style.background = this.iconBackgrounds.get(device.name + '_on');
+          b.style.background = this._iconBackgrounds.get(device.name + '_on');
         },
         off: () => {
-          b.style.background = this.iconBackgrounds.get(device.name + '_off');
+          b.style.background = this._iconBackgrounds.get(device.name + '_off');
         }
       });
-      this.container.appendChild(li);
+      this._container.appendChild(li);
       last = b;
     }
     this._toggleButton({button: last});
@@ -62,7 +62,7 @@ class ResponsiveSelector {
   }
 
   _toggleButton({button}) {
-    this.buttons.forEach((obj, b) => {
+    this._buttons.forEach((obj, b) => {
       if (b !== button) {
         obj.off();
       }
@@ -73,13 +73,13 @@ class ResponsiveSelector {
   }
 
   _broadcastChange({deviceName}) {
-    this.documentEditor.events.emit('GUID.responsive.change', {
+    this._documentEditor.events.emit('GUID.responsive.change', {
       deviceName
     });
   }
 
   _valueChange({width, minWidth, deviceName}) {
-    this.documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
+    this._documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
     this._broadcastChange({deviceName});
   }
 }

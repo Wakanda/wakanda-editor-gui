@@ -1,28 +1,22 @@
-import ResponsiveDevices from '../../Pannels/ResponsiveDevices';
-
 class ElementStyleManager{
   constructor({element}) {
     this.element = element;
 
     this.responsiveClasses = null;
-    this.initResponsiveClasses();
   }
 
   changeClassName({fullClassName}) {
     this.element.className = fullClassName;
-    this.initResponsiveClasses();
   }
 
   addClass({className}) {
     console.log('Adding class ' + className);
     this.element.classList.add(className);
-    this.initResponsiveClasses();
   }
 
   removeClass({className}) {
     console.log('Removing class ' + className);
     this.element.classList.remove(className);
-    this.initResponsiveClasses();
   }
 
   getAttributeValue(attributeName) {
@@ -54,17 +48,6 @@ class ElementStyleManager{
     }
 
     return null;
-  }
-
-  initResponsiveClasses() {
-    this.responsiveClasses = new Map();
-
-    for (let device of ResponsiveDevices.devices) {
-      let c = this._getResponsiveClassForDeviceName({
-        deviceName: device.name
-      });
-      this.responsiveClasses.set(device.name, c);
-    }
   }
 
   //return an array container either "all" or actives borders (left, right, top and/or bottom)

@@ -41,7 +41,7 @@ class PluginsManager {
 		try{
 			this.plugins[pluginName].code.activate();
 		}catch(e){
-
+			console.warn(e);
 		}
 
 		this.events.emit("plugin_activated", this.plugins[pluginName]);

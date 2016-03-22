@@ -13,7 +13,6 @@ var Module = {
 			var UserInterface = require("./UserInterface");
 			var Components = require("./Pannels/Components");
 			var Angular = require("./Pannels/Angular");
-			var ResponsiveSelector = require('./Pannels/ResponsiveSelector');
 
 
 			//TODO - URL of the iframe content
@@ -43,11 +42,6 @@ var Module = {
 					// 	containerId: 'angular',
 					// 	userInterface: IDE.GUID.userInterface
 					// });
-
-					IDE.GUID.panels.responsive = new ResponsiveSelector({
-						documentEditor,
-						containerId: 'responsiveButtonsList'
-					});
 
 					//to use it on devtool
 					window.d = documentEditor;
