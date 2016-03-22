@@ -66,17 +66,6 @@ class PanelsManager {
 		});
 	}
 
-	hookEvents(){
-		this.container.addEventListener("click", function(event){
-			var target     = event.target;
-			var pluginName = target.getAttribute("data-plugin");
-			var command    = target.getAttribute("data-command");
-			var plugin     = IDE.plugins.get(pluginName);
-
-			plugin.code[command]();
-		});
-	}
-
 	getPanelContainer({panelName}) {
 		let panelObj = this._panelsMap.get(panelName);
 		if(panelObj){
