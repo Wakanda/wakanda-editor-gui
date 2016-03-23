@@ -34,7 +34,7 @@ IDE.Core.onReady(function(){
 		"toolbar_plugin",
 		"outline",
 		"attributes",
-		"responsive"
-		//,"stying"
+		"responsive",
+		"styling"
 	]);
 });

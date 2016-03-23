@@ -27,7 +27,6 @@ class ResponsiveSelector {
   _createService(){
     let service = {};
     service.portViews = ResponsiveDevices;
-    service.portViewsNames = ResponsiveDevices.map( d => d.name );
     service.setPortView = ( { deviceName } ) => {
       let button = this.__getButtonFromDevice({deviceName});
       let device = ResponsiveDevices.filter( device=> device.name == deviceName)[0];

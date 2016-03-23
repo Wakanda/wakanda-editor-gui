@@ -10,15 +10,18 @@ import AlignmentManager from './Components/AlignmentManager';
 
 class Styling {
 
-  constructor({
-    containerId, documentEditor
-  }){
+  constructor({ containerId, documentEditor, panelContainer }){
     this.documentEditor = documentEditor || IDE.GUID.documentEditor;
     this.container = document.createElement('ul');
-    document.getElementById(containerId).appendChild(this.container);
-
+    (panelContainer || document.getElementById(containerId)).appendChild(this.container);
+    this._portViews = [];
     this.initStyleList();
     // this.stylesheetManager = this.documentEditor.stylesheetManager;
+  }
+
+  set portViews(portViews){
+    this._portViews = portViews;
+    console.log('from Styling Plugin: portViews added ', portViews);
   }
 
   initStyleList() {

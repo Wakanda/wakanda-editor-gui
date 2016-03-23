@@ -5,9 +5,12 @@ export default {
     coreModules : [
       'GUID',
       'panels'
-    ],
-    plugins:[
-
     ]
+  },
+  consumedServices: {
+    viewPort: {
+      // FIXME: now it support only the exact version (maybe use https://www.npmjs.com/package/semver)
+      "1.0.0": "consumedViewPortServiceV1"
+    }
   }
 }

@@ -6,8 +6,28 @@ class PluginsManager {
 		var _EventEmitter   = require('../../../lib/micro-events.js');
 		this.events = new _EventEmitter();
 
+		this._services = {};
+
 		this.toolbarElements  = [];
 		this.plugins          = {};
+	}
+
+	_addServices({services}){
+		for(let serviceName in services){
+			let servicesSet = services[serviceName];
+			let myService = this._services[serviceName] = this._services[serviceName] || {};
+			for(let version in servicesSet){
+				let service = servicesSet[version];
+				// TODO: review
+				myService[version] = service;
+			}
+		}
+		//inject added service in active plugins
+		for(let pluginName in this.plugins){
+			if(this.plugins[pluginName].active){
+				this._injectServices({pluginName, services});
+			}
+		}
 	}
 
 	get(pluginName) {
@@ -18,6 +38,7 @@ class PluginsManager {
 		this.plugins[pluginName]          = {};
 		this.plugins[pluginName].code     = require(`../../../plugins/${pluginName}/index.js`);
 		this.plugins[pluginName].manifest = require(`../../../plugins/${pluginName}/manifest.js`);
+		this.plugins[pluginName].active		= false;
 	}
 	// TODO: private ?
 	loadMultiple(plugins) {
@@ -43,6 +64,9 @@ class PluginsManager {
 			let dependencies = this._getDependenciesOfPlugin(pluginName);
 			// NOTE: return value is not used now
 			this.plugins[pluginName].code.activate(dependencies);
+			this.plugins[pluginName].active = true;
+			this._registerServices({pluginName});
+			this._injectServices({pluginName});
 		}catch(e){
 			console.warn(e);
 		}
@@ -50,6 +74,25 @@ class PluginsManager {
 		this.events.emit("plugin_activated", this.plugins[pluginName]);
 	}
 
+	_injectServices({pluginName, services}){
+		let plugin = this.plugins[pluginName];
+		let consumedServices = plugin.manifest.consumedServices || {};
+		for(let serviceName in consumedServices){
+			let servicesSet = consumedServices[serviceName];
+			let serviceToInjectSet = (services || this._services)[serviceName];// optimisation
+			if(serviceToInjectSet){
+				for(let version in servicesSet){
+					let injectionFunctionName = servicesSet[version];
+					let serviceToInject = serviceToInjectSet[version];
+					if(serviceToInject){
+						if(plugin.code[injectionFunctionName]){
+							plugin.code[injectionFunctionName](serviceToInject);
+						}
+					}
+				}
+			}
+		}
+	}
 	registerPluginToolbarElements(pluginName) {
 		var toolbarElements = this.plugins[pluginName].manifest.toolbar;
 
@@ -73,6 +116,22 @@ class PluginsManager {
 
 	onPluginsActivated(callback){
 		this.events.on("all_activated", callback );
+	}
+
+	_registerServices({pluginName}){
+		let plugin = this.plugins[pluginName];
+		let servicesProvidersNames = plugin.manifest.providedServices || {};
+		let providedServices = {};
+		for(let serviceName in servicesProvidersNames){
+			providedServices[serviceName] = {};
+			let servicesSet = servicesProvidersNames[serviceName];
+			for(let version in servicesSet){
+				let serviceProviderName = servicesSet[version];
+				let serviceFromPlugin = plugin.code[serviceProviderName]();
+				providedServices[serviceName][version] = serviceFromPlugin;
+			}
+		}
+		this._addServices({services: providedServices});
 	}
 
 	_getDependenciesOfPlugin(pluginName){

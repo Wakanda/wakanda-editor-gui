@@ -9,7 +9,7 @@ export default {
   },
   providedServices : {
     viewPort : {
-      '1.0.0' : provideServiceV1
+      '1.0.0' : 'provideServiceV1'
     }
   }
 }
