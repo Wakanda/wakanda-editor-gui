@@ -10,6 +10,7 @@ require("./styles/guid.css");
 //- LOAD CORE -//
 import Core from "./src/core";
 
+// TODO: separate
 //- INITIALIZE CORE -//
 IDE.Core = new Core([
 	"plugins",
@@ -23,7 +24,8 @@ IDE.Core.onReady(function(){
 		IDE.plugins.activate("toolbar_plugin");
 		IDE.plugins.activate("outline");
 		IDE.plugins.activate("attributes");
-		// TODO: needs dome changes before activating
+		IDE.plugins.activate("responsive");
+		// TODO: needs some changes before activating
 		// IDE.plugins.activate("styling");
 		IDE.plugins.events.emit("all_activated");
 	});
@@ -32,6 +34,7 @@ IDE.Core.onReady(function(){
 		"toolbar_plugin",
 		"outline",
 		"attributes",
-		"stying"
+		"responsive"
+		//,"stying"
 	]);
 });

@@ -2,7 +2,6 @@ import ResponsiveDevices from './ResponsiveDevices';
 
 class ResponsiveSelector {
   constructor({documentEditor, containerId, container}) {
-
     this._documentEditor = documentEditor;
     this._container = container || document.getElementById(containerId);
 
@@ -12,8 +11,54 @@ class ResponsiveSelector {
     this._initHtmlElement();
   }
 
-  _initHtmlElement() {
+  /**
+  /*  portViews
+  /*  portViewsNames
+  /*  setPortView
+  /*  mapDocumentSizeObservable
+  **/
+  get viewPortService(){
+    if( ! this._service ){
+      this._service = this._createService();
+    }
+    return this._service;
+  }
 
+  _createService(){
+    let service = {};
+    service.portViews = ResponsiveDevices;
+    service.portViewsNames = ResponsiveDevices.map( d => d.name );
+    service.setPortView = ( { deviceName } ) => {
+      let button = this.__getButtonFromDevice({deviceName});
+      let device = ResponsiveDevices.filter( device=> device.name == deviceName)[0];
+      this._toggleButton({button});
+      this._valueChange({
+        width: device.width,
+        minWidth: device.minWidth,
+        deviceName: device.name
+      });
+    };
+    service.mapDocumentSizeObservable = (documentDimObservable) => {
+      return documentDimObservable.map((dim)=>{
+        // FIXME:
+        let deviceName = 'sm'
+        for(device of ResponsiveDevices){
+          let wi = parseInt(device.minWidth || device.width);
+          if(dim.width > wi){
+            deviceName = device.name;
+          }else{
+            break;
+          }
+        }
+
+        return deviceName;
+      }).distinctUntilChanged();
+    };
+
+    return service;
+  }
+
+  _initHtmlElement() {
     var last;
     for (let device of ResponsiveDevices.devices) {
       let li = document.createElement('li');
@@ -39,6 +84,7 @@ class ResponsiveSelector {
 
       li.appendChild(b);
       this._buttons.set(b, {
+        device,
         on: () => {
           b.style.background = this._iconBackgrounds.get(device.name + '_on');
         },
@@ -50,9 +96,18 @@ class ResponsiveSelector {
       last = b;
     }
     this._toggleButton({button: last});
-    this._broadcastChange({deviceName: 'lg'});
   }
 
+  _getButtonFromDevice({deviceName}){
+    let button = null;
+    for(let current of this._buttons){
+      if(current[0].name == deviceName){
+        button = current[1];
+        break;
+      }
+    }
+    return button;
+  }
 
   _iconBackground({deviceName, active}) {
     let iconUrl = 'url(\'./images/mediaqueries/' + deviceName + '_' + (active ? 'on' : 'off') + '.png\') center no-repeat';
@@ -72,15 +127,8 @@ class ResponsiveSelector {
     });
   }
 
-  _broadcastChange({deviceName}) {
-    this._documentEditor.events.emit('GUID.responsive.change', {
-      deviceName
-    });
-  }
-
   _valueChange({width, minWidth, deviceName}) {
     this._documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
-    this._broadcastChange({deviceName});
   }
 }
 

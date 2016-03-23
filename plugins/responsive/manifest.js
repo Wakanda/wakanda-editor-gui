@@ -5,9 +5,11 @@ export default {
     coreModules : [
       'GUID',
       'panels'
-    ],
-    plugins:[
-
     ]
+  },
+  providedServices : {
+    viewPort : {
+      '1.0.0' : provideServiceV1
+    }
   }
 }
