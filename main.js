@@ -9,7 +9,7 @@ gui.ready.then(function(){
 		"toolbar_plugin",
 		"outline",
 		"attributes",
-		"responsive",
+		"viewPort",
 		"styling"
 	]);
 
@@ -17,6 +17,6 @@ gui.ready.then(function(){
 	pluginsmodule.activate("outline");
 	pluginsmodule.activate("attributes");
 	pluginsmodule.activate("styling");
-	pluginsmodule.activate("responsive");
+	pluginsmodule.activate("viewPort");
 
 });
