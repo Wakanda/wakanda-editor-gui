@@ -13,6 +13,11 @@ class PluginsManager {
 		this.plugins          = {};
 	}
 
+	get allActivated(){
+		let notActivatedPlugins = Object.keys(this.plugins).filter( pluginName => ! this.plugins[pluginName].active );
+		return notActivatedPlugins.length === 0;
+	}
+
 	_addServices({services}){
 		for(let serviceName in services){
 			let servicesSet = services[serviceName];
@@ -73,6 +78,10 @@ class PluginsManager {
 		}
 
 		this.events.emit("plugin_activated", this.plugins[pluginName]);
+		// TODO: review
+		if(this.allActivated){
+			this.events.emit("all_activated");
+		}
 	}
 
 	_injectServices({pluginName, services}){

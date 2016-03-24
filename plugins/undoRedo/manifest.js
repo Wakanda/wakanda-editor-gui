@@ -1,17 +1,14 @@
 export default {
   "toolbar": [
 		{
-	    name: "save",
+	    name: "undo",
 	    type: "button",
-	    action: "save"
+	    action: "undo"
 	  },
 		{
-	    type: "separator"
-	  },
-		{
-	    name: "prevEdit",
+	    name: "redo",
 	    type: "button",
-	    action: "prevEdit"
+	    action: "redo"
 	  }
 	],
   dependencies: {

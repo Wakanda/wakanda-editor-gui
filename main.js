@@ -6,14 +6,14 @@ gui.ready.then(function(){
 
 	// NOTE: auto loading all plugins
 	pluginsmodule.loadMultiple([
-		"toolbar_plugin",
+		"undoRedo",
 		"outline",
 		"attributes",
 		"viewPort",
 		"styling"
 	]);
 
-	pluginsmodule.activate("toolbar_plugin");
+	pluginsmodule.activate("undoRedo");
 	pluginsmodule.activate("outline");
 	pluginsmodule.activate("attributes");
 	pluginsmodule.activate("styling");

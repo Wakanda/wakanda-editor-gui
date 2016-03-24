@@ -62,7 +62,7 @@ class Toolbar {
 	}
 
 	hookEvents(){
-		this.container.addEventListener("click", function(event){
+		this.container.addEventListener("click", (event) => {
 			var target     = event.target;
 			var pluginName = target.getAttribute("data-plugin");
 			var command    = target.getAttribute("data-command");
