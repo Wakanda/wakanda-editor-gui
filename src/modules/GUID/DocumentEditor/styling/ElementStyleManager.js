@@ -31,9 +31,9 @@ class ElementStyleManager{
     }
   }
 
-  getResponsiveClassForDeviceName({deviceName}) {
-    return this.responsiveClasses.has(deviceName) ? this.responsiveClasses.get(deviceName) : null;
-  }
+  // getResponsiveClassForDeviceName({deviceName}) {
+  //   return this.responsiveClasses.has(deviceName) ? this.responsiveClasses.get(deviceName) : null;
+  // }
 
   _getResponsiveClassForDeviceName({deviceName}) {
     if (deviceName) {
