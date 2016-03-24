@@ -1,18 +1,17 @@
 import Toolbar from "./Toolbar"
 
 var Module =  {
-	activate(loaded){
+	activate(loaded, getModulMethod){
+
+		let pluginsManager = getModulMethod("plugins");
+
 		var toolbar = new Toolbar({
-			className : "page_toolbar"
+			options:{
+				className : "page_toolbar"
+			},
+			pluginsManager
 		});
 
-		IDE.plugins.onPluginsLoaded(function(){
-			//alert("Plugins Loaded");
-		});
-
-		IDE.plugins.onPluginsActivated(function(){
-			//alert("Plugins Activated");
-		});
 
 		loaded(toolbar);
 	}

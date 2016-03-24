@@ -1,14 +1,11 @@
-
-var IDE = window.IDE || {};
-
-
 class Core {
 	constructor(coreModules){
 		var that = this;
 
-		if( IDE.Core ) {
-			throw "Only one instance of core is allowed.";
-		}
+		// TODO: singleton
+		// if( IDE.Core ) {
+		// 	throw "Only one instance of core is allowed.";
+		// }
 
 		this._modulesInstances          = {};
 
@@ -23,7 +20,8 @@ class Core {
 							console.log(`Core module ${currentModuleName} loaded`);
 							this._modulesInstances[currentModuleName] = currentModuleInstance;
 							resolve();
-						});
+							// TODO: review
+						}, this.get.bind(this));
 					});
 				})
 			}, Promise.resolve());
@@ -34,8 +32,8 @@ class Core {
 		return this._modulesInstances[moduleName];
 	}
 
-	onReady(callback) {
-		this._readyPromise.then(callback);
+	get ready() {
+		return this._readyPromise;
 	}
 }
 

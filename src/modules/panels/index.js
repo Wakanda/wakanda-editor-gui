@@ -5,8 +5,6 @@ var Module =  {
 		var panels = new PanelsManager({
 			panelsContainerId : "side-panel"
 		});
-		// TODO: remove IDE object affectation from inside modules
-		IDE.panels = panels;
 
 		loaded(panels);
 	}

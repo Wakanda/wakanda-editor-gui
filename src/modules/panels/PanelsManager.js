@@ -1,7 +1,5 @@
 // NOTE: maybe using angular or react ... to create html rendering ..
 
-var IDE = window.IDE || {};
-
 class PanelsManager {
 	constructor({panelsContainer, panelsContainerId}) {
 

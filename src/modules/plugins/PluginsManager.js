@@ -1,7 +1,8 @@
-var IDE = window.IDE || {};
 // NOTE: using fileManager to load plugins
 class PluginsManager {
-	constructor(){
+	constructor({getModulMethod}){
+		// TODO: review
+		this._getModulMethod = getModulMethod;
 
 		var _EventEmitter   = require('../../../lib/micro-events.js');
 		this.events = new _EventEmitter();
@@ -141,7 +142,8 @@ class PluginsManager {
 		dependencies.coreModules = coreModuleDependenciesManifest
 			.reduce((retObj, coreModuleName)=>{
 				// NOTE: get the module with internal dependenci injection or IoC
-				let coreModule = IDE.Core.get(coreModuleName);
+				// TODO: review
+				let coreModule = this._getModulMethod(coreModuleName);
 				if(coreModule){
 					retObj[coreModuleName] = coreModule;
 				}else {

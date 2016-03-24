@@ -1,40 +1,22 @@
 import "babel-polyfill";
+import gui from './src/gui';
 
-var IDE = window.IDE = {};
+gui.ready.then(function(){
+	let pluginsmodule = gui.get("plugins");
 
-require("./styles/common.css");
-require("./styles/editor.css");
-require("./styles/tree.css");
-require("./styles/guid.css");
-
-//- LOAD CORE -//
-import Core from "./src/core";
-
-// TODO: separate
-//- INITIALIZE CORE -//
-IDE.Core = new Core([
-	"plugins",
-	"toolbar",
-	"panels",
-	"GUID"
-]);
-
-IDE.Core.onReady(function(){
-	IDE.plugins.onPluginsLoaded(function(){
-		IDE.plugins.activate("toolbar_plugin");
-		IDE.plugins.activate("outline");
-		IDE.plugins.activate("attributes");
-		IDE.plugins.activate("responsive");
-		// TODO: needs some changes before activating
-		// IDE.plugins.activate("styling");
-		IDE.plugins.events.emit("all_activated");
-	});
-
-	IDE.plugins.loadMultiple([
+	// NOTE: auto loading all plugins
+	pluginsmodule.loadMultiple([
 		"toolbar_plugin",
 		"outline",
 		"attributes",
 		"responsive",
 		"styling"
 	]);
+
+	pluginsmodule.activate("toolbar_plugin");
+	pluginsmodule.activate("outline");
+	pluginsmodule.activate("attributes");
+	pluginsmodule.activate("styling");
+	pluginsmodule.activate("responsive");
+
 });
