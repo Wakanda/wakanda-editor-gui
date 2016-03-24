@@ -7,6 +7,8 @@ gui.ready.then(function(){
 	// NOTE: auto loading all plugins
 	pluginsmodule.loadMultiple([
 		"undoRedo",
+		"save",
+		"preview",
 		"outline",
 		"attributes",
 		"viewPort",
@@ -14,6 +16,8 @@ gui.ready.then(function(){
 	]);
 
 	pluginsmodule.activate("undoRedo");
+	pluginsmodule.activate("save");
+	pluginsmodule.activate("preview");
 	pluginsmodule.activate("outline");
 	pluginsmodule.activate("attributes");
 	pluginsmodule.activate("styling");

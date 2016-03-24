@@ -8,13 +8,7 @@ export default {
     this._documentEditor = coreModules.GUID.documentEditor;
     this._toolbar = coreModules.toolbar;
     this._uiStateIsEdit = this._documentEditor.setUIToEdit(true);
-    this._updatePrevEditIcon();
-  },
-
-  save() {
-    this._documentEditor.save().then((saved) => {
-      alert('file saved');
-    })
+    // this._updatePrevEditIcon();
   },
 
   prevEdit() {
