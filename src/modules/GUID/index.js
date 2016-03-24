@@ -4,13 +4,11 @@ var Module = {
 		require.ensure([
 			"./DocumentEditor",
 			"./UserInterface",
-			"./Pannels/Components",
-			"./Pannels/Angular"
+			"./Pannels/Components"
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
 			var Components = require("./Pannels/Components");
-			var Angular = require("./Pannels/Angular");
 
 
 			//TODO - URL of the iframe content
@@ -34,13 +32,7 @@ var Module = {
 						documentEditor,
 						containerId: 'components'
 					});
-					// TODO: load angular
-					// // angular panel
-					// let angularPanel = IDE.GUID.panels.angularPanel = new Angular({
-					// 	documentEditor,
-					// 	containerId: 'angular',
-					// 	userInterface: IDE.GUID.userInterface
-					// });
+
 
 					//to use it on devtool
 					window.d = documentEditor;

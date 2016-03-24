@@ -2,25 +2,30 @@ import "babel-polyfill";
 import gui from './src/gui';
 
 gui.ready.then(function(){
-	let pluginsmodule = gui.get("plugins");
+	let pluginsManager = gui.get("plugins");
 
 	// NOTE: auto loading all plugins
-	pluginsmodule.loadMultiple([
+	pluginsManager.loadMultiple([
 		"undoRedo",
 		"save",
 		"preview",
 		"outline",
 		"attributes",
 		"viewPort",
-		"styling"
+		"styling",
+		"angular"
 	]);
 
-	pluginsmodule.activate("undoRedo");
-	pluginsmodule.activate("save");
-	pluginsmodule.activate("preview");
-	pluginsmodule.activate("outline");
-	pluginsmodule.activate("attributes");
-	pluginsmodule.activate("styling");
-	pluginsmodule.activate("viewPort");
+	pluginsManager.activate("undoRedo");
+	pluginsManager.activate("save");
+	pluginsManager.activate("preview");
+	pluginsManager.activate("outline");
+	pluginsManager.activate("attributes");
+	pluginsManager.activate("styling");
+	pluginsManager.activate("viewPort");
+
+	// NOTE: temp
+	pluginsManager.events.emit('all_activated')
+	// pluginsManager.activate("angular");
 
 });

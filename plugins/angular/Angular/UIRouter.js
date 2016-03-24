@@ -1,4 +1,4 @@
-import {getFile, stringToDomElements, saveFileForPreview, domArrayToDocumentFragmentClone, docFragmentToString} from '../helpers';
+import {getFile, stringToDomElements, saveFileForPreview, domArrayToDocumentFragmentClone, docFragmentToString} from './helpers';
 const UIDIRATTNAME = 'ui-view';
 
 class UIRouter {

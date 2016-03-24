@@ -1,4 +1,4 @@
-import helpers from '../../helpers';
+import helpers from '../helpers';
 // TODO: neeed refactoring
 class AngularRecipe{
   constructor({recipeContent, recipeType, recipeName, /*fromScript,*/ applicationName}){

@@ -1,18 +1,18 @@
 import AngularPage from './AngularPage';
 import UIRouter from './UIRouter';
 import {ScriptsRenderer, RecipeRenderer, UIRouterRenderer, ApplicationRenderer} from './Renderers';
-import helpers from '../helpers';
+import helpers from './helpers';
 
 class AngularPanel{
-  constructor({documentEditor, containerId}){
+  constructor({documentEditor, containerId, panelContainer}){
     this._documentEditor = documentEditor;
-    this.panelContainer = document.getElementById(containerId);
+    this.panelContainer = panelContainer || document.getElementById(containerId);
 
 		this._angularPage = new AngularPage({documentEditor});
 
     this._angularPage.ready.then((angularPage)=>{
       this._uiRouter = new UIRouter({angularPage});
-      
+
       this._uiRouter.ready.then((uirouter)=>{
         this._uiRouterRenderer = this.initUIRouterRenderer();
       });

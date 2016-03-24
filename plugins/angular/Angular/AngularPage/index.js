@@ -1,6 +1,6 @@
 import AngularRecipe from './AngularRecipe';
-import MultiEvent from '../../../../../../lib/multi-event-master/src/multi-event-es6.js';
-import helpers from '../../helpers';
+import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
+import helpers from '../helpers';
 
 const NGAPPATTRIBUTE = 'ng-app';
 const NGCTRLATTRIBUTE = 'ng-controller';
@@ -9,7 +9,7 @@ class AngularPage {
   constructor({documentEditor}){
     this._documentEditor = documentEditor;
 
-    this._applicationElement = this.documentEditor.document.querySelector(`[${NGAPPATTRIBUTE}]`);
+    this._applicationElement = this._documentEditor.querySelector(`[${NGAPPATTRIBUTE}]`);
 
     this.applicationNameToScript = new Map();
     this.applicationNameToInfos = new Map();
@@ -35,7 +35,7 @@ class AngularPage {
   get recipes(){
     return Array.from(this.recipesMap.values());
   }
-  setControllerToElement({controller, element = this.documentEditor.selectedElement}){
+  setControllerToElement({controller, element = this._documentEditor.selectedElement}){
     let oldControllerElement = this.getControllerElement({controller});
     let elements = [],
         attributes = [],
@@ -51,7 +51,7 @@ class AngularPage {
 
     this.controllerToElement.set(controller, element);
 
-    this.documentEditor.changeElementAttributes({elements, attributes, values});
+    this._documentEditor.changeElementAttributes({elements, attributes, values});
   }
   getControllerElement({controller}){
     return this.controllerToElement.get(controller);
@@ -80,7 +80,7 @@ class AngularPage {
               return null;
             }
             let declarationCode = helpers.getDeclarationCodeOfApplication({applicationInfos});
-            return this.documentEditor.scriptManager.createEmbdedScript({
+            return this._documentEditor.scriptManager.createEmbdedScript({
               content: declarationCode,
               text: 'Application '+applicationInfos.applicationName
             });
@@ -90,7 +90,7 @@ class AngularPage {
         let recipesScripts = this.getRecipesByScript({script})
           .map((recipe)=>{
             let code = recipe.code;
-            return this.documentEditor.scriptManager.createEmbdedScript({
+            return this._documentEditor.scriptManager.createEmbdedScript({
               content: code,
               text: recipe.type+' '+recipe.name
             });
@@ -99,7 +99,7 @@ class AngularPage {
         // embeded create a new script/scripts that containe the script informations
       }, []);
 
-    this.documentEditor.addRemoveScripts({
+    this._documentEditor.addRemoveScripts({
       scriptsToAdd: newScripts,
       scriptsToRemove: selectedScripts
     });
@@ -112,7 +112,7 @@ class AngularPage {
     }
   }
   setApplicationToSelectedElement({applicationName}){
-    let selectedElement = this.documentEditor.selectedElement;
+    let selectedElement = this._documentEditor.selectedElement;
     if(!selectedElement){
       return false;
     }
@@ -128,12 +128,12 @@ class AngularPage {
       angular.module('${applicationName}', []);
     `;
 
-    let script = this.documentEditor.scriptManager.createEmbdedScript({
+    let script = this._documentEditor.scriptManager.createEmbdedScript({
       content: declarationCode,
       text: 'Application '+ applicationName
     });
 
-    this.documentEditor.addRemoveScripts({
+    this._documentEditor.addRemoveScripts({
       scriptsToAdd: [script],
       scriptsToRemove: oldApplicationScript ? [oldApplicationScript] : []
     });
@@ -157,19 +157,19 @@ class AngularPage {
 
     this._applicationElement = applicationElement
 
-    this.documentEditor.changeElementAttributes({elements, attributes, values});
+    this._documentEditor.changeElementAttributes({elements, attributes, values});
   }
   get configRecipe(){
     return this.getRecipeByName({name: 'config'});
   }
   syncWithDocument(){
-    this.documentEditor.scripts.forEach((script)=>{
+    this._documentEditor.scripts.forEach((script)=>{
       this.addScript({script});
     });
-    this.documentEditor.onAddScript(({script})=>{
+    this._documentEditor.onAddScript(({script})=>{
       this.addScript({script});
     });
-    this.documentEditor.onRemoveScript(({script})=>{
+    this._documentEditor.onRemoveScript(({script})=>{
       this.removeScript({script});
     });
   }
