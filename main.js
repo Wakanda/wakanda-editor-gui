@@ -1,31 +1,35 @@
 import "babel-polyfill";
 import gui from './src/gui';
 
-gui.ready.then(function(){
-	let pluginsManager = gui.get("plugins");
+// NOTE: ex: adding undoRedo state
+let guiArgs = { filePath: location.hash.substring(2) };
 
-	// NOTE: auto loading all plugins
-	pluginsManager.loadMultiple([
-		"undoRedo",
-		"save",
-		"preview",
-		"outline",
-		"attributes",
-		"viewPort",
-		"styling",
-		"angular"
-	]);
+gui.load({	GUID:  guiArgs })
+	.then( ( ) => {
+		let pluginsManager = gui.get("plugins");
 
-	pluginsManager.activate("undoRedo");
-	pluginsManager.activate("save");
-	pluginsManager.activate("preview");
-	pluginsManager.activate("outline");
-	pluginsManager.activate("attributes");
-	pluginsManager.activate("styling");
-	pluginsManager.activate("viewPort");
+		// NOTE: auto loading all plugins
+		pluginsManager.loadMultiple([
+			"undoRedo",
+			"save",
+			"preview",
+			"outline",
+			"attributes",
+			"viewPort",
+			"styling",
+			"angular"
+		]);
 
-	// NOTE: temp
-	pluginsManager.events.emit('all_activated')
-	// pluginsManager.activate("angular");
+		pluginsManager.activate("undoRedo");
+		pluginsManager.activate("save");
+		pluginsManager.activate("preview");
+		pluginsManager.activate("outline");
+		pluginsManager.activate("attributes");
+		pluginsManager.activate("styling");
+		pluginsManager.activate("viewPort");
 
-});
+		// NOTE: temp
+		pluginsManager.events.emit('all_activated')
+		// pluginsManager.activate("angular");
+
+	});

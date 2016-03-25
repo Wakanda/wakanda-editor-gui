@@ -1,7 +1,7 @@
 import PanelsManager from "./PanelsManager";
 
 var Module =  {
-	activate(loaded){
+	activate({loaded}){
 		var panels = new PanelsManager({
 			panelsContainerId : "side-panel"
 		});

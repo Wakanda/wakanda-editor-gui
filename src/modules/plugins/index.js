@@ -2,8 +2,8 @@ import PluginsManager from "./PluginsManager"
 
 var Module =  {
 	// TODO: review
-	activate(loaded, getModulMethod){
-		
+	activate({loaded, getModulMethod}){
+
 		var plugins    = new PluginsManager({getModulMethod});
 
 		loaded(plugins);

@@ -1,5 +1,5 @@
 var Module = {
-	activate(loaded) {
+	activate({loaded, moduleArgs}) {
 
 		require.ensure([
 			"./DocumentEditor",
@@ -12,9 +12,8 @@ var Module = {
 
 
 			//TODO - URL of the iframe content
-			let projectPath = location.hash.substring(2);
+			let projectPath = moduleArgs.filePath;
 
-			console.log(projectPath);
 			DocumentEditor.load({projectPath})
 				.then((documentEditor)=>{
 					let GUID = {};

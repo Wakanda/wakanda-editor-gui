@@ -1,7 +1,7 @@
 import Toolbar from "./Toolbar"
 
 var Module =  {
-	activate(loaded, getModulMethod){
+	activate({loaded, getModulMethod}){
 
 		let pluginsManager = getModulMethod("plugins");
 
