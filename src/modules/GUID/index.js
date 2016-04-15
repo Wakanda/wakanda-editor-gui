@@ -11,7 +11,6 @@ var Module = {
 			var Components = require("./Pannels/Components");
 
 
-			//TODO - URL of the iframe content
 			let projectPath = moduleArgs.filePath;
 
 			DocumentEditor.load({projectPath})

@@ -11,52 +11,6 @@ class ResponsiveSelector {
     this._initHtmlElement();
   }
 
-  /**
-  /*  portViews
-  /*  portViewsNames
-  /*  setPortView
-  /*  mapDocumentSizeObservable
-  **/
-  get viewPortService(){
-    if( ! this._service ){
-      this._service = this._createService();
-    }
-    return this._service;
-  }
-
-  _createService(){
-    let service = {};
-    service.portViews = ResponsiveDevices;
-    service.setPortView = ( { deviceName } ) => {
-      let button = this.__getButtonFromDevice({deviceName});
-      let device = ResponsiveDevices.filter( device=> device.name == deviceName)[0];
-      this._toggleButton({button});
-      this._valueChange({
-        width: device.width,
-        minWidth: device.minWidth,
-        deviceName: device.name
-      });
-    };
-    service.mapDocumentSizeObservable = (documentDimObservable) => {
-      return documentDimObservable.map((dim)=>{
-        // FIXME:
-        let deviceName = 'sm'
-        for(device of ResponsiveDevices){
-          let wi = parseInt(device.minWidth || device.width);
-          if(dim.width > wi){
-            deviceName = device.name;
-          }else{
-            break;
-          }
-        }
-
-        return deviceName;
-      }).distinctUntilChanged();
-    };
-
-    return service;
-  }
-
   _initHtmlElement() {
     var last;
     for (let device of ResponsiveDevices.devices) {

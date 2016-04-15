@@ -13,13 +13,17 @@ export default {
       panelContainer,
       documentEditor: GUID.documentEditor
     });
-    // TODO: manage the comunication between plugins in the plugins manager (services in atom )
+
     return this._stylingPanelInstance;
   },
 
+  _addResponsiceClassPicker({portViewService}){
+    console.log(portViewService);
+  },
+
   consumedViewPortServiceV1(service){
-    this._stylingPanelInstance.portViews = service.portViews;
-    // this._stylingPanelInstance.setChangeViewFunction(service.setPortView);
+    let portViewService = service;
+    this._addResponsiceClassPicker({portViewService});
   }
 
 }

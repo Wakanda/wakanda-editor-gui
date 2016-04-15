@@ -1,4 +1,5 @@
 import ResponsiveSelector from "./ResponsiveSelector";
+import PortViewService from "./PortViewService";
 
 export default {
 
@@ -9,16 +10,23 @@ export default {
 
     let panelContainer = pannelsManager.responsiveButtonsList;
 
-    this._responsivePanelInstance = new ResponsiveSelector({
+    this._portViewlInstance = new ResponsiveSelector({
       documentEditor,
       container: panelContainer
     });
-    // TODO: manage the comunication between plugins in the plugins manager (services in atom )
-    return this._responsivePanelInstance;
+
+    this._portViewsService = null;
+
+    return this._portViewlInstance;
   },
-  // NOTE: without versioning
+
   provideServiceV1() {
-    return this._responsivePanelInstance.viewPortService;
+    if(! this._portViewsService){
+      this._portViewsService = new PortViewService({
+        responsiveSelector: this._portViewlInstance
+      });
+    }
+    return this._portViewsService;
   }
 
 }
