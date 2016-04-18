@@ -11,3 +11,5 @@ var Module =  {
 }
 
 export default Module;
+
+// TODO: manage error messages

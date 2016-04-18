@@ -1,7 +1,13 @@
 class ResponsiveClassPicker {
 
-  constructor({documentEditor}) {
-
+  constructor({documentEditor, portViewService}) {
+    /*
+    //  portViewService
+    setPortView
+    portViews
+    onPortViewChange
+    */
+    this._portViewsService = portViewService;
     this.documentEditor = documentEditor;
     this.htmlElement = null;
     this.currentDeviceName = null;
@@ -11,6 +17,13 @@ class ResponsiveClassPicker {
     this._initHtmlElement();
     this._subscribeToEvents();
     this._subscribeToDocumentEditorEvents();
+
+    this.onValueChange(({newValue, oldValue}) => {
+      this.documentEditor.addRemoveClasses({
+        classesToAdd: [newValue],
+        classesToRemove: [oldValue]
+      });
+    });
   }
 
   _initHtmlElement() {
@@ -20,23 +33,44 @@ class ResponsiveClassPicker {
     this.htmlElement = container;
   }
 
-  appendToElement(element) {
-    element.appendChild(this.htmlElement);
+  insertFirst(element) {
+    let parent = element;
+    let child = parent.firstChild;
+    parent.insertBefore(this.htmlElement, child);
   }
 
   onValueChange(callback) {
     this.select.addEventListener('change', () => {
       if (this.currentDeviceName && this.selectedElement) {
-        let esm = this.documentEditor.styleManager.getElementStyleManager({element: this.selectedElement});
+        let esm = this.documentEditor.styleManager.getElementStyleManager({
+          element: this.selectedElement
+        });
         var newValue = this.select.value;
         if (newValue == 'null') {
           newValue = null;
         }
-        let oldValue = esm.getResponsiveClassForDeviceName({deviceName: this.currentDeviceName});
+        let oldValue = this._getResponsiveClassForDeviceName({
+          deviceName: this.currentDeviceName,
+          element : this.selectedElement
+        });
 
         callback({newValue, oldValue});
       }
     });
+  }
+  _getResponsiveClassForDeviceName({deviceName = this.currentDeviceName, element = this.selectedElement}){
+    if (deviceName) {
+      let classes = element.classList;
+      let prefix = 'col-' + deviceName + '-';
+
+      for (let c of classes) {
+        if (c.indexOf(prefix) != -1) {
+          return c;
+        }
+      }
+    }
+
+    return null;
   }
 
   _emptySelect() {
@@ -57,10 +91,14 @@ class ResponsiveClassPicker {
 
   _determineResponsiveClass({element}) {
     if (element) {
-      let manager = this.documentEditor.styleManager.getElementStyleManager({element});
-      this.select.value = manager.getResponsiveClassForDeviceName({
-        deviceName: this.currentDeviceName
+      this.select.value = this._getResponsiveClassForDeviceName({
+        deviceName: this.currentDeviceName,
+        element
       });
+      // let manager = this.documentEditor.styleManager.getElementStyleManager({element});
+      // this.select.value = manager.getResponsiveClassForDeviceName({
+      //   deviceName: this.currentDeviceName
+      // });
     }
     else {
       this.select.value = null;
@@ -89,14 +127,20 @@ class ResponsiveClassPicker {
   }
 
   _subscribeToEvents() {
-    // TODO: change this (must not access to documentEditor._events)
-    this.documentEditor.events.on('GUID.responsive.change', ({deviceName}) => {
+    this._portViewsService.onPortViewChange(({deviceName}) => {
       this._switchToDevice({deviceName});
 
       if (this.selectedElement) {
         this._determineResponsiveClass({element: this.selectedElement});
       }
     });
+    // this.documentEditor.events.on('GUID.responsive.change', ({deviceName}) => {
+    //   this._switchToDevice({deviceName});
+    //
+    //   if (this.selectedElement) {
+    //     this._determineResponsiveClass({element: this.selectedElement});
+    //   }
+    // });
   }
 
   _subscribeToDocumentEditorEvents() {

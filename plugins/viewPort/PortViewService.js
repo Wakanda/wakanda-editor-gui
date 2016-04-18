@@ -1,6 +1,4 @@
 
-// TODO: add packages dependencies for each
-import MultiEvent from '../../lib/multi-event-master/src/multi-event-es6.js';
 import ResponsiveDevices from './ResponsiveSelector/ResponsiveDevices';
 /**
 /*  portViews
@@ -11,7 +9,6 @@ import ResponsiveDevices from './ResponsiveSelector/ResponsiveDevices';
 class PortViewService {
   constructor({responsiveSelector}) {
     this._responsiveSelector = responsiveSelector;
-    this._events = new MultiEvent();
     // NOTE: trying to use observables
     // let tmp = mapDocumentSizeObservable = (documentDimObservable) => {
     //   return documentDimObservable.map((dim)=>{
@@ -41,15 +38,14 @@ class PortViewService {
         minWidth: device.minWidth,
         deviceName: device.name
       });
-      this._events.emit('change', {deviceName});
   }
 
   get portViews(){
     return ResponsiveDevices;
   }
 
-  onPortViexChange(callBack){
-    this._events.on('change', callBack);
+  onPortViewChange(callBack){
+    this._responsiveSelector.onPortViewChange(callBack);
   }
 
 }

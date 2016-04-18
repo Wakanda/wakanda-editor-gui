@@ -1,4 +1,6 @@
 import ResponsiveDevices from './ResponsiveDevices';
+// TODO: add packages dependencies for each
+import MultiEvent from '../../../lib/multi-event-master/src/multi-event-es6.js';
 
 class ResponsiveSelector {
   constructor({documentEditor, containerId, container}) {
@@ -7,6 +9,8 @@ class ResponsiveSelector {
 
     this._buttons = new Map();
     this._iconBackgrounds = new Map();
+
+    this._events = new MultiEvent();
 
     this._initHtmlElement();
   }
@@ -82,6 +86,11 @@ class ResponsiveSelector {
 
   _valueChange({width, minWidth, deviceName}) {
     this._documentEditor.changeDocumentSize({width: width, minWidth: minWidth});
+    this._events.emit('change', {deviceName});
+  }
+
+  onPortViewChange(callBack){
+    this._events.on('change', callBack);
   }
 }
 
