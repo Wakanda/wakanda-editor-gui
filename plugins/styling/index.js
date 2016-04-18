@@ -28,8 +28,7 @@ export default {
       documentEditor: this._documentEditor,
       portViewService : portViewService
     });
-    this._responsiveClassPicker.insertFirst(this._panelContainer);
-    console.log(portViewService);
+    this._responsiveClassPicker.insertFirst(this._stylingPanelInstance.container);
   },
 
   consumedViewPortServiceV1(service){

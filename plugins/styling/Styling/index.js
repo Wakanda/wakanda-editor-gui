@@ -12,11 +12,15 @@ class Styling {
 
   constructor({ containerId, documentEditor, panelContainer }){
     this.documentEditor = documentEditor || IDE.GUID.documentEditor;
-    this.container = document.createElement('ul');
-    (panelContainer || document.getElementById(containerId)).appendChild(this.container);
+    this._container = document.createElement('ul');
+    (panelContainer || document.getElementById(containerId)).appendChild(this._container);
     this._portViews = [];
     this.initStyleList();
     // this.stylesheetManager = this.documentEditor.stylesheetManager;
+  }
+
+  get container(){
+    return this._container;
   }
 
   set portViews(portViews){
@@ -31,7 +35,7 @@ class Styling {
     // let responsiveClassPicker = new ResponsiveClassPicker({
     //   documentEditor: this.documentEditor
     // });
-    // responsiveClassPicker.appendToElement(this.container);
+    // responsiveClassPicker.appendToElement(this._container);
     // responsiveClassPicker.onValueChange(({newValue, oldValue}) => {
     //   this.documentEditor.addRemoveClasses({
     //     classesToAdd: [newValue],
@@ -44,7 +48,7 @@ class Styling {
       attributeName: 'id',
       placeholder: 'ID'
     });
-    idInput.appendToElement(this.container);
+    idInput.appendToElement(this._container);
     idInput.onValueChange((value) => {
       this.documentEditor.changeElementAttribute({
         attribute: 'id',
@@ -58,7 +62,7 @@ class Styling {
       placeholder: 'Text color',
       attributeName: 'color'
     });
-    this.colorPicker.appendToElement(this.container);
+    this.colorPicker.appendToElement(this._container);
     this.colorPicker.onColorChange((colorHexFormat) => {
       this.documentEditor.changeSelectedElementStyleAttribute({
         attribute: 'color',
@@ -72,7 +76,7 @@ class Styling {
       placeholder: 'Background color',
       attributeName: 'background-color'
     });
-    this.bgColorPicker.appendToElement(this.container);
+    this.bgColorPicker.appendToElement(this._container);
     this.bgColorPicker.onColorChange((colorHexFormat) => {
       this.documentEditor.changeSelectedElementStyleAttribute({
         attribute: 'background-color',
@@ -83,7 +87,7 @@ class Styling {
     this.fontSizePicker = new FontSizePicker({
       documentEditor: this.documentEditor
     });
-    this.fontSizePicker.appendToElement(this.container);
+    this.fontSizePicker.appendToElement(this._container);
     this.fontSizePicker.onValueChange((size) => {
       this.documentEditor.changeSelectedElementStyleAttribute({
         attribute: 'font-size',
@@ -99,11 +103,11 @@ class Styling {
     let boxManager = new BoxManager({
       documentEditor: this.documentEditor
     });
-    boxManager.appendToElement(this.container);
+    boxManager.appendToElement(this._container);
     let classPicker = new ClassPicker({
       documentEditor: this.documentEditor
     });
-    classPicker.appendToElement(this.container);
+    classPicker.appendToElement(this._container);
     classPicker.onClassInputValueChange(({value}) => {
       this.documentEditor.addClass({className: value});
     });
@@ -111,11 +115,11 @@ class Styling {
     let borderManager = new BorderManager({
       documentEditor: this.documentEditor
     });
-    borderManager.appendToElement(this.container);
+    borderManager.appendToElement(this._container);
     let alignmentManager = new AlignmentManager({
       documentEditor: this.documentEditor
     });
-    alignmentManager.appendToElement(this.container);
+    alignmentManager.appendToElement(this._container);
     alignmentManager.onHorizontalValueChange((value) => {
       this.documentEditor.changeSelectedElementStyleAttribute({
         attribute: 'text-align',
@@ -128,7 +132,7 @@ class Styling {
     // saveButton.addEventListener('click', () => {
     //   console.log("CSS dump\n", _this.stylesheetManager.toString());
     // });
-    // this.container.appendChild(saveButton);
+    // this._container.appendChild(saveButton);
   }
 }
 

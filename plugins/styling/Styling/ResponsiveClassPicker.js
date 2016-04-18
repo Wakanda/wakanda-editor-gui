@@ -34,9 +34,11 @@ class ResponsiveClassPicker {
   }
 
   insertFirst(element) {
+    let ul = document.createElement('ul');
+    ul.appendChild(this.htmlElement);
     let parent = element;
     let child = parent.firstChild;
-    parent.insertBefore(this.htmlElement, child);
+    parent.insertBefore(ul, child);
   }
 
   onValueChange(callback) {
