@@ -3,12 +3,11 @@ var Module = {
 
 		require.ensure([
 			"./DocumentEditor",
-			"./UserInterface",
-			"./Pannels/Components"
+			"./UserInterface"
 		], function(require) {
 			var DocumentEditor = require("./DocumentEditor");
 			var UserInterface = require("./UserInterface");
-			var Components = require("./Pannels/Components");
+			//var Components = require("./Pannels/Components");
 
 
 			let projectPath = moduleArgs.filePath;
@@ -26,10 +25,10 @@ var Module = {
 					// load Pannels
 					GUID.panels = {};
 					// Components
-					GUID.panels.components = new Components({
-						documentEditor,
-						containerId: 'components'
-					});
+		//			GUID.panels.components = new Components({
+		//				documentEditor,
+		//				containerId: 'components'
+		//			});
 
 
 					//to use it on devtool

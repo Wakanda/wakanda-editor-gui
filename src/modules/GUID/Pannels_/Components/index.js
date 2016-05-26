@@ -1,10 +1,10 @@
-import htmlComponentsAsJson from './HtmlComponents'; // components
+//import htmlComponentsAsJson from './HtmlComponents'; // components
 import bootstrapComponentsAsJson from './BootstrapComponents'; // components
 import directivesAsJson from './Directives'; // components
 import Component from './Component' //class
 
 
-let [htmlComponents, bootstrapComponents, directives ] = [ htmlComponentsAsJson, bootstrapComponentsAsJson, directivesAsJson]
+let [bootstrapComponents, directives ] = [ bootstrapComponentsAsJson, directivesAsJson]
   .map((componentsAsJson) => {
     return componentsAsJson.map((compoJson)=>{
      return new Component({manifest: compoJson.manifest, template: compoJson.template});
@@ -21,7 +21,7 @@ class ComponentPanel {
   }
 
   _initContainer() {
-    for (let c of [...htmlComponents, ...bootstrapComponents, ...directives]) {
+    for (let c of [...bootstrapComponents, ...directives]) {
       let div = document.createElement('div');
       div.innerHTML = c.name;
 

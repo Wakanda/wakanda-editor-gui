@@ -22,8 +22,7 @@ export default {
 
     return this._stylingPanelInstance;
   },
-
-  _addResponsiceClassPicker({portViewService}){
+  _addResponsiveClassPicker({portViewService}){
     this._responsiveClassPicker = new ResponsiveClassPicker({
       documentEditor: this._documentEditor,
       portViewService : portViewService
@@ -33,7 +32,7 @@ export default {
 
   consumedViewPortServiceV1(service){
     let portViewService = service;
-    this._addResponsiceClassPicker({portViewService});
+    this._addResponsiveClassPicker({portViewService});
   }
 
 }

@@ -8,8 +8,7 @@ gui.load({	GUID:  guiArgs })
 	.then( ( ) => {
 		let pluginsManager = gui.get("plugins");
 
-		// NOTE: auto loading all plugins
-		pluginsManager.loadMultiple([
+		var pluginsList = [
 			"undoRedo",
 			"save",
 			"preview",
@@ -17,19 +16,21 @@ gui.load({	GUID:  guiArgs })
 			"attributes",
 			"viewPort",
 			"styling",
-			"angular"
-		]);
+			"angular",
+			"components",
+			"htmlComponents"
+		];
 
-		pluginsManager.activate("undoRedo");
-		pluginsManager.activate("save");
-		pluginsManager.activate("preview");
-		pluginsManager.activate("outline");
-		pluginsManager.activate("attributes");
-		pluginsManager.activate("styling");
-		pluginsManager.activate("viewPort");
+		// NOTE: auto loading all plugins
+		// NOTE: asynchrone
+		pluginsManager.loadMultiple(pluginsList);
+
+		pluginsList.forEach(function(pluginName){
+			pluginsManager.activate(pluginName);
+		});
 
 		// NOTE: temp
-		pluginsManager.events.emit('all_activated')
+		pluginsManager.events.emit('all_activated');
 		// pluginsManager.activate("angular");
 
 	});
