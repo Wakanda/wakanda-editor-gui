@@ -10,7 +10,8 @@ export default {
   componentsGroupServiceV1Consume(service){
     let componentsGroupService = service;
 
-    let htmlComponents = componentsGroupService.createComponentsFromJson(htmlComponentsAsJson);
+    let htmlComponents = componentsGroupService
+      .createComponentsFromJson(htmlComponentsAsJson);
 
     componentsGroupService.addGroup({
       groupName: 'Html Components',

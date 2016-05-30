@@ -31,6 +31,8 @@ class Component {
     this._directiveBody = manifest.directiveBody;
   }
 
+  // TODO: add strategy for Bijection
+
   get name(){
     return this._name;
   }

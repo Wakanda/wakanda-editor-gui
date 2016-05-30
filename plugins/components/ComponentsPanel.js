@@ -3,7 +3,7 @@ import ComponentGroup from './ComponentsGroup';
 class ComponentsPanel {
   constructor({documentEditor, containerId, panelContainer}) {
     this._panelContainer = panelContainer;
-    this.documentEditor = documentEditor;
+    this._documentEditor = documentEditor;
 
     this._componentsGroups = {};
 
@@ -11,7 +11,11 @@ class ComponentsPanel {
 
   addGroup({groupName, components}){
     if(! this._componentsGroups[groupName]){
-      this._componentsGroups[groupName] = new ComponentGroup({groupName});
+      // we pass the document editor because we do not have automatic dependencies injection (maybe in the future)
+      this._componentsGroups[groupName] = new ComponentGroup({
+        groupName,
+        documentEditor: this._documentEditor
+      });
       this._panelContainer
         .appendChild(this._componentsGroups[groupName]
           .container);

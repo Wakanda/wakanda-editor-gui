@@ -1,6 +1,8 @@
-
+// NOTE: maybe the stratategy will be shared between all components in the same group
 class ComponentGroup {
-  constructor({groupName}) {
+  constructor({groupName, documentEditor}) {
+    this._documentEditor = documentEditor;
+
     this._div = document.createElement('div');
     let title = document.createElement('h4');
     title.textContent = groupName;
@@ -18,6 +20,16 @@ class ComponentGroup {
       let div = document.createElement('div');
       div.innerHTML = c.name;
 
+      // NOTE: css in js temporary
+      div.style.cursor = 'pointer';
+      let docEditor = this._documentEditor;
+      div.onclick = () => {
+          docEditor.appendElement({
+            element: c.createElement()
+          });
+      };
+
+      // NOTE: tmp
       div.getComponent = () => {
         return c;
       };
