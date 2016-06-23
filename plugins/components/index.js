@@ -7,7 +7,7 @@ export default {
     let GUID = coreModules.GUID;
     let pannelsManager = coreModules.panels;
 
-    let panelContainer = pannelsManager.addPanel({panelName: 'NewComponents'});
+    let panelContainer = pannelsManager.addPanel({panelName: 'Components'});
 
     let componentsPanel = new ComponentsPanel({
       panelContainer,

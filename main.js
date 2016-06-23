@@ -16,7 +16,7 @@ gui.load({	GUID:  guiArgs })
 			"attributes",
 			"viewPort",
 			"styling",
-			"angular",
+//			"angular",
 			"components",
 			"htmlComponents"
 		];
@@ -30,7 +30,7 @@ gui.load({	GUID:  guiArgs })
 		});
 
 		// NOTE: temp
-		pluginsManager.events.emit('all_activated');
+		//pluginsManager.events.emit('all_activated');
 		// pluginsManager.activate("angular");
 
 	});
