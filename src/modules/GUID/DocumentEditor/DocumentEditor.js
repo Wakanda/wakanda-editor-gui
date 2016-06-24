@@ -737,6 +737,10 @@ class DocumentEditor {
 		});
 	}
 
+	querySelector(selector){
+		return this._sourceDocument.querySelector(selector);
+	}
+
 	temporaryAppendElement({element, parent = this._selectedElement}){
 		let command = this._commandFactory.appendElement({
 			parent,

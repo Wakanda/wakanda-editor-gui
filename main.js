@@ -1,29 +1,36 @@
 import "babel-polyfill";
+import gui from './src/gui';
 
-var IDE = window.IDE = {};
+// NOTE: ex: adding undoRedo state
+let guiArgs = { filePath: location.hash.substring(2) };
 
-require("./styles/common.css");
-require("./styles/editor.css");
-require("./styles/tree.css");
-require("./styles/guid.css");
+gui.load({	GUID:  guiArgs })
+	.then( ( ) => {
+		let pluginsManager = gui.get("plugins");
 
-//- LOAD CORE -//
-import Core from "./src/core";
+		var pluginsList = [
+			"undoRedo",
+			"save",
+			"preview",
+			"outline",
+			"attributes",
+			"viewPort",
+			"styling",
+//			"angular",
+			"components",
+			"htmlComponents"
+		];
 
-//- INITIALIZE CORE -//
-IDE.Core = new Core([
-	"plugins",
-	"toolbar",
-	"GUID"
-]);
+		// NOTE: auto loading all plugins
+		// NOTE: asynchrone
+		pluginsManager.loadMultiple(pluginsList);
 
-IDE.Core.onReady(function(){
-	IDE.plugins.onPluginsLoaded(function(){
-		IDE.plugins.activate("toolbar_plugin");
-		IDE.plugins.events.emit("all_activated");
+		pluginsList.forEach(function(pluginName){
+			pluginsManager.activate(pluginName);
+		});
+
+		// NOTE: temp
+		//pluginsManager.events.emit('all_activated');
+		// pluginsManager.activate("angular");
+
 	});
-
-	IDE.plugins.loadMultiple([
-		"toolbar_plugin"
-	]);
-});

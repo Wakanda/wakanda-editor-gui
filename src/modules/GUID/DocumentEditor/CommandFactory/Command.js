@@ -1,4 +1,4 @@
-// TODO: !important : change afterUndo when appending commands
+// TODO: change afterUndo when appending commands
 
 class Command {
 	constructor({commands, afterExecute, afterUndo, thisArg, broker}) {

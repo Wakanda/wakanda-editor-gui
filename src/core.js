@@ -1,54 +1,55 @@
-
-var IDE = window.IDE || {};
-
-
 class Core {
 	constructor(coreModules){
 		var that = this;
-		
-		if( IDE.Core ) {
-			throw "Only one instance of core is allowed.";
-		}
-		
-		this.activatedPlugins = [];
-		this.plugins          = {};
-		
-		var _EventEmitter   = require('../lib/micro-events.js');
-		this.events = new _EventEmitter();
-		
-		coreModules.forEach(function(moduleName){
-			console.log(moduleName);
-			var module = require(`./modules/${moduleName}/index.js`);
-			
-			module.activate(function(){
-				that.activatedPlugins.push(moduleName);
-				
-				if(that.activatedPlugins.length === coreModules.length){
-					that.events.emit("ready");
-				}
-			});
-		});		
-	}
- 
-	get(pluginName) {
-		return this.plugins[pluginName]
+
+		// TODO: singleton
+		// if( IDE.Core ) {
+		// 	throw "Only one instance of core is allowed.";
+		// }
+		this._coreModulesNames	= coreModules;
+		this._modulesInstances	= {};
+
+		this._readyPromise = Promise.resolve('modules not loaded yet');
+
 	}
 
-	load(pluginName) {
-		this.plugins[pluginName]          = {};
-		this.plugins[pluginName].code     = require(`../plugins/${pluginName}/index.js`);
-		this.plugins[pluginName].manifest = require(`../plugins/${pluginName}/manifest.js`);
+	_loadModules({coreModules, argsByModule}){
+		return coreModules
+		 .reduce( ( prevActivationPromise, currentModuleName ) => {
+			 let moduleArgs = argsByModule[currentModuleName];
+			 return prevActivationPromise.then( ( ) => {
+				 return new Promise((resolve, reject) => {
+					 let moduleContent = require(`./modules/${currentModuleName}/index.js`);
+					 // TODO: make activate asynchrone
+					 moduleContent.activate({
+						 loaded: (currentModuleInstance) => {
+							 console.log(`Core module ${currentModuleName} loaded`);
+							 this._modulesInstances[currentModuleName] = currentModuleInstance;
+							 resolve();
+							 // TODO: review
+						 },
+						 getModulMethod: this.get.bind(this),
+						 moduleArgs
+					 });
+				 });
+			 })
+		 }, Promise.resolve());
 	}
 
-	activate(pluginName) {
-		if (!this.plugins[pluginName]) {
-			throw "Plugin \"" + pluginName + "\" doesn't exist.";
-		}
-		this.plugins[pluginName].isActivated = true;
+	get(moduleName) {
+		return this._modulesInstances[moduleName];
 	}
-	
-	onReady(callback) {
-		this.events.on("ready", callback);
+
+	get ready() {
+		return this._readyPromise;
+	}
+
+	load(argsByModule){
+		this._readyPromise = this._loadModules({
+			coreModules: this._coreModulesNames,
+			argsByModule
+		});
+		return this._readyPromise;
 	}
 }
 
