@@ -18,7 +18,8 @@ gui.load({	GUID:  guiArgs })
 			"styling",
 //			"angular",
 			"components",
-			"htmlComponents"
+			"htmlComponents",
+			"keyboardShortcuts"
 		];
 
 		// NOTE: auto loading all plugins

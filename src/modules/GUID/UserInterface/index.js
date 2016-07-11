@@ -36,8 +36,6 @@ class UserInterface {
 		this._initElementSelection();
 		this._subscribeToDocumentEditorEvents();
 
-		let keyboardJS = require('../../../../lib/keyboardjs');
-		this._initKeyboardWatchers(keyboardJS);
 		this._lastPosition = null;
 		this._mouseOverCanvas = false;
 		this._subscribeToDragulaEvent();
@@ -469,25 +467,6 @@ class UserInterface {
 		});
 	}
 
-	_initKeyboardWatchers(keyboardJS) {
-
-		//Deselect the selected element if any
-		keyboardJS.bind('esc', () => {
-			this._documentEditor.deselectElement();
-		});
-
-		//Remove the selected element if any
-		keyboardJS.bind('del', () => {
-
-			let element = this._documentEditor.selectedElement;
-			if (element) {
-				let tagName = element.tagName.toLowerCase();
-				if (tagName !== 'body' && tagName !== 'html') {
-					this._documentEditor.removeElement({element});
-				}
-			}
-		});
-	}
 
 	_resetCanvasDimentions() {
 		let {	width, height	} = this._documentEditor.dimensions;
