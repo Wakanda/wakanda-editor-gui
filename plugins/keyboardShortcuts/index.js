@@ -17,11 +17,17 @@ export default {
 
   		//Deselect the selected element if any
   		this._keyboardJS.bind('esc', () => {
+        if(this._isInputOnFocus()){
+          return;
+        }
   			this._documentEditor.deselectElement();
   		});
 
   		//Remove the selected element if any
   		this._keyboardJS.bind('del', () => {
+        if(this._isInputOnFocus()){
+          return;
+        }
   			let element = this._documentEditor.selectedElement;
   			if (element) {
   				let tagName = element.tagName.toLowerCase();
@@ -31,4 +37,15 @@ export default {
   			}
   		});
   	}
+    ,
+
+    // NOTE: not sure if this is the most efficient way to do it
+    _isInputOnFocus(){
+      let isInput = document.activeElement.tagName.toLowerCase() === 'input';
+      if(isInput){
+        console.warn('key pressed out of context');
+      }
+      return isInput;
+    }
+
 }
