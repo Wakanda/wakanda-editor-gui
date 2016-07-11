@@ -38,8 +38,8 @@ class UserInterface {
 
 		let keyboardJS = require('../../../../lib/keyboardjs');
 		this._initKeyboardWatchers(keyboardJS);
-		this.lastPosition = null;
-		this.mouseOverCanvas = false;
+		this._lastPosition = null;
+		this._mouseOverCanvas = false;
 		this._subscribeToDragulaEvent();
 	}
 
@@ -92,7 +92,7 @@ class UserInterface {
 				console.error('addDragMark, position not valid');
 		}
 
-		this.dragMark = new fabric.Rect({
+		this._dragMark = new fabric.Rect({
 			left: coords.x,
 			top: coords.y,
 			fill: 'blue',
@@ -101,7 +101,7 @@ class UserInterface {
 			height: coords.height,
 			selectable: false
 		});
-		this._fabric_canvas.add(this.dragMark);
+		this._fabric_canvas.add(this._dragMark);
 	}
 
 	updateSelectedElementBorder() {
@@ -235,9 +235,9 @@ class UserInterface {
 
 		this._dragulaManager.onDrop((element, target) => {
     console.log('Dragula event : onDrop');
-			if (this.mouseOverCanvas) {
-				// console.log('position over canvas', this.lastPosition);
-				let availableElement = this._elementAtPosition(this.lastPosition);
+			if (this._mouseOverCanvas) {
+				// console.log('position over canvas', this._lastPosition);
+				let availableElement = this._elementAtPosition(this._lastPosition);
 				if (availableElement) {
 
 					if (availableElement.tagName.toLowerCase() === 'html') {
@@ -315,9 +315,9 @@ class UserInterface {
 					}
 				}
 
-				if (this.dragMark) {
-					this._fabric_canvas.remove(this.dragMark);
-					this.dragMark = null;
+				if (this._dragMark) {
+					this._fabric_canvas.remove(this._dragMark);
+					this._dragMark = null;
 				}
 			}
 		});
@@ -326,11 +326,11 @@ class UserInterface {
 	_initHighLighting() {
 		this.cloudEditorIDE.addEventListener('mouseleave', () => {
 			this.clearHighLighting();
-			this.mouseOverCanvas = false;
+			this._mouseOverCanvas = false;
 		});
 
 		this._fabric_canvas.on('mouse:down', (options) => {
-			let element = this._elementAtPosition(this.lastPosition);
+			let element = this._elementAtPosition(this._lastPosition);
 			let tagName = element ? element.tagName.toLowerCase() : null;
 			this.mouseDownPosition = {x: options.e.offsetX, y: options.e.offsetY};
 
@@ -363,16 +363,16 @@ class UserInterface {
 
 		this._fabric_canvas.on('mouse:up', (options) => {
 
-			if (this.dragMark) {
-				this._fabric_canvas.remove(this.dragMark);
-				this.dragMark = null;
+			if (this._dragMark) {
+				this._fabric_canvas.remove(this._dragMark);
+				this._dragMark = null;
 			}
 
 			if (this.isDraggingExistingElement) {
 				this.isDraggingElement = false;
 				this.isDraggingExistingElement = false;
 
-				let availableElement = this._elementAtPosition(this.lastPosition);
+				let availableElement = this._elementAtPosition(this._lastPosition);
 				if (availableElement && availableElement !== this.existingElementDragged) {
 
 					if (availableElement.tagName.toLowerCase() === 'html') {
@@ -426,17 +426,17 @@ class UserInterface {
 		});
 
 		this._fabric_canvas.on('mouse:move', (options) => {
-			this.mouseOverCanvas = true;
+			this._mouseOverCanvas = true;
 
-			if (this.dragMark) {
-				this._fabric_canvas.remove(this.dragMark);
-				this.dragMark = null;
+			if (this._dragMark) {
+				this._fabric_canvas.remove(this._dragMark);
+				this._dragMark = null;
 			}
 			this.dropPosition = 'inside';
 
 			// TODO : DEFER (?)
 			let [x, y] = [options.e.offsetX, options.e.offsetY];
-			this.lastPosition = {x, y};
+			this._lastPosition = {x, y};
 
 			let element = this._elementAtPosition({x, y});
 			if (element) {
