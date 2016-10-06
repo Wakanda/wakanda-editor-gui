@@ -1,8 +1,8 @@
-class HighlightManager {
+class SelectManager {
   constructor({container}) {
     this._container = container;
     this._highLightArea = document.createElement('div');
-    this._highLightArea.classList.add('highlight');
+    this._highLightArea.classList.add('selectb');
 
     this._container.appendChild(this._highLightArea);
   }
@@ -37,4 +37,4 @@ class HighlightManager {
 
 }
 
-export default HighlightManager;
+export default SelectManager;

@@ -18,16 +18,6 @@ iframe.source{
   left: 0;
   right: 0;
 }
-.user-interface-canvas {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
 
 .highligh{
   background-color: rgba(218, 193, 122, 0.61)

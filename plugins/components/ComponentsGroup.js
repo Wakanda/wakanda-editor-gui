@@ -20,6 +20,8 @@ class ComponentGroup {
       let div = document.createElement('div');
       div.innerHTML = c.name;
 
+      div.setAttribute('draggable', true);
+
       // NOTE: css in js temporary
       div.style.cursor = 'pointer';
       let docEditor = this._documentEditor;

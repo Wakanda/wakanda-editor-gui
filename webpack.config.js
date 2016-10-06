@@ -67,6 +67,9 @@ module.exports = {
     }, {
       test: /\.png$/,
       loader: "url-loader?limit=100000&mimetype=image/png"
+    }, {
+      test: /\.scss$/,
+      loader: 'style!css!sass'
     }]
   },
   plugins: pluginsToLoad
