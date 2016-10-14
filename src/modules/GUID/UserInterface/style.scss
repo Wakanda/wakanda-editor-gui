@@ -20,7 +20,8 @@ $selectBorderColor: #113BB2;
   opacity: 0.2;
 }
 .selectb{
-  border: solid 0.5px $selectBorderColor;
+  box-sizing: border-box;
+  border: solid 0.7px $selectBorderColor;
   position: absolute;
   display: none;
 }
