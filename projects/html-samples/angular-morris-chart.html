@@ -1,0 +1,45 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>angular-morris-chart</title>
+
+
+  <script src="/projects/bower_components/angular/angular.min.js"></script>
+  <script src="/projects/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/projects/bower_components/raphael/raphael.js"></script>
+  <script src="/projects/bower_components/morris.js/morris.js"></script>
+  <script src="/projects/bower_components/angular-morris-chart/src/angular-morris-chart.min.js"></script>
+
+  <script type="text/javascript">
+    angular.module('my.app', [
+      'angular.morris-chart'
+    ])
+  </script>
+</head>
+<body ng-app="my.app">
+
+<h1>Bar Chart example</h1><div donut-chart="" donut-data="[
+  {label: &quot;Download Sales&quot;, value: 12},
+  {label: &quot;In-Store Sales&quot;,value: 30},
+  {label: &quot;Mail-Order Sales&quot;, value: 20}
+]" donut-colors="[&quot;#31C0BE&quot;,&quot;#c7254e&quot;,&quot;#98a0d3&quot;]" donut-formatter="&quot;currency&quot;">
+</div><div area-chart="" area-data="[
+      { y: &quot;2006&quot;, a: 100, b: 90 },
+      { y: &quot;2007&quot;, a: 75,  b: 65 },
+      { y: &quot;2008&quot;, a: 50,  b: 40 },
+      { y: &quot;2009&quot;, a: 75,  b: 65 },
+      { y: &quot;2010&quot;, a: 50,  b: 40 },
+      { y: &quot;2011&quot;, a: 75,  b: 65 },
+      { y: &quot;2012&quot;, a: 100, b: 90 }
+    ]" area-xkey="y" area-ykeys="[&quot;a&quot;, &quot;b&quot;]" area-labels="[&quot;Serie A&quot;, &quot;Serie B&quot;]" line-colors="[&quot;#31C0BE&quot;, &quot;#c7254e&quot;]">
+  </div><div bar-chart="" bar-data="[
+    { y: &quot;2006&quot;, a: 100, b: 90 },
+    { y: &quot;2007&quot;, a: 75,  b: 65 },
+    { y: &quot;2008&quot;, a: 50,  b: 40 },
+    { y: &quot;2009&quot;, a: 75,  b: 65 },
+    { y: &quot;2010&quot;, a: 50,  b: 40 },
+    { y: &quot;2011&quot;, a: 75,  b: 65 },
+    { y: &quot;2012&quot;, a: 100, b: 90 }
+]" bar-x="y" bar-y="[&quot;a&quot;, &quot;b&quot;]" bar-labels="[&quot;Series A&quot;, &quot;Series B&quot;]" bar-colors="[&quot;#31C0BE&quot;, &quot;#c7254e&quot;]">
+</div><div area-chart="" area-data="[      { y: &quot;2006&quot;, a: 10, b: 20 },      { y: &quot;2007&quot;, a: 25,  b: 15 },      { y: &quot;2008&quot;, a: 50,  b: 40 },      { y: &quot;2009&quot;, a: 75,  b: 65 },      { y: &quot;2010&quot;, a: 50,  b: 40 },      { y: &quot;2011&quot;, a: 75,  b: 65 },      { y: &quot;2012&quot;, a: 100, b: 90 }    ]" area-xkey="y" area-ykeys="[&quot;a&quot;, &quot;b&quot;]" area-labels="[&quot;Serie A&quot;, &quot;Serie B&quot;]" line-colors="[&quot;#31C0BE&quot;, &quot;#c7254e&quot;]">
+  </div>
+</body></html>

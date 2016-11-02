@@ -21,10 +21,47 @@ class UserInterface {
 
 		this._selectManager = new SelectManager({container: this.cloudEditorIDE});
 
+		this._initDnDEvents();
 		this._initHighLighting();
 		this._initElementSelection();
 		this._subscribeToDocumentEditorEvents();
 
+	}
+
+	_initDnDEvents(){
+		this._whiteBoard.addEventListener("dragover", (e)=>{
+			// TODO: refactor
+			let [x, y] = [e.offsetX, e.offsetY];
+			let element = this._documentEditor.getElementFromPoint({x,y});
+			this.highLightElement({element});
+
+			// BUG: ??
+			//console.log('data from event', e.dataTransfer.getData("infos"));
+			e.preventDefault();
+		});
+
+		this._whiteBoard.addEventListener("drop", (e)=>{
+			// TODO: informations about the component type
+			let [x, y] = [e.offsetX, e.offsetY];
+			let elementRef = this._documentEditor.getElementFromPoint({x,y});
+			let infos = JSON.parse(e.dataTransfer.getData("infos"));
+			let coords = infos.coords;
+
+			let draggedFrom = infos.draggedFrom;
+			console.log('dragged from', draggedFrom);
+
+			console.log('data from event', e.dataTransfer.getData("infos"));
+
+			coords.x -= this._whiteBoard.getBoundingClientRect().left;
+			coords.y -= this._whiteBoard.getBoundingClientRect().top;
+
+			let element = this._documentEditor.getElementFromPoint(coords);
+
+			this._documentEditor.moveInsideElement({
+				elementRef,
+				element
+			})
+		});
 	}
 
 	clearHighLighting() {

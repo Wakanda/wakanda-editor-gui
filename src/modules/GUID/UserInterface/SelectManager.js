@@ -1,38 +1,38 @@
-class SelectManager {
+import AreaManager from './AreaManager';
+
+
+class SelectManager extends AreaManager {
   constructor({container}) {
-    this._container = container;
-    this._highLightArea = document.createElement('div');
-    this._highLightArea.classList.add('selectb');
+    super({container, className: 'selectb'});
 
-    this._container.appendChild(this._highLightArea);
+    let area = super.element;
+
+    this._moveIcon = document.createElement('div');
+    this._moveIcon.classList.add('move');
+    area.appendChild(this._moveIcon);
+
+    this._initDnDEvents();
+
   }
 
-  show(){
-    this._highLightArea.style.display = 'block';
-  }
+  _initDnDEvents(){
+      this._moveIcon.setAttribute("draggable", true);
 
-  hide(){
-    this._highLightArea.style.display = 'none';
-  }
-
-  set coords({x: left, y: top, width, height}){
-    let style = this._highLightArea.style;
-    style.top       = top;
-    style.left      = left;
-    style.width     = width;
-    style.height    = height;
-
-    this.show();
-  }
-
-  get coords(){
-    let style = this._highLightArea.style;
-    return {
-      top : style.top,
-      left  : style.left,
-      width : style.width,
-      height  : style.height
-    };
+      this._moveIcon.addEventListener("drag", (e) => {
+        console.log('data from event', e.dataTransfer.getData("infos"));
+      });
+      this._moveIcon.addEventListener("dragstart", (e) => {
+  			let coords = {
+          x: e.pageX,
+          y: e.pageY
+        };
+        let infos = {
+          coords,
+          draggedFrom: 'whiteboard'
+        }
+        let infosStr = JSON.stringify(infos);
+        e.dataTransfer.setData("infos", infosStr);
+      });
   }
 
 }

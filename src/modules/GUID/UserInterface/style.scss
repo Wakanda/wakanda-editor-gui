@@ -1,5 +1,6 @@
 $highlightColor: #FFCD4C;
 $selectBorderColor: #113BB2;
+$moveIconSize: 20px;
 
 .whiteboard {
   position: absolute;
@@ -21,7 +22,17 @@ $selectBorderColor: #113BB2;
 }
 .selectb{
   box-sizing: border-box;
-  border: solid 0.7px $selectBorderColor;
+  border: solid 2px $selectBorderColor;
   position: absolute;
   display: none;
+}
+.move{
+//  display: none;
+  position: absolute;
+  opacity: 0.5;
+  background-color: black;
+  width: $moveIconSize;
+  height: $moveIconSize;
+  z-index: 10000;
+  cursor: move;
 }
