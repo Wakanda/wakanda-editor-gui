@@ -61,6 +61,10 @@ class Component {
     return this._methodes;
   }
 
+  get template(){
+    return this._template;
+  }
+
   createElement(){
     // IDEA: documentFragement
     return elementFromTemplate({template: this._template});

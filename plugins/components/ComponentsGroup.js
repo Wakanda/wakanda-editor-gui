@@ -31,6 +31,15 @@ class ComponentGroup {
           });
       };
 
+      div.addEventListener("dragstart", (e) => {
+        let infos = {
+          template: c.template,
+          draggedFrom: 'panel'
+        }
+        let infosStr = JSON.stringify(infos);
+        e.dataTransfer.setData("infos", infosStr);
+      });
+
       // NOTE: tmp
       div.getComponent = () => {
         return c;

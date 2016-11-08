@@ -1,6 +1,7 @@
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import HighlightManager from './HighlightManager';
 import SelectManager from './SelectManager';
+import {elementFromTemplate} from '../functUtils';
 require('./style.scss');
 
 class UserInterface {
@@ -45,22 +46,33 @@ class UserInterface {
 			let [x, y] = [e.offsetX, e.offsetY];
 			let elementRef = this._documentEditor.getElementFromPoint({x,y});
 			let infos = JSON.parse(e.dataTransfer.getData("infos"));
-			let coords = infos.coords;
 
 			let draggedFrom = infos.draggedFrom;
 			console.log('dragged from', draggedFrom);
 
-			console.log('data from event', e.dataTransfer.getData("infos"));
+			if(draggedFrom === "panel"){
+				let template = infos.template;
+				let element = elementFromTemplate({template});
+				console.log(infos);
+				this._documentEditor.appendElement({
+					element,
+					parent: elementRef
+				});
+			} else if(draggedFrom === "whiteboard"){
+				let coords = infos.coords;
+				console.log('data from event', e.dataTransfer.getData("infos"));
 
-			coords.x -= this._whiteBoard.getBoundingClientRect().left;
-			coords.y -= this._whiteBoard.getBoundingClientRect().top;
+				coords.x -= this._whiteBoard.getBoundingClientRect().left;
+				coords.y -= this._whiteBoard.getBoundingClientRect().top;
 
-			let element = this._documentEditor.getElementFromPoint(coords);
+				let element = this._documentEditor.getElementFromPoint(coords);
 
-			this._documentEditor.moveInsideElement({
-				elementRef,
-				element
-			})
+				this._documentEditor.moveInsideElement({
+					elementRef,
+					element
+				});
+			}
+
 		});
 	}
 
