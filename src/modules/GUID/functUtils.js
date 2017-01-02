@@ -20,6 +20,7 @@ let functUtils = {
 
 		return elements;
 	},
+	// NOTE: duplication
 	elementFromTemplate({template}) {
     let tmpDiv = document.createElement('div');
     tmpDiv.innerHTML = template;

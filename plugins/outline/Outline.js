@@ -234,9 +234,8 @@ class Outline {
   _syncWithUserInterface() {
     this.$container.bind('hover_node.jstree', (_, data) => {
       let element = this._getElementFromId(data.node.id);
-      this.userInterface.highLightElement(element);
+      this.userInterface.highLightElement({element});
     });
-
     this.$container.bind('dehover_node.jstree', (_, data) => {
       this.userInterface.clearHighLighting();
     });
@@ -253,6 +252,10 @@ class Outline {
     });
 
     this.userInterface.onClearHighLighting(({element}) => {
+      // if(!element){
+      //   debugger;
+      // }
+      // TODO: fix the need of the dehovered element
       let jstree = this.$container.jstree();
       if (element.tagName.toLowerCase() === 'html') {
         jstree.dehover_node('body');

@@ -20,6 +20,8 @@ class ComponentGroup {
       let div = document.createElement('div');
       div.innerHTML = c.name;
 
+      div.setAttribute('draggable', true);
+
       // NOTE: css in js temporary
       div.style.cursor = 'pointer';
       let docEditor = this._documentEditor;
@@ -28,6 +30,15 @@ class ComponentGroup {
             element: c.createElement()
           });
       };
+
+      div.addEventListener("dragstart", (e) => {
+        let infos = {
+          template: c.template,
+          draggedFrom: 'panel'
+        }
+        let infosStr = JSON.stringify(infos);
+        e.dataTransfer.setData("infos", infosStr);
+      });
 
       // NOTE: tmp
       div.getComponent = () => {

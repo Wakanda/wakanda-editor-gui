@@ -1,6 +1,8 @@
 import MultiEvent from '../../../../lib/multi-event-master/src/multi-event-es6.js';
 import HighlightManager from './HighlightManager';
-import DragulaManager from './DragulaManager';
+import SelectManager from './SelectManager';
+import {elementFromTemplate} from '../functUtils';
+require('./style.scss');
 
 class UserInterface {
 	constructor({documentEditor, dndContainerId}) {
@@ -8,48 +10,97 @@ class UserInterface {
 		this._events = new MultiEvent();
 
 		this._documentEditor = documentEditor;
-		this._highLightedElement = null;
 
-		let canvas = document.createElement('canvas');
-		canvas.classList.add('user-interface-canvas');
+		this._whiteBoard = document.createElement('div');
+		this._whiteBoard.classList.add('whiteboard');
 		this.cloudEditorIDE = document.querySelector('#cloud-ide-editor');
-		this.cloudEditorIDE.appendChild(canvas);
+		this.cloudEditorIDE.appendChild(this._whiteBoard);
 
-		let fabric = require('../../../../lib/fabric.js');
+		this._highlightManager = new HighlightManager({container: this.cloudEditorIDE});
+		this._currentHElement = null;
+		// this._resetCanvasDimentions();
 
-		this._fabric_canvas = new fabric.Canvas(canvas);
+		this._selectManager = new SelectManager({container: this.cloudEditorIDE});
 
-		this._highlightManager = new HighlightManager({
-			fabricCanvas: this._fabric_canvas,
-			events: this._events,
-			documentEditor: this._documentEditor
-		});
-
-		this._dragulaManager = new DragulaManager({
-			documentEditor,
-			sourceContainerId: dndContainerId
-		});
-
-		this._resetCanvasDimentions();
-
+		this._initDnDEvents();
 		this._initHighLighting();
 		this._initElementSelection();
 		this._subscribeToDocumentEditorEvents();
 
-		this._lastPosition = null;
-		this._mouseOverCanvas = false;
-		this._subscribeToDragulaEvent();
+	}
+
+	_initDnDEvents(){
+		this._whiteBoard.addEventListener("dragover", (e)=>{
+			// TODO: refactor
+			let [x, y] = [e.offsetX, e.offsetY];
+			let element = this._documentEditor.getElementFromPoint({x,y});
+			this.highLightElement({element});
+
+			// BUG: ??
+			//console.log('data from event', e.dataTransfer.getData("infos"));
+			e.preventDefault();
+		});
+
+		this._whiteBoard.addEventListener("drop", (e)=>{
+			// TODO: informations about the component type
+			let [x, y] = [e.offsetX, e.offsetY];
+			let elementRef = this._documentEditor.getElementFromPoint({x,y});
+			let infos = JSON.parse(e.dataTransfer.getData("infos"));
+
+			let draggedFrom = infos.draggedFrom;
+			console.log('dragged from', draggedFrom);
+
+			if(draggedFrom === "panel"){
+				let template = infos.template;
+				let element = elementFromTemplate({template});
+				console.log(infos);
+				this._documentEditor.appendElement({
+					element,
+					parent: elementRef
+				});
+			} else if(draggedFrom === "whiteboard"){
+				let coords = infos.coords;
+				console.log('data from event', e.dataTransfer.getData("infos"));
+
+				coords.x -= this._whiteBoard.getBoundingClientRect().left;
+				coords.y -= this._whiteBoard.getBoundingClientRect().top;
+
+				let element = this._documentEditor.getElementFromPoint(coords);
+
+				this._documentEditor.moveInsideElement({
+					elementRef,
+					element
+				});
+			}
+
+		});
 	}
 
 	clearHighLighting() {
-		this._highlightManager.clearHighLighting();
+		if(!this._currentHElement){
+			return;
+		}
+		let el = this._currentHElement;
+		this._highlightManager.hide();
+		this._currentHElement = null;
+		this._events.emit('GUID.UI.clearHighLighting', {element: el});
 	}
 
-	// TODO: with outline
-	highLightElement(element) {
-		if(!this._documentEditor.rendering){
-			this._highlightManager.highLightElement({element});
-		}
+	_getCoords({element}){
+		let rawCoords = this._documentEditor.getBoundingClientRect({element});
+		let coords = {
+			x				: rawCoords.left,
+			y				: rawCoords.top,
+			width		: rawCoords.width,
+			height	: rawCoords.height
+		};
+		return coords;
+	}
+
+	highLightElement({element}) {
+		this._highlightManager.coords = this._getCoords({element});
+		this._currentHElement = element;
+		this._events.emit('GUID.UI.element.highlight', {element});
 	}
 
 	onClearHighLighting(callBack) {
@@ -59,7 +110,7 @@ class UserInterface {
 	onElementHighLight(callBack) {
 		this._events.on('GUID.UI.element.highlight', callBack);
 	}
-
+/**
 	addDragMark({position, elementRect}) {
 		let coords = {x: null, y: null, width: null, height: null};
 
@@ -101,10 +152,14 @@ class UserInterface {
 		});
 		this._fabric_canvas.add(this._dragMark);
 	}
+/**/
 
-	updateSelectedElementBorder() {
-		this.removeSelectedElementBorder();
-
+	_updateSelectedElementBorder({element = this._currentSElement}) {
+		this._currentSElement = element;
+		if(element){
+			this._selectManager.coords = this._getCoords({element});
+		}
+		/**
 		if(this._documentEditor.selectedElement){
 			let style = this._documentEditor.getSelectedElementComputedStyle();
 
@@ -148,23 +203,30 @@ class UserInterface {
 
 			this._fabric_canvas.add(this.rectSelected);
 		}
+		/**/
 	}
 
 	removeSelectedElementBorder() {
 		if (this.rectSelected) {
-			this._fabric_canvas.remove(this.rectSelected);
+			this._selectManager.hide();
+			this._currentSElement = null;
 		}
 	}
 
 	_initElementSelection() {
 
-		this._documentEditor.onElementSelected(() => {
-			this.updateSelectedElementBorder();
+		this._whiteBoard.addEventListener("click", e => {
+				let [x, y] = [e.offsetX, e.offsetY];
+				this._documentEditor.selectElementByPoint({x, y});
+		});
+
+		this._documentEditor.onElementSelected(({element}) => {
+			this._updateSelectedElementBorder({element});
 		});
 
 		this._documentEditor.onDocumentScroll(()=>{
 			this.clearHighLighting();
-			this.updateSelectedElementBorder();
+			this._updateSelectedElementBorder();
 		});
 
 		this._documentEditor.onElementDeselected(() => {
@@ -172,32 +234,32 @@ class UserInterface {
 		});
 
 		this._documentEditor.onDocumentSizeChange(() => {
-			this.updateSelectedElementBorder();
+			this._updateSelectedElementBorder();
 		});
 		this._documentEditor.onElementTextChange(()=> {
-			this.updateSelectedElementBorder();
+			this._updateSelectedElementBorder();
 		});
 	}
 
 	_subscribeToDocumentEditorEvents() {
 		this._documentEditor.onDocumentSizeChange(() => {
-			this._resetCanvasDimentions();
+			// this._resetCanvasDimentions();
 		});
 		this._documentEditor.onAppendElement(() => {
-			this._resetCanvasDimentions();
-			// this.updateSelectedElementBorder();
+			// this._resetCanvasDimentions();
+			// this._updateSelectedElementBorder();
 			this.clearHighLighting();
 		});
 		this._documentEditor.onRemoveElement(() => {
-			this._resetCanvasDimentions();
+			// this._resetCanvasDimentions();
 		});
 		this._documentEditor.onElementStyleAttributeChange(() => {
-			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
+			// this._resetCanvasDimentions();
+			this._updateSelectedElementBorder();
 		});
 		this._documentEditor.onElementClassChange(({element, className}) => {
-			this._resetCanvasDimentions();
-			this.updateSelectedElementBorder();
+			// this._resetCanvasDimentions();
+			this._updateSelectedElementBorder();
 		});
 	}
 
@@ -210,122 +272,129 @@ class UserInterface {
 		}
 	}
 
-	_subscribeToDragulaEvent() {
-		this.isDraggingElement = false;
-
-		this._dragulaManager.onCloned((clone, original) => {
-    console.log('Dragula event : onCloned', clone, original);
-			clone.getComponent = original.getComponent;
-
-			//FIXME
-      clone.style.border = '1px solid red';
-		});
-
-		this._dragulaManager.onDragStart(() => {
-    console.log('this.isDraggingElement set to true');
-			this.isDraggingElement = true;
-		})
-
-		this._dragulaManager.onDragEnd(() => {
-    console.log('this.isDraggingElement set to false');
-			this.isDraggingElement = false;
-		});
-
-		this._dragulaManager.onDrop((element, target) => {
-    console.log('Dragula event : onDrop');
-			if (this._mouseOverCanvas) {
-				// console.log('position over canvas', this._lastPosition);
-				let availableElement = this._elementAtPosition(this._lastPosition);
-				if (availableElement) {
-
-					if (availableElement.tagName.toLowerCase() === 'html') {
-						availableElement = this._documentEditor.document.body;
-					}
-
-					let componentToInsert = element.getComponent();
-					let insertCommand = null;
-
-					switch (this.dropPosition) {
-						case 'inside':
-							insertCommand = this._documentEditor.appendElement({
-								element: componentToInsert.createElement(),
-								parent: availableElement,
-								justReturnCommand : true
-							});
-							break;
-						case 'top':
-							insertCommand = this._documentEditor.prependElement({
-								element: componentToInsert.createElement(),
-								elementRef: availableElement,
-								justReturnCommand : true
-							});
-							break;
-						case 'bottom':
-							insertCommand = this._documentEditor.appendAfterElement({
-								element: componentToInsert.createElement(),
-								elementRef: availableElement,
-								justReturnCommand : true
-							});
-							break;
-						default:
-							console.error('Invalid drop position');
-					}
-
-					if(insertCommand){
-						// TODO: temporary before adding script manager
-						componentToInsert.jsDependencies
-							.map((scriptUrl)=>{
-								return `<script src="${scriptUrl}"></script>`;
-							})
-							.forEach((scriptTag)=>{
-								// NOTE: tempo
-								if(this._documentEditor._scriptTags.indexOf(scriptTag) === -1){
-									this._documentEditor._scriptTags.push(scriptTag);
-								}
-							});
-
-						if(componentToInsert._angularApplicationName || componentToInsert._directiveBody){
-							let appDependencies = '';
-							if(componentToInsert._angularApplicationName){
-								appDependencies = `'${componentToInsert._angularApplicationName}'`;
-							}
-							let angularAppDeclaration = `angular.module('app', [${appDependencies}]);`;
-							let angularApplicationScript = `<script type="text/javascript">${angularAppDeclaration}</script>`;
-
-							// NOTE: tempo
-							if(this._documentEditor._scriptTags.indexOf(angularApplicationScript) === -1){
-								this._documentEditor._scriptTags.splice(2, 0, angularApplicationScript);
-							}
-
-							if(componentToInsert._directiveBody){
-								let directiveScript = `angular.module('app')
-								.directive('${componentToInsert._directiveName}', ${componentToInsert._directiveBody});`;
-								let directiveScriptTag = `<script type="text/javascript">${directiveScript}</script>`;
-								// NOTE: tempo
-								if(this._documentEditor._scriptTags.indexOf(directiveScriptTag) === -1){
-									this._documentEditor._scriptTags.push(directiveScriptTag);
-								}
-							}
-						}
-
-						insertCommand.exec();
-
-					}
-				}
-
-				if (this._dragMark) {
-					this._fabric_canvas.remove(this._dragMark);
-					this._dragMark = null;
-				}
-			}
-		});
-	}
+	// _subscribeToDragulaEvent() {
+	// 	this.isDraggingElement = false;
+	//
+	// 	this._dragulaManager.onCloned((clone, original) => {
+  //   console.log('Dragula event : onCloned', clone, original);
+	// 		clone.getComponent = original.getComponent;
+	//
+	// 		//FIXME
+  //     clone.style.border = '1px solid red';
+	// 	});
+	//
+	// 	this._dragulaManager.onDragStart(() => {
+  //   console.log('this.isDraggingElement set to true');
+	// 		this.isDraggingElement = true;
+	// 	})
+	//
+	// 	this._dragulaManager.onDragEnd(() => {
+  //   console.log('this.isDraggingElement set to false');
+	// 		this.isDraggingElement = false;
+	// 	});
+	//
+	// 	this._dragulaManager.onDrop((element, target) => {
+  //   console.log('Dragula event : onDrop');
+	// 		if (this._mouseOverCanvas) {
+	// 			// console.log('position over canvas', this._lastPosition);
+	// 			let availableElement = this._elementAtPosition(this._lastPosition);
+	// 			if (availableElement) {
+	//
+	// 				if (availableElement.tagName.toLowerCase() === 'html') {
+	// 					availableElement = this._documentEditor.document.body;
+	// 				}
+	//
+	// 				let componentToInsert = element.getComponent();
+	// 				let insertCommand = null;
+	//
+	// 				switch (this.dropPosition) {
+	// 					case 'inside':
+	// 						insertCommand = this._documentEditor.appendElement({
+	// 							element: componentToInsert.createElement(),
+	// 							parent: availableElement,
+	// 							justReturnCommand : true
+	// 						});
+	// 						break;
+	// 					case 'top':
+	// 						insertCommand = this._documentEditor.prependElement({
+	// 							element: componentToInsert.createElement(),
+	// 							elementRef: availableElement,
+	// 							justReturnCommand : true
+	// 						});
+	// 						break;
+	// 					case 'bottom':
+	// 						insertCommand = this._documentEditor.appendAfterElement({
+	// 							element: componentToInsert.createElement(),
+	// 							elementRef: availableElement,
+	// 							justReturnCommand : true
+	// 						});
+	// 						break;
+	// 					default:
+	// 						console.error('Invalid drop position');
+	// 				}
+	//
+	// 				if(insertCommand){
+	// 					// TODO: temporary before adding script manager
+	// 					componentToInsert.jsDependencies
+	// 						.map((scriptUrl)=>{
+	// 							return `<script src="${scriptUrl}"></script>`;
+	// 						})
+	// 						.forEach((scriptTag)=>{
+	// 							// NOTE: tempo
+	// 							if(this._documentEditor._scriptTags.indexOf(scriptTag) === -1){
+	// 								this._documentEditor._scriptTags.push(scriptTag);
+	// 							}
+	// 						});
+	//
+	// 					if(componentToInsert._angularApplicationName || componentToInsert._directiveBody){
+	// 						let appDependencies = '';
+	// 						if(componentToInsert._angularApplicationName){
+	// 							appDependencies = `'${componentToInsert._angularApplicationName}'`;
+	// 						}
+	// 						let angularAppDeclaration = `angular.module('app', [${appDependencies}]);`;
+	// 						let angularApplicationScript = `<script type="text/javascript">${angularAppDeclaration}</script>`;
+	//
+	// 						// NOTE: tempo
+	// 						if(this._documentEditor._scriptTags.indexOf(angularApplicationScript) === -1){
+	// 							this._documentEditor._scriptTags.splice(2, 0, angularApplicationScript);
+	// 						}
+	//
+	// 						if(componentToInsert._directiveBody){
+	// 							let directiveScript = `angular.module('app')
+	// 							.directive('${componentToInsert._directiveName}', ${componentToInsert._directiveBody});`;
+	// 							let directiveScriptTag = `<script type="text/javascript">${directiveScript}</script>`;
+	// 							// NOTE: tempo
+	// 							if(this._documentEditor._scriptTags.indexOf(directiveScriptTag) === -1){
+	// 								this._documentEditor._scriptTags.push(directiveScriptTag);
+	// 							}
+	// 						}
+	// 					}
+	//
+	// 					insertCommand.exec();
+	//
+	// 				}
+	// 			}
+	//
+	// 			if (this._dragMark) {
+	// 				this._fabric_canvas.remove(this._dragMark);
+	// 				this._dragMark = null;
+	// 			}
+	// 		}
+	// 	});
+	// }
 
 	_initHighLighting() {
-		this.cloudEditorIDE.addEventListener('mouseleave', () => {
-			this.clearHighLighting();
-			this._mouseOverCanvas = false;
+		this._whiteBoard.addEventListener("mousemove", e => {
+				let [x, y] = [e.offsetX, e.offsetY];
+				let element = this._documentEditor.getElementFromPoint({x,y});
+				this.highLightElement({element});
 		});
+
+		this._whiteBoard.addEventListener('mouseleave', () => {
+			this.clearHighLighting();
+		});
+
+		return;
 
 		this._fabric_canvas.on('mouse:down', (options) => {
 			let element = this._elementAtPosition(this._lastPosition);
@@ -438,7 +507,7 @@ class UserInterface {
 
 			let element = this._elementAtPosition({x, y});
 			if (element) {
-				this.highLightElement(element);
+				this.highLightElement({element});
 			}
 
 			let tagName = element ? element.tagName.toLowerCase() : null;
@@ -468,10 +537,10 @@ class UserInterface {
 	}
 
 
-	_resetCanvasDimentions() {
-		let {	width, height	} = this._documentEditor.dimensions;
-		this._fabric_canvas.setDimensions({ width, height });
-	}
+	// _resetCanvasDimentions() {
+	// 	let {	width, height	} = this._documentEditor.dimensions;
+	// 	this._fabric_canvas.setDimensions({ width, height });
+	// }
 
 }
 
