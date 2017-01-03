@@ -66,6 +66,8 @@ class UserInterface {
 				coords.y -= this._whiteBoard.getBoundingClientRect().top;
 
 				let element = this._documentEditor.getElementFromPoint(coords);
+        // TODO: ....
+        element = this._documentEditor.selectedElement;
 
 				this._documentEditor.moveInsideElement({
 					elementRef,

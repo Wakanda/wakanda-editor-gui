@@ -19,7 +19,8 @@ gui.load({	GUID:  guiArgs })
 //			"angular",
 			"components",
 			"htmlComponents",
-			"keyboardShortcuts"
+			"keyboardShortcuts",
+			"ionicComponents"
 		];
 
 		// NOTE: auto loading all plugins
