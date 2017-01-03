@@ -1,0 +1,47 @@
+<html ng-app="ionicApp"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+
+    <title>Toggles</title>
+
+    <link href="//code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
+    
+    <style media="screen">
+      body {
+        cursor: url('http://ionicframework.com/img/finger.png'), auto;
+      }
+    </style>
+  <script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script></head>
+
+  <body ng-controller="MainCtrl">
+
+    <ion-header-bar class="bar-positive">
+      <h1 class="title">TOTO</h1>
+    </ion-header-bar>
+
+    <ion-content>
+
+      <ion-list>
+  <ion-item>
+      Hello !
+    </ion-item><div class="item item-divider">
+    Candy Bars
+  </div><ion-item>
+      Hello !
+    </ion-item><div class="item item-divider">
+          Settings
+        </div><ion-item>
+    Hello !
+  </ion-item>
+</ion-list>
+
+    </ion-content>
+    <script type="text/javascript">
+      angular.module('ionicApp', ['ionic'])
+        .controller('MainCtrl', function($scope) {
+
+        });
+    </script>
+  
+
+</body></html>

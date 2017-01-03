@@ -1,0 +1,61 @@
+<html ng-app="ionicApp">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+
+    <title>Toggles</title>
+
+    <link href="//code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
+    <script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
+    <style media="screen">
+      body {
+        cursor: url('http://ionicframework.com/img/finger.png'), auto;
+      }
+    </style>
+  </head>
+
+  <body ng-controller="MainCtrl">
+
+    <ion-header-bar class="bar-positive">
+      <h1 class="title">Toggles</h1>
+    </ion-header-bar>
+
+    <ion-content>
+
+      <div class="list">
+
+        <div class="item item-divider">
+          Settings
+        </div>
+
+        <ion-toggle >
+          Toggle 1
+        </ion-toggle>
+
+        <ion-toggle >
+          Toggle 2
+        </ion-toggle>
+
+        <ion-toggle >
+          Toggle 3
+        </ion-toggle>
+
+        <div class="item">
+          <pre ng-bind="settingsList | json"></pre>
+        </div>
+
+        <!--div class="item item-divider">
+          Notifications
+        </div-->
+
+      </div>
+
+    </ion-content>
+    <script type="text/javascript">
+      angular.module('ionicApp', ['ionic'])
+        .controller('MainCtrl', function($scope) {
+
+        });
+    </script>
+  </body>
+</html>
