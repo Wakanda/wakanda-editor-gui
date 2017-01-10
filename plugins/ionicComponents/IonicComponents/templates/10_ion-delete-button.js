@@ -1,13 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'List Item',
+    name: 'ion-delete-button',
     properties:[],
     methodes: []
   },
-  template: `<li class="item">
-  Item ...
-</li>`
+  template: `<ion-delete-button class="ion-minus-circled"></ion-delete-button>`
 }
 
 export default componentJson;

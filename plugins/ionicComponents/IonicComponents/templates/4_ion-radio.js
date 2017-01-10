@@ -1,7 +1,7 @@
 
 let componentJson = {
   manifest: {
-    name: 'Ion Radio',
+    name: 'ion-radio',
     properties:[],
     methodes: []
   },

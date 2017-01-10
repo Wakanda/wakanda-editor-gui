@@ -1,12 +1,13 @@
+
 let componentJson = {
   manifest: {
-    name: 'Ion Item',
+    name: 'ion-pane',
     properties:[],
     methodes: []
   },
-  template: `<ion-item>
-      Hello !
-    </ion-item>`
+  template: `<ion-pane>
+...
+</ion-pane>`
 }
 
 export default componentJson;

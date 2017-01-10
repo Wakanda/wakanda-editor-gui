@@ -1,7 +1,7 @@
 
 let componentJson = {
   manifest: {
-    name: 'Ion Toggle',
+    name: 'ion-toggle',
     properties:[],
     methodes: []
   },

@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Button in header',
+    name: 'ion-item',
     properties:[],
     methodes: []
   },
-  template: `<button class="button">Text</button>`
+  template: `<ion-item>Hello!</ion-item>`
 }
 
 export default componentJson;

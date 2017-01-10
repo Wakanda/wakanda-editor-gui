@@ -1,11 +1,11 @@
 
 let componentJson = {
   manifest: {
-    name: 'Ion Checkbox',
+    name: 'ion-checkbox',
     properties:[],
     methodes: []
   },
-  template: `<ion-checkbox ng-model="isChecked">Checkbox Label</ion-checkbox>`
+  template: `<ion-checkbox>Checkbox Label</ion-checkbox>`
 }
 
 export default componentJson;
